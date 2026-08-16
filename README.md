@@ -107,7 +107,7 @@ pnpm install
 pnpm --filter @stoqr/web run typecheck && pnpm --filter @stoqr/web run test
 
 # Statisches App-Bundle bauen (SPA-Target)
-STOQR_TARGET=app pnpm --filter @stoqr/web build
+pnpm --filter @stoqr/web run build:app
 
 # Android-Projekt syncen und bauen
 npx cap sync

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:app": "node scripts/build-app.mjs",
     "preview": "vite preview",
     "lint": "eslint src",
     "typecheck": "svelte-kit sync && tsc --noEmit",
