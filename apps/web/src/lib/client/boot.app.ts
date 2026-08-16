@@ -81,11 +81,26 @@ export async function bootApp(): Promise<void> {
     const sqlite = new SQLiteConnection(CapacitorSQLite)
 
     // Verbindung wiederverwenden, falls sie aus einem frueheren Lauf noch offen
-    // ist (Hot-Reload/erneuter Boot) — sonst neu anlegen.
+    // ist (Hot-Reload/erneuter Boot) — sonst neu anlegen. Nach einem WebView-
+    // Full-Reload ist das JS-`bootPromise` zwar zurueckgesetzt, die native
+    // Connection kann aber weiterleben; isConnection() meldet sie nicht immer.
+    // Deshalb createConnection defensiv: bei "already exists" retrieven.
     const isConn = (await sqlite.isConnection(DB_NAME, false)).result
-    const conn: SQLiteDBConnection = isConn
-      ? await sqlite.retrieveConnection(DB_NAME, false)
-      : await sqlite.createConnection(DB_NAME, false, 'no-encryption', DB_VERSION, false)
+    let conn: SQLiteDBConnection
+    if (isConn) {
+      conn = await sqlite.retrieveConnection(DB_NAME, false)
+    } else {
+      try {
+        conn = await sqlite.createConnection(DB_NAME, false, 'no-encryption', DB_VERSION, false)
+      } catch (err) {
+        // Native Connection existiert bereits (z.B. nach Full-Reload) — nutzen.
+        if (String((err as Error)?.message ?? err).includes('already exists')) {
+          conn = await sqlite.retrieveConnection(DB_NAME, false)
+        } else {
+          throw err
+        }
+      }
+    }
 
     if (!(await conn.isDBOpen()).result) {
       await conn.open()

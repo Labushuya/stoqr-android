@@ -65,11 +65,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # Verifiziert, dass das statische SPA-Bundle (adapter-static) ohne
-      # SSR-Fehler baut — das ist der Input fuer `cap sync`.
-      - name: Build (STOQR_TARGET=app)
-        run: pnpm --filter @stoqr/web build
-        env:
-          STOQR_TARGET: app
+      # SSR-Fehler baut — das ist der Input fuer `cap sync`. build:app stasht
+      # dabei die +*.server.ts, damit SvelteKit keine __data.json-Fetches
+      # generiert (die es im SPA-Fallback nicht gibt).
+      - name: Build (App-Target)
+        run: pnpm --filter @stoqr/web run build:app
 
       - name: Upload SPA-Bundle als Artefakt
         uses: actions/upload-artifact@v4

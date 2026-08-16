@@ -51,10 +51,10 @@ jobs:
         run: pnpm run test
 
       # Statisches SPA-Bundle bauen (adapter-static), das die WebView laedt.
-      - name: App-Bundle bauen (STOQR_TARGET=app)
-        run: pnpm --filter @stoqr/web build
-        env:
-          STOQR_TARGET: app
+      # build:app stasht die +*.server.ts, damit SvelteKit keine __data.json-
+      # Fetches erzeugt (im SPA-Fallback nicht vorhanden -> 404/blank).
+      - name: App-Bundle bauen (App-Target)
+        run: pnpm --filter @stoqr/web run build:app
 
       # Android-Plattform-Ordner wird in CI generiert (nicht im Repo eingecheckt),
       # damit das Repo frei von generiertem Scaffolding bleibt. Idempotent: cap add

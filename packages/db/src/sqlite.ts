@@ -25,3 +25,9 @@ export {
 // wieder-exportiert, damit das First-Launch-Seeding sie ohne Zusatzimport hat.
 export { categorySeeds } from '../seeds/categories'
 export { nutrientTypeSeeds } from '../seeds/nutrient-types'
+
+// Datei-basierter Import/Export — derselbe dialekt-neutrale Kern wie im
+// Haupt-Barrel (Pi). So teilen App und Pi Envelope-Format, Tiers, FK-Map und
+// remapImport ohne Duplikat.
+export * from './transfer'
+export * from './transfer-io'

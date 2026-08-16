@@ -21,10 +21,11 @@
 // und beeinflusst den Response-Vertrag NICHT — im App-Router bewusst weggelassen,
 // um den Router schlank zu halten (die UI liest kein Audit-Log offline).
 
-import { LOCAL_HOUSEHOLD_ID, sqliteSchema } from '@stoqr/db/sqlite'
+import { LOCAL_HOUSEHOLD_ID, LOCAL_USER_ID, sqliteSchema } from '@stoqr/db/sqlite'
 import type { SqliteDatabase } from '@stoqr/db/sqlite'
+import { collectExport, applyImport, serializeEnvelope, type ExportTier, type TransferSchema } from '@stoqr/db/sqlite'
 import { getDb } from '$data/db'
-import { and, eq, count } from 'drizzle-orm'
+import { and, eq, count, inArray } from 'drizzle-orm'
 
 import * as locationsQ from '$data/queries/locations'
 import * as categoriesQ from '$data/queries/categories'
@@ -120,6 +121,16 @@ function normalizeScrapeUrl(
 // Runtime unveraendert — nur ein Typ-Cast an EINER Stelle.
 function getSqliteDb(): SqliteDatabase {
   return getDb() as unknown as SqliteDatabase
+}
+
+// Schema-Namespace fuer die dialekt-neutralen Transfer-Runner (collectExport/
+// applyImport). sqliteSchema enthaelt alle Tabellen unter denselben Namen wie
+// TRANSFER_TABLE_ORDER/FK_DESCRIPTOR erwarten.
+const SQLITE_TRANSFER_SCHEMA = sqliteSchema as unknown as TransferSchema
+const TRANSFER_OPS = { eq, inArray, and }
+
+function isTier(v: string): v is ExportTier {
+  return v === 'stammdaten' || v === 'orte-inventar' || v === 'einkauf' || v === 'alles'
 }
 
 export async function routeApp(path: string, init?: RequestInit): Promise<Response> {
@@ -1202,10 +1213,57 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
       })
     }
 
+    // -----------------------------------------------------------------------
+    // /api/transfer/export | /api/transfer/import  (Datei-Erstbefuellung)
+    // -----------------------------------------------------------------------
+    // Identisch zu den Pi-Endpoints (api/transfer/*), nur gegen die On-Device-
+    // SQLite und die lokale Identitaet. Das eigentliche File-IO (speichern/teilen
+    // bzw. Datei-Lesen) macht die UI ueber transfer.app.ts — hier fliesst nur der
+    // Envelope-Text. REPLACE ist destruktiv → confirm=true erforderlich.
+    if (r === 'transfer') {
+      const action = seg[2]
+      const db = getSqliteDb()
+
+      if (action === 'export' && method === 'GET') {
+        const scopeRaw = q.get('scope') ?? 'alles'
+        if (!isTier(scopeRaw)) return errRes(`Unbekannter scope: ${scopeRaw}`, 400)
+        const envelope = await collectExport({
+          db,
+          schema: SQLITE_TRANSFER_SCHEMA,
+          ops: TRANSFER_OPS,
+          sourceSystem: 'app',
+          scope: scopeRaw,
+          householdId: hh,
+          exportedAt: new Date().toISOString(),
+        })
+        // Envelope-Text im Body (die UI schreibt/teilt die Datei via Capacitor).
+        return jsonRes({ scope: scopeRaw, file: serializeEnvelope(envelope), exportedAt: envelope.exportedAt })
+      }
+
+      if (action === 'import' && method === 'POST') {
+        const b = parseBody(init) as { confirm?: boolean; file?: string }
+        if (b.confirm !== true) return errRes('Import nicht bestaetigt (confirm=true erforderlich).', 400)
+        if (typeof b.file !== 'string' || !b.file.length) return errRes('Feld file (Datei-Inhalt) fehlt.', 400)
+        try {
+          const result = await applyImport({
+            db,
+            schema: SQLITE_TRANSFER_SCHEMA,
+            ops: TRANSFER_OPS,
+            fileText: b.file,
+            targetHouseholdId: hh,
+            targetUserId: LOCAL_USER_ID,
+            newId: () => crypto.randomUUID(),
+          })
+          return jsonRes(result)
+        } catch (err) {
+          return errRes(`Import fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, 400)
+        }
+      }
+    }
+
     // =======================================================================
     // ONLINE-ONLY-Endpoints → gnaedige Degradation (KEINE Query-Aufrufe)
     // =======================================================================
-
     // /api/catalog/search — Globus-Live-Suche. Offline: leere Trefferliste,
     // live:false (die UI zeigt dann nur lokale/keine Katalogtreffer).
     if (r === 'catalog' && seg[2] === 'search' && method === 'GET') {
