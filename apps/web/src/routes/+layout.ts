@@ -28,7 +28,7 @@ export const load: LayoutLoad = async () => {
     await bootApp()
 
     return {
-      user: { id: 'local-user', name: 'Lokal', email: null },
+      user: { id: 'local-user', name: 'Die Merbotts', email: null },
       authDisabled: true,
     }
   }
