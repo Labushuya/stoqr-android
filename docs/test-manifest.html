@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>stoqr — Test-Manifest A–E</title>
+<style>
+  :root {
+    --bg: #faf7f2;
+    --surface: #ffffff;
+    --surface-sunken: #f3efe8;
+    --border: #e4ddd1;
+    --text: #2a2621;
+    --text-muted: #857b6d;
+    --primary: #c4673a;
+    --primary-subtle: #f7e8e0;
+    --ok: #16a34a;
+    --ok-subtle: #dcfce7;
+    --warn: #c2410c;
+    --warn-subtle: #fff7ed;
+    --danger: #dc2626;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a17; --surface: #262320; --surface-sunken: #201d1a;
+      --border: #3a352f; --text: #ece7df; --text-muted: #9a9084;
+      --primary: #e08a5c; --ok: #4ade80; --ok-subtle: #14331f;
+      --warn: #fb923c; --warn-subtle: #33220f; --danger: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55; font-size: 16px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 120px; }
+  header.top { margin-bottom: 20px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 16px; }
+
+  .pre {
+    background: var(--warn-subtle); border: 1px solid var(--warn);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+  }
+  .pre h2 { margin: 0 0 6px; font-size: 1rem; color: var(--warn); }
+  .pre ul { margin: 6px 0 0; padding-left: 20px; }
+  .pre li { margin: 2px 0; font-size: 0.9rem; }
+
+  .progress-bar {
+    position: sticky; top: 0; z-index: 10; background: var(--bg);
+    padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .progress-track { height: 10px; background: var(--surface-sunken); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--ok); width: 0%; transition: width 0.2s; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.85rem; color: var(--text-muted); gap: 8px; flex-wrap: wrap; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button.act {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: var(--radius-sm); padding: 7px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  }
+  button.act:hover { border-color: var(--primary); color: var(--primary); }
+  button.act.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  button.act.primary:hover { opacity: 0.9; color: #fff; }
+
+  section.block { margin-bottom: 26px; }
+  .block-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+  .block-head h2 { font-size: 1.2rem; margin: 0; }
+  .block-tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary); background: var(--primary-subtle); padding: 2px 8px; border-radius: 999px; }
+  .block-desc { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 12px; }
+
+  .item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px;
+  }
+  .item.done { border-color: var(--ok); background: var(--ok-subtle); }
+  .item-top { display: flex; gap: 10px; align-items: flex-start; }
+  .item-cb { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; accent-color: var(--ok); cursor: pointer; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-id { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }
+  .item-title { font-weight: 600; margin: 1px 0 4px; }
+  .item-steps { margin: 6px 0 0; padding-left: 18px; font-size: 0.9rem; }
+  .item-steps li { margin: 2px 0; }
+  .expect {
+    margin: 8px 0 0; padding: 8px 10px; background: var(--surface-sunken);
+    border-left: 3px solid var(--ok); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.88rem;
+  }
+  .expect b { color: var(--ok); }
+  .note-wrap { margin-top: 10px; }
+  .note-wrap label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
+  textarea.note {
+    width: 100%; min-height: 40px; resize: vertical; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--bg); color: var(--text);
+    padding: 7px 9px; font-family: inherit; font-size: 0.9rem;
+  }
+  textarea.note:focus { outline: none; border-color: var(--primary); }
+  code { background: var(--surface-sunken); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+  .flag { color: var(--warn); font-weight: 600; }
+  footer.foot { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 30px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 0.9rem; font-weight: 600; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>stoqr — Test-Manifest</h1>
+    <p class="subtitle">Blöcke A–E + F/F2 + G/G6/G7/G8/G10/G11/G12/G13/G15/G16/G17/G18/G19/G20/G21/G22/G24/G25/G26/G27/G28/G29/G30/G31/G32/G33/G34/G35/G36/G37/G39/G40/G41/G42/G43/G44/G45/G46/G47/G48/G49/G50/G51/G52/G53 · logisch aufbauender Durchlauf · Stand nach G53 (Name „Die Merbotts" + Gefahrenzone/Werksreset mit Auto-Re-Seed)</p></p>
+
+    <div class="pre">
+      <h2>Voraussetzung (kein Testschritt)</h2>
+      <ul>
+        <li>Deployment auf dem Pi ist erfolgreich durchgelaufen; die App ist erreichbar.</li>
+        <li>Migration <code>0010_shopping_trips</code> ist beim Container-Start gelaufen (sonst funktioniert der Einkauf-Teil E nicht).</li>
+        <li>Du bist eingeloggt und einem Haushalt zugeordnet.</li>
+      </ul>
+      Trifft alles zu → direkt mit <b>R1</b> beginnen. Hake jeden Punkt ab; trage Abweichungen ins Notizfeld.
+    </div>
+  </header>
+
+  <div class="progress-bar">
+    <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+    <div class="progress-meta">
+      <span id="count">0 / 0 erledigt</span>
+      <span class="actions">
+        <button class="act primary" onclick="copyExport(true)">📋 Offene + Notizen kopieren</button>
+        <button class="act" onclick="copyExport(false)">Alles kopieren</button>
+        <button class="act" onclick="resetAll()">Zurücksetzen</button>
+      </span>
+    </div>
+  </div>
+
+  <div id="manifest"></div>
+
+  <footer class="foot">
+    Zustand wird automatisch im Browser gespeichert (localStorage). „Ergebnis kopieren" legt eine Markdown-Übersicht
+    in die Zwischenablage — hier im Chat einfügen.
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Manifest-Daten ────────────────────────────────────────────────────────
+// Jeder Punkt: id, title, steps[], expect (Erwartung), optional flag (Auffälligkeit).
+const BLOCKS = [
+  {
+    tag: "Setup", name: "Räume & Struktur", desc: "Lagerstruktur anlegen — Voraussetzung für Bestände (Block A3: „Orte“ → „Räume“).",
+    items: [
+      { id: "R1", title: "Räume-Seite öffnen", steps: ["Im Menü „Räume“ öffnen."],
+        expect: "Menüpunkt heißt „Räume“ (nicht „Orte“). Seitentitel „Räume“. Bei leerem Stand: „Noch keine Räume angelegt“ + Button „Ersten Raum anlegen“." },
+      { id: "R2", title: "Raum anlegen", steps: ["„Raum hinzufügen“ (oder „Ersten Raum anlegen“) klicken.", "Icon wählen (Default 📍), Name z.B. „Küche“ eingeben.", "„Hinzufügen“ klicken."],
+        expect: "Toast „Raum \"Küche\" hinzugefügt“. Raum erscheint als aufklappbare Zeile." },
+      { id: "R3", title: "Lagerort im Raum anlegen", steps: ["Raum „Küche“ aufklappen.", "„Lagerort hinzufügen“ klicken.", "Name z.B. „Kühlschrank“ → „Hinzufügen“."],
+        expect: "Toast „Lagerort \"Kühlschrank\" hinzugefügt“. Lagerort erscheint unter dem Raum." },
+      { id: "R4", title: "Fach im Lagerort anlegen", steps: ["Lagerort „Kühlschrank“ aufklappen.", "„Fach hinzufügen“ klicken.", "Name z.B. „Oberes Fach“ → „Hinzufügen“."],
+        expect: "Toast „Fach \"Oberes Fach\" hinzugefügt“. Fach erscheint unter dem Lagerort." },
+      { id: "R5", title: "Umbenennen & Löschen prüfen", steps: ["Ein „Bearbeiten“ (Stift) an Raum/Lagerort/Fach testen, umbenennen, „Speichern“.", "Ein „Löschen“ (Papierkorb) an einem Test-Fach testen."],
+        expect: "Umbenennen → Toast „… umbenannt“. Löschen zeigt Bestätigungsdialog mit passendem Text; Fach danach weg." },
+    ]
+  },
+  {
+    tag: "Setup", name: "Märkte & Einheiten", desc: "Märkte und eine eigene Einheit anlegen — Grundlage für Markt-Zuordnung, Bedarf und A4 (Einheiten-Vorschläge).",
+    items: [
+      { id: "M1", title: "Zwei Märkte anlegen", steps: ["Einstellungen → Märkte verwalten.", "Zwei Märkte anlegen, z.B. „Globus“ und „Penny“ (Kette optional)."],
+        expect: "Beide Märkte erscheinen in der Liste. (Werden später für das 2×2-Szenario gebraucht.)" },
+      { id: "U1", title: "Einheiten-Vorschläge: Button-Logik (A4)", steps: ["Einstellungen → Einheiten verwalten.", "„+ Vorschläge“ klicken.", "Ein paar Vorschläge übernehmen (antippen)."],
+        expect: "Modal „Gängige Einheiten“ zeigt viele Vorschläge (u.a. Portion, Scheibe, Tafel, Tube, Kiste, Paar). Bereits vorhandene sind ausgegraut/„vorhanden“. Übernommene verschwinden aus der Auswahl." },
+      { id: "U2", title: "Vorschläge-Button verschwindet wenn leer (A4)", steps: ["Alle Vorschläge übernehmen (oder so viele wie sinnvoll)."],
+        expect: "Wenn KEIN Vorschlag mehr offen ist, verschwindet der „+ Vorschläge“-Button ganz." },
+      { id: "U3", title: "Eigene Einheit anlegen", steps: ["Unter „Neue Einheit anlegen“ Name + Kürzel eingeben, Dimension wählen.", "Bei Masse/Volumen einen Faktor angeben.", "„Anlegen“."],
+        expect: "Toast „Einheit angelegt“. Einheit erscheint mit Dimension-Badge; bei Masse/Volumen Faktor-Anzeige (z.B. „1 EL = 15 ml“), bei Stückzahl „—“." },
+      { id: "U4", title: "System-Einheiten sind schreibgeschützt", steps: ["Eine System-Einheit (z.B. Stück, kg) betrachten."],
+        expect: "System-Einheiten tragen Badge „System“ und haben KEINE Bearbeiten/Löschen-Buttons." },
+    ]
+  },
+  {
+    tag: "B", name: "Artikel & EAN", desc: "Artikel-Stammdaten inkl. EAN (Block B) — an beiden Anlege-Stellen, plus EAN-Duplikat-Meldung (B-a Fix).",
+    items: [
+      { id: "A-EAN1", title: "Artikel mit EAN + Standard-Einheit über FAB anlegen", steps: ["Inventar öffnen.", "FAB „Neuer Artikel“ klicken.", "Name „Vollmilch“, Kategorie wählen, Standard-Einheit „Packung“, EAN z.B. „4001234567890“.", "„Anlegen“."],
+        expect: "Es öffnet sich die gemeinsame Artikel-Bearbeitung (identisch zu Einstellungen→Artikel): Felder Name*, Marke, EAN/Barcode, Kategorie, Standard-Einheit, Bild-URL, Beschreibung. Toast „Artikel angelegt — Bestand über ‚Bestand hinzufügen‘“." },
+      { id: "A-EAN2", title: "EAN in Artikelverwaltung sichtbar + editierbar", steps: ["Einstellungen → Artikel verwalten.", "„Vollmilch“ suchen: EAN sichtbar?", "„Bearbeiten“ → EAN ändern → „Speichern“."],
+        expect: "EAN wird als Barcode-Zeile am Artikel angezeigt. Nach dem Bearbeiten ist die neue EAN SOFORT sichtbar (ohne Reload). (Fix B-b)" },
+      { id: "A-EAN3", title: "EAN-Duplikat wird klar abgelehnt (B-a Fix)", steps: ["Neuen Artikel „Testdopplung“ mit der GLEICHEN EAN wie Vollmilch anlegen (FAB oder Artikelverwaltung)."],
+        expect: "Klare Fehlermeldung „Diese EAN ist bereits einem anderen Artikel zugeordnet.“ — NICHT eine generische Meldung." },
+      { id: "A-EAN4", title: "EAN-Feld in „Neuer Artikel anlegen“ (Einstellungen)", steps: ["Einstellungen → Artikel → Abschnitt „Neuen Artikel anlegen“.", "Artikel mit Name + EAN anlegen."],
+        expect: "Das Formular hat ein EAN-Feld; die eingegebene EAN wird gespeichert und erscheint am neuen Artikel." },
+    ]
+  },
+  {
+    tag: "A6/A2", name: "Bestand anlegen & Einheit-Vorauswahl", desc: "Bestand über easy-add (Block A2 Stepper, A6 Einheit-Vorauswahl, C Vererbung).",
+    items: [
+      { id: "S1", title: "Bestand anlegen mit korrekter Einheit-Vorauswahl (A6)", steps: ["Inventar → „Bestand hinzufügen“.", "Artikel „Vollmilch“ wählen (mit Standard-Einheit „Packung“ angelegt).", "Auf Step „Lagerplatz wählen“ die Einheit prüfen."],
+        expect: "Einheit ist mit „Packung“ VORBELEGT (nicht mit einer Custom-Einheit wie „Blihn“). (Fix A6)" },
+      { id: "S2", title: "0,25er-Stepper bei Mengen (A2)", steps: ["Im Anzahl-Feld die Stepper-Pfeile nutzen.", "Danach manuell z.B. „1,3“ eintippen."],
+        expect: "Stepper springt in 0,25-Schritten (1,00 → 1,25 → 1,50). Freie Tastatureingabe wie „1,3“ bleibt möglich." },
+      { id: "S3", title: "Bestand speichern (Raum + Markt + MHD)", steps: ["Raum/Lagerort/Fach „Küche › Kühlschrank › Oberes Fach“ wählen.", "Markt „Globus“ wählen.", "Anzahl 2, ein MHD-Datum setzen.", "„Speichern“."],
+        expect: "Toast „1 Eintrag hinzugefügt“ (bzw. Anzahl). Zurück im Inventar erscheint Vollmilch." },
+      { id: "S4", title: "Zweiter Bestand erbt Markt/Ort (Block C)", steps: ["Erneut „Bestand hinzufügen“ → wieder „Vollmilch“ wählen.", "Ohne selbst etwas zu wählen: Markt- und Raum-Vorbelegung prüfen."],
+        expect: "Markt „Globus“ und der Lagerort aus dem ersten Bestand sind bereits VORBELEGT. (Vererbung aus vorhandenen Beständen)" },
+    ]
+  },
+  {
+    tag: "A5", name: "Inventar-Übersicht & MHD", desc: "MHD-Darstellung, „Kein MHD“-Hervorhebung (Block A5), Filter, Kontextmenü.",
+    items: [
+      { id: "I1", title: "MHD-Badge korrekt", steps: ["Inventar-Liste betrachten (Bestand mit MHD)."],
+        expect: "Badge zeigt sinnvollen MHD-Text („Noch N Tage“ / „Heute ablaufend“ / „Abgelaufen seit …“) in passender Farbe (grün/gelb/rot)." },
+      { id: "I2", title: "Bestand OHNE MHD auffällig markiert (A5)", steps: ["Einen Bestand ohne MHD anlegen (easy-add, MHD-Feld leer lassen).", "Inventar-Liste + Artikel-Detailseite betrachten."],
+        expect: "„⚠ Kein MHD“ wird ORANGE mit gestricheltem Rand angezeigt — NICHT grün wie „frisch“. (Fix A5) Gleiche Markierung auf der Detailseite." },
+      { id: "I3", title: "Lagerplatz-Filter", steps: ["Filter-Dropdown „Alle Lagerplätze“ öffnen, einen Lagerplatz wählen.", "„Nur verfügbare“-Toggle testen."],
+        expect: "Liste filtert auf den gewählten Lagerplatz (angezeigt als „Raum › Lagerort › Fach“). Toggle blendet verbrauchte aus." },
+    ]
+  },
+  {
+    tag: "2a-c", name: "Soll-Bestand, Bedarf & Korrektur", desc: "Artikel-Detailseite: Märkte-Zuordnung, Soll festlegen (A1 Bugfix), Bestandskorrektur.",
+    items: [
+      { id: "D1", title: "Märkte dem Artikel zuordnen", steps: ["Vollmilch → Detailseite öffnen.", "Unter „Märkte wo einkaufbar“ BEIDE Märkte „Globus“ und „Penny“ antippen."],
+        expect: "Beide Chips werden aktiv (✓ vorangestellt). (Wichtig fürs 2×2-Szenario in Block E.)" },
+      { id: "D2", title: "Soll-Bestand mit Mindestbestand speichern (A1 Bugfix)", steps: ["„+ Soll-Bestand festlegen“ klicken.", "Soll-Menge z.B. 4 und Mindestbestand z.B. 1 eintragen (die Einheit kommt aus dem Artikel — kein separates Einheiten-Feld mehr, siehe G22-2).", "„Speichern“."],
+        expect: "KEIN „Netzwerkfehler“. Toast „Soll-Bestand gespeichert“. Wert bleibt nach Reload erhalten. (Fix A1 — trat früher nur mit gesetztem Mindestbestand auf.)" },
+      { id: "D3", title: "Bedarf-Indikator", steps: ["Nach dem Soll den Bedarf-Indikator betrachten."],
+        expect: "Badge zeigt Status: „Bestand ausreichend“ / „Unter Soll — nachkaufen“ / „Unter Mindestbestand!“ passend zum Ist-Bestand." },
+      { id: "D4", title: "Bestandskorrektur (Inventur)", steps: ["„Bestand korrigieren“ klicken.", "Tatsächlichen (niedrigeren) Bestand angeben, z.B. 1.", "„Übernehmen“."],
+        expect: "Toast „Bestand korrigiert“. Gesamtbestand sinkt. (Erhöhung wird abgelehnt mit Hinweis, den Zuwachs über „Bestand hinzufügen“ zu erfassen.)" },
+    ]
+  },
+  {
+    tag: "2c", name: "Einkaufsliste & Bedarf", desc: "Bedarf erzeugen, manuelle Einträge, Markt-Filter.",
+    items: [
+      { id: "L1", title: "Bedarf aus Beständen erzeugen", steps: ["Einkaufsliste öffnen.", "„↻ Bedarf aus Beständen erzeugen“ klicken."],
+        expect: "Toast „Bedarf aktualisiert (… neu, … aktualisiert, … entfernt)“. Für Vollmilch (Soll 4 > Ist) erscheint GENAU EIN Bedarf-Eintrag — unabhängig davon, dass Vollmilch Globus+Penny zugeordnet ist (Bedarf ist markt-neutral). Kein Duplikat pro Markt." },
+      { id: "L2", title: "Manuellen Eintrag hinzufügen", steps: ["Unten „Eintrag hinzufügen…“ z.B. „Küchenrolle“, Menge, Einheit, „+“ klicken."],
+        expect: "Eintrag erscheint in „Zu kaufen“. Abhaken verschiebt ihn nach „Erledigt“." },
+      { id: "L3", title: "Markt-Filter „Einkauf bei“", steps: ["Oben „Einkauf bei“ → „Globus“ wählen."],
+        expect: "Zeigt nur Globus-Bedarf + markt-lose Einträge. Hinweis „Kein Mischen mehrerer Märkte“. Penny-nur-Einträge sind ausgeblendet." },
+    ]
+  },
+  {
+    tag: "E", name: "Einkauf-Runs & 2×2-Fix", desc: "Kern von Block E: Reservierung „1 Bedarf = 1 Run“, Status-Maschine, Verschieben, Ausverkauft.",
+    items: [
+      { id: "E1", title: "Neuen Einkauf starten", steps: ["Menü „Einkauf“ öffnen.", "Unter „Neuen Einkauf starten“ Markt „Globus“ wählen, „Starten“."],
+        expect: "Weiterleitung zur Run-Detailseite; Status-Badge „Aktiv“. In der Übersicht steht der Run unter „Laufende Einkäufe“." },
+      { id: "E2", title: "2×2 behoben: nur ein Bedarf, reserviert & gesperrt", steps: ["Einkaufsliste öffnen — für Vollmilch existiert nur EIN Bedarf-Eintrag (nicht 2×2).", "Beim Vollmilch-Bedarf „In Einkauf“ klicken (legt ihn in den Globus-Run).", "Markt-Filter auf „Penny“ stellen und den Vollmilch-Eintrag suchen."],
+        expect: "Es gibt genau EINEN Vollmilch-Bedarf (kein Duplikat je Markt). Nach „In Einkauf“ ist er in allen Markt-Ansichten AUSGEGRAUT mit Badge „reserviert · <Globus-Run>“ und nicht doppelt buchbar. (Wurzel-Fix E2/2×2)" },
+      { id: "E3", title: "Sammel-Aktion „Alle in Einkauf legen“", steps: ["In der Einkaufsliste (ggf. Markt wählen) „🛒 Alle in Einkauf legen“ klicken."],
+        expect: "Toast „N Bedarf(e) in den Einkauf gelegt.“ Alle passenden offenen Bedarfe werden reserviert und erscheinen ausgegraut." },
+      { id: "E4", title: "Verschieben zwischen Runs + leere Runs", steps: ["Zweiten Run für „Penny“ starten (Einkauf → Starten).", "Einkauf-Übersicht öffnen: erscheint ein LEERER Run in der Liste?", "In der Einkaufsliste beim reservierten Vollmilch-Eintrag das Dropdown „→ verschieben…“ öffnen und den Penny-Run wählen."],
+        expect: "Leere Runs (ohne Positionen) werden in der Übersicht NICHT gelistet (ggf. Hinweis „N leerer Einkauf ausgeblendet“). Zweimal Starten für denselben Markt legt keinen zweiten leeren Run an. Verschieben: Toast „Verschoben.“, Badge zeigt nun den Penny-Run (Bedarf hängt an genau einem Run)." },
+      { id: "E5", title: "Nur ein aktiver Run", steps: ["Beim Starten des zweiten Runs (E4) den ersten beobachten bzw. Einkauf-Übersicht öffnen."],
+        expect: "Nur EIN Run hat Status „Aktiv“; der zuvor aktive steht auf „Pausiert“. Ein pausierter Run hat einen „Fortsetzen“-Button." },
+      { id: "E6", title: "Position: Gekauft / Ausverkauft", steps: ["Run-Detailseite öffnen.", "Bei einer Position „Gekauft“ klicken, bei einer anderen „Ausverkauft“.", "Nochmal auf denselben Chip klicken (Toggle)."],
+        expect: "Badge wechselt „Offen“ → „Gekauft“ (grün) bzw. „Ausverkauft“ (rot). Erneuter Klick setzt zurück auf „Offen“." },
+      { id: "E7", title: "Freigeben (zurück in die Liste)", steps: ["Bei einer Position das „✕“ (Freigeben) klicken."],
+        expect: "Toast „Zurück in die Einkaufsliste.“ Position verschwindet aus dem Run; der Bedarf erscheint wieder normal (nicht mehr reserviert) in der Einkaufsliste." },
+    ]
+  },
+  {
+    tag: "E7", name: "Einbuchen aus Run mit Split", desc: "Position aus dem Run als echten Bestand einbuchen; Split in mehrere MHD-Zeilen.",
+    items: [
+      { id: "B1", title: "Split beim Einbuchen", steps: ["Run-Detail → bei einer Position „Einbuchen“ klicken (öffnet „Bestand hinzufügen“ vorbelegt).", "Im Step „MHD-Gruppen“ auf „Split:“ einen Chip klicken, z.B. „×2“.", "Beiden Zeilen unterschiedliche MHD-Daten geben."],
+        expect: "Die Gesamtmenge wird gleichmäßig auf 2 Zeilen aufgeteilt (Summe bleibt gleich, sichtbar unter „Gesamt“). Jede Zeile hat ein eigenes MHD-Feld." },
+      { id: "B2", title: "Einbuchen schließt den Kreis", steps: ["„Speichern“ klicken."],
+        expect: "Weiterleitung zurück zur Run-Detailseite. Die Position ist verschwunden (Bedarf verbraucht). Im Inventar liegen 2 neue Bestände mit je eigenem MHD." },
+      { id: "B3", title: "Einkauf beenden — Blockade-Regel", steps: ["Eine Position im Run auf „Gekauft“ setzen, aber NICHT einbuchen.", "„Einkauf beenden“ klicken."],
+        expect: "Beenden wird BLOCKIERT mit Meldung, dass noch gekaufte Position(en) einzubuchen sind. Erst nach Einbuchen (oder Freigeben) lässt sich der Run beenden." },
+      { id: "B4", title: "Einkauf beenden — Aufräumen", steps: ["Die offene(n)/ausverkaufte(n) Position(en) belassen, gekaufte einbuchen/freigeben.", "„Einkauf beenden“ klicken."],
+        expect: "Toast „Einkauf beendet.“ Offene/ausverkaufte Positionen werden freigegeben → ihre Bedarfe stehen wieder in der Einkaufsliste. Run erscheint unter „Abgeschlossen“ (Badge „Beendet“)." },
+    ]
+  },
+  {
+    tag: "F", name: "Preise & Kosten-Schätzung", desc: "Block F: Preise je Artikel+Markt mit Historie; Estimate in Einkaufsliste + Einkauf-Run.",
+    items: [
+      { id: "P1", title: "Preis beim Einbuchen erfassen", steps: ["Inventar → „Bestand hinzufügen“, Artikel + Markt „Globus“ wählen.", "Im Feld „Preis (pro …)“ z.B. 1,19 eingeben.", "„Speichern“."],
+        expect: "Preisfeld ist vorhanden (mit Haken „reduziert“ / „als Dauerpreis übernehmen“, sobald ein Markt gewählt ist). Nach dem Speichern ist der Preis erfasst." },
+      { id: "P2", title: "Preise-Card auf der Artikel-Detailseite", steps: ["Artikel-Detailseite öffnen.", "Abschnitt „Preise“ betrachten."],
+        expect: "„Preise“-Card zeigt je zugeordnetem Markt den aktuellen Preis (z.B. „1,19 € / Packung“) bzw. „kein Preis“. „Preis setzen“/„Ändern“ öffnet einen Inline-Editor (Preis + Einheit + 2 Haken)." },
+      { id: "P3", title: "Preis manuell je Markt setzen", steps: ["In der „Preise“-Card bei einem Markt „Preis setzen“/„Ändern“.", "Preis + Einheit eingeben, „Speichern“."],
+        expect: "Toast „Preis gespeichert“. Der neue Preis erscheint sofort als aktueller Preis des Markts." },
+      { id: "P4", title: "Reduziert vs. Dauerpreis", steps: ["Einen Preis mit Haken „reduziert“, aber OHNE „als Dauerpreis“ speichern.", "Danach das Estimate (Einkaufsliste/Run) prüfen.", "Dann denselben Preis mit „als Dauerpreis“ speichern."],
+        expect: "Ohne „als Dauerpreis“ zählt der reduzierte Preis NICHT fürs Estimate (der vorherige reguläre Preis bleibt maßgeblich). Mit „als Dauerpreis“ wird er der neue maßgebliche Preis. Angebot ist mit Badge „Angebot“ markiert." },
+      { id: "P5", title: "Estimate im Einkauf-Run", steps: ["Einkauf-Run mit Markt öffnen (Positionen vorhanden).", "Positionen + Kopfzeile betrachten."],
+        expect: "Jede Position zeigt „ca. ~X €“ (bzw. „kein Preis“ / „Einheit ≠“). Oben Summe „Einkauf ca. ~X €“. Bei Artikeln ohne Preis: Warnung „Schätzung unvollständig …“." },
+      { id: "P6", title: "Estimate in der Einkaufsliste", steps: ["Einkaufsliste öffnen.", "Oben „Einkauf bei“ → „Globus“ wählen."],
+        expect: "Pro Position „ca. ~X €“, oben Summe „Einkauf ca. ~X €“ + ggf. Warnung. Ohne gewählten Markt: Hinweis „Markt wählen für Preisschätzung“." },
+      { id: "P7", title: "Einheiten-Umrechnung im Estimate", steps: ["Für einen Artikel einen Preis „1,50 € / kg“ setzen.", "Einen Bedarf/eine Position mit 500 g dieses Artikels betrachten.", "Zum Vergleich: Preis pro „Packung“ setzen und Bedarf in „kg“ prüfen."],
+        expect: "500 g bei 1,50 €/kg → „ca. ~0,75 €“. Preis pro „Packung“ gegen Bedarf in „kg“ → „Einheit ≠“ (nicht vergleichbar, fließt nicht in die Summe)." },
+    ]
+  },
+  {
+    tag: "G", name: "Einheiten v2 & Gebinde-Größe", desc: "Gebinde-Größe je Artikel: count-Einheit (Flasche) auf Volumen/Masse umrechenbar.",
+    items: [
+      { id: "G-1", title: "Gebinde-Größe je Artikel festlegen", steps: ["Artikel mit Standard-Einheit „Flasche“ öffnen (Detailseite).", "In der Produkt-Card die Gebinde-Zeile suchen → „Gebinde festlegen“.", "Wert 1,5 + „Liter (l)“ wählen, „Speichern“."],
+        expect: "Gebinde-Zeile erscheint nur bei Stückzahl-Einheiten. Nach dem Speichern: „1 Flasche = 1,5 l“. Toast „Gebinde-Größe gespeichert“." },
+      { id: "G-2", title: "Dual-Anzeige im Gesamtbestand", steps: ["Für diesen Artikel 3 Flaschen als Bestand anlegen (falls noch nicht).", "Gesamtbestand auf der Detailseite betrachten."],
+        expect: "Gesamtbestand zeigt „3 Flasche (4,5 l)“ — Stückzahl führend, Umrechnung in Klammern." },
+      { id: "G-3", title: "Soll-Ist vergleichbar trotz anderer Einheit", steps: ["Soll-Bestand „6 l“ für den Flaschen-Artikel setzen.", "Bedarf-Indikator betrachten."],
+        expect: "Indikator vergleicht korrekt (z.B. „Unter Soll — nachkaufen“ bei 4,5 l < 6 l), NICHT mehr „nicht vergleichbar“. In der Einkaufsliste entsteht ein stimmiger Bedarf." },
+      { id: "G-4", title: "Preis-Estimate mit Gebinde", steps: ["Preis „0,29 € pro Flasche“ setzen.", "In Einkauf-Run/Einkaufsliste (Markt gewählt) das Estimate betrachten, wenn der Bedarf in l vorliegt."],
+        expect: "„Preis pro Flasche“ wird gegen Bedarf in Litern fair umgerechnet (kein „Einheit ≠“ mehr für diesen Artikel)." },
+      { id: "G-5", title: "Fallback ohne Gebinde", steps: ["Einen count-Artikel OHNE Gebinde (z.B. „Packung“, kein Volumen/Gewicht) betrachten."],
+        expect: "Verhält sich exakt wie bisher: Anzeige „N Packung“ (kein Dual), Soll-Ist ggf. „nicht vergleichbar“ bei abweichender Einheit." },
+      { id: "G-6", title: "Einheiten-Seite Klarstellung", steps: ["Einstellungen → Einheiten öffnen.", "Eine Stückzahl-Einheit (Flasche, Packung) betrachten."],
+        expect: "Statt „—“ steht bei count-Einheiten „Größe je Artikel (Gebinde)“; die Seitenbeschreibung verweist auf das Gebinde je Artikel." },
+    ]
+  },
+  {
+    tag: "G6", name: "Einheiten-Fixes", desc: "Standard-Einheit editierbar, Preisvorschlag nutzt Bestands-Einheit, „Alle angleichen“-Aktion.",
+    items: [
+      { id: "G6-1", title: "Standard-Einheit ändern", steps: ["Artikel-Detailseite öffnen.", "Bei „Standard-Einheit“ auf „Ändern“, eine andere Einheit wählen, „Speichern“."],
+        expect: "Die Standard-Einheit lässt sich ändern und bleibt nach Reload erhalten (kein eingefrorener/unsichtbarer Wert mehr)." },
+      { id: "G6-2", title: "Preisvorschlag nutzt Bestands-Einheit", steps: ["Artikel mit Beständen in „Packung“, Standard-Einheit ggf. abweichend.", "Online-Preis abrufen (Markt mit Suggest-URL)."],
+        expect: "Der Vorschlag zeigt die Einheit der vorhandenen Bestände (z.B. „/ Packung“), NICHT eine alte/custom Einheit wie „blihn“." },
+      { id: "G6-3", title: "Alle auf eine Einheit angleichen (nur umbenennen)", steps: ["Detailseite → „Alle angleichen…“.", "Zieleinheit wählen, Modus „Nur umbenennen“, „Angleichen“."],
+        expect: "Artikel + ALLE Bestände (auch verbraucht/gespendet/entsorgt) tragen danach die Zieleinheit; Mengen unverändert. Dialog erklärt beide Modi mit Beispielen." },
+      { id: "G6-4", title: "Angleichen mit Umrechnung", steps: ["Bestand mit mass/volume-Einheit (z.B. 500 g).", "„Alle angleichen…“ → Zieleinheit kg → Modus „Menge umrechnen“ → „Angleichen“."],
+        expect: "500 g wird zu 0,5 kg umgerechnet. Bei Stückzahl-Zieleinheit (nicht umrechenbar) erscheint der Hinweis, dass nur umbenannt wird." },
+    ]
+  },
+  {
+    tag: "G7", name: "Katalog-Snapshots, Bilder & freie Gebinde-Einheit", desc: "Freie Gebinde-Einheit (g/kg/ml/l); Katalog-Sicherung als EAN-Spiegel des Bestands: je Artikel-mit-EAN neuester Snapshot + Feld-Diff (Name/Bild/Kategorie), einzeln oder komplett übernehmbar.",
+    items: [
+      { id: "G7-1", title: "Gebinde mit freier Einheit (g statt 0,04 kg)", steps: ["Artikel mit Stückzahl-Standard-Einheit (z.B. „Packung“) öffnen.", "„Gebinde festlegen“ → Betrag 40 + Einheit „Gramm (g)“ → Speichern."],
+        expect: "Anzeige „1 Packung = 40 g“ (NICHT 0,04 kg). Mit 1,5 + „Liter (l)“ → „1,5 l“. Gesamtbestand/Estimate bleiben korrekt." },
+      { id: "G7-2", title: "Katalog sichern & Spiegel füllen", steps: ["Voraussetzung: Online-Preis-Abruf aktiv, Globus-Markt mit Suggest-URL, Artikel mit EAN zugeordnet.", "Einstellungen → „Katalog-Sicherung (Globus)“ → „Katalog jetzt sichern“."],
+        expect: "Ergebnis-Toast („X neu, Y unverändert, ggf. übersprungen/fehlgeschlagen“). Danach steht jeder Bestands-Artikel-mit-EAN in der Liste „Bestands-Artikel im Katalog“ mit Thumbnail, EAN und — falls vorhanden — Katalog-Preis. Artikel mit Abweichung (Name/Bild/Kategorie) stehen zuoberst und sind aufgeklappt, Badge „abweichend“." },
+      { id: "G7-3", title: "Erneuter Sync ohne Änderung", steps: ["Direkt nochmal „Katalog jetzt sichern“ (ohne dass sich bei Globus etwas geändert hat)."],
+        expect: "Ergebnis meldet „unverändert“. Der Spiegel bleibt unverändert: weiterhin genau EINE Zeile je EAN (keine Dopplung), keine neuen Abweichungen." },
+      { id: "G7-4", title: "Abweichung übernehmen / ignorieren", steps: ["Bei einem abweichenden Artikel einzelne Felder ankreuzen und „Übernehmen“ klicken — oder „Alles übernehmen“ bzw. „Ignorieren“."],
+        expect: "Der Artikel verschwindet NICHT aus der Liste (EAN-Spiegel). Die übernommenen Felder stehen danach im Artikel, die Abweichung ist weg → die Zeile zeigt „Katalogdaten stimmen mit dem Artikel überein“ und rutscht nach unten (Badge „aktuell“). /aktivitaet zeigt den Übergang (globus_snapshots → confirmed/rejected)." },
+      { id: "G7-5", title: "Bild-Anzeige (Volume)", steps: ["Einen Spiegel-Eintrag mit Thumbnail betrachten; Bild-URL ist /media/…"],
+        expect: "Das Bild lädt (aus dem lokalen Volume, nur für den eigenen Haushalt sichtbar)." },
+      { id: "G7-6", title: "Failsafe / Struktur-Check + URL-Validierung", steps: ["Beim Markt eine Abruf-URL OHNE {EAN}-Platzhalter speichern.", "Optional: Sync mit gültigen EANs ausführen, die Globus nicht liefert."],
+        expect: "URL ohne {EAN} wird beim Speichern ABGELEHNT („Abruf-URL muss den Platzhalter {EAN} enthalten“), nicht erst im Sync übersprungen. Der Sync selbst läuft ohne Absturz durch (übersprungen/fehlgeschlagen gezählt). Bei 0 Treffern trotz EANs erscheint eine DAUERHAFTE Warn-Card „Globus-Struktur evtl. geändert“ (kein flüchtiger Toast)." },
+    ]
+  },
+  {
+    tag: "G8", name: "Snapshot→Artikel, Markt, On-demand-Katalog & Quick-Wins", desc: "Katalog-Daten in Artikel übernehmen, Markt merken, Update-Diagnose, Quick-Wins.",
+    items: [
+      { id: "G8-1", title: "Katalog-Snapshot in Artikel übernehmen (Bild)", steps: ["Einstellungen → Katalog-Sicherung → abweichenden Artikel aufklappen.", "Feld „Bild“ angekreuzt lassen, „Übernehmen“ klicken."],
+        expect: "Der Artikel zeigt danach das Katalog-Bild (Detailseite). Angekreuzte Felder überschreiben, nicht angekreuzte füllen nur leere Artikelfelder. Die Zuordnung läuft über die EAN — es gibt KEINE „kein Match / gesperrt“-Situation mehr (Snapshot ohne productId wird per EAN aufgelöst)." },
+      { id: "G8-2", title: "Markt wird am Artikel gemerkt", steps: ["Bestand hinzufügen (easy-add) mit Markt „Globus“ → speichern.", "Artikel-Detailseite öffnen → Bezugsquellen-Chips prüfen. Danach erneut einen Bestand desselben Artikels anlegen."],
+        expect: "„Globus“ ist auf der Detailseite als Bezugsquelle markiert; beim erneuten Anlegen ist der Markt vorbelegt." },
+      { id: "G8-3", title: "Update-Check nennt die Ursache", steps: ["Versionsanzeige unten → Update prüfen."],
+        expect: "Statt pauschal „Prüfung nicht möglich“ die konkrete Ursache (z.B. „kein Internetzugang zu GitHub“, „GitHub-Rate-Limit“)." },
+      { id: "G8-5a", title: "Einkauf umbenennen", steps: ["Einkauf-Run öffnen → „Umbenennen“ → Name eingeben → Speichern."],
+        expect: "Der Name bleibt nach Reload erhalten (Titel + Breadcrumb)." },
+      { id: "G8-5b", title: "EAN auf der Inventar-Übersicht", steps: ["/inventar öffnen (Artikel mit EAN)."],
+        expect: "Die EAN wird je Karte angezeigt." },
+      { id: "G8-5c", title: "„Nur verfügbare“-Toggle wirkt", steps: ["/inventar: einen Bestand als verbraucht markieren.", "Toggle „Nur verfügbare“ aus- und wieder einschalten."],
+        expect: "Ausgeschaltet erscheinen verbrauchte/gespendete/entsorgte Bestände; eingeschaltet werden sie ausgeblendet." },
+    ]
+  },
+  {
+    tag: "G10", name: "Katalog-Spiegel & Konsolidierung", desc: "Katalog-Sicherung als EAN-Spiegel des Bestands (kein Katalog-Crawl beim Anlegen), {EAN}-Pflicht bei Abruf-URLs, Einstellungs-Reihenfolge; Regressionen aus G8/G9.",
+    items: [
+      { id: "G10-1", title: "Katalog-Spiegel zeigt alle Bestands-Artikel mit EAN + Diff", steps: ["Online-Preis-Abruf aktiv + Globus-Markt mit {EAN}-URL, mind. 1 Artikel mit EAN.", "Einstellungen → „Katalog-Sicherung (Globus)“ → „Katalog jetzt sichern“."],
+        expect: "Liste „Bestands-Artikel im Katalog (n)“ erscheint dauerhaft (nicht nur bei offenen Vorschlägen). Artikel MIT Abweichung stehen oben und sind aufgeklappt, mit Feld-Diff (Name/Bild/Kategorie, alt → neu) und Buttons „Übernehmen“ / „Alles übernehmen“ / „Ignorieren“. Artikel ohne Abweichung: „Katalogdaten stimmen überein“; ohne Snapshot: „Noch kein Katalog-Eintrag“." },
+      { id: "G13-2", title: "Katalog-Preis als Preis-Vorschlag übernehmbar", steps: ["Katalog sichern (Sync, nicht easy-add) für einen Artikel mit Markt-Bezug + Katalog-Preis.", "Im Katalog-Spiegel die Zeile aufklappen → „Preis“-Checkbox anhaken → Übernehmen.", "Artikel-Detailseite → Preise-Card ansehen."],
+        expect: "Es erscheint eine „Preis“-Zeile (nur wenn Katalog-Preis UND Markt-Bezug vorhanden — bei easy-add-Snapshots ohne Markt fehlt sie). Nach Übernehmen liegt auf der Detailseite ein Preis-VORSCHLAG (wie beim Online-Abruf), den man bestätigt/verwirft; erst nach Bestätigung fließt er ins Estimate. NICHT in den Bestand (Charge-Preis bleibt getrennt)." },
+      { id: "G10-2", title: "easy-add: nur existierende Artikel (kein Katalog-Anlegen)", steps: ["Bestand hinzufügen → im Suchfeld einen Begriff tippen (z.B. „milch“).", "EAN eines bekannten Artikels ins Suchfeld eingeben."],
+        expect: "Es erscheinen NUR vorhandene Artikel (Name/Marke/EAN) aus dem eigenen Bestand — KEIN Block „Aus Globus-Katalog“, kein „Anlegen aus Katalog“. Ohne lokalen Treffer: Hinweis mit Link zum normalen Artikel-Anlegen. Eine bekannte EAN findet den passenden Artikel direkt." },
+      { id: "G10-3", title: "Abruf-URL ohne {EAN}-Platzhalter wird abgelehnt", steps: ["Einstellungen → Märkte → Markt bearbeiten.", "Gültige http/https-URL OHNE {EAN} eintragen (z.B. https://produkte.globus.de/suggest?search=wasser) → Speichern."],
+        expect: "SOFORTIGE Fehlermeldung im Formular „Abruf-URL muss den Platzhalter {EAN} enthalten“ (Client-Guard, kein Speicherversuch); die URL wird NICHT gespeichert. (Verschärft F2-2: früher wurde eine gültige URL ohne {EAN} akzeptiert.)" },
+      { id: "G10-4", title: "Einstellungs-Reihenfolge: Einheiten + Aktivität unter Märkte", steps: ["/einstellungen öffnen und Abschnitte von oben durchgehen."],
+        expect: "Reihenfolge: Haushaltsmitglieder → Artikel → Märkte → Einheiten → Aktivität. Einheiten und Aktivität stehen direkt unterhalb von Märkte." },
+      { id: "G9-1", title: "Spiegel bleibt nach „Katalog sichern“ sichtbar (Regression)", steps: ["„Katalog jetzt sichern“ ausführen und die Liste danach betrachten (ohne manuellen Reload)."],
+        expect: "Die Katalog-Liste zeigt die aktuellen Daten (reaktiv), nicht leer/stale. (Regression aus G8 behoben.)" },
+    ]
+  },
+  {
+    tag: "G11", name: "Einheitliche Artikel-Bearbeitung & Abruf-Transparenz", desc: "Eine gemeinsame vollständige Artikel-Bearbeitung an allen Stellen; sofortiges {EAN}-Feedback; Transparenz beim Sammel-Abruf (welche Artikel übersprungen).",
+    items: [
+      { id: "G11-1a", title: "Artikel-Detailseite: Stammdaten bearbeiten (inkl. EAN + Bild)", steps: ["Artikel-Detailseite öffnen → „Bearbeiten“ im Kopf.", "Name, Marke, EAN, Kategorie, Bild-URL, Beschreibung ändern → „Speichern“."],
+        expect: "Das Formular hat ALLE Felder (inkl. EAN und Bild-URL — vorher fehlend). Nach dem Speichern werden die Werte angezeigt; ist eine Bild-URL gesetzt, erscheint das echte Produktbild im Kopf statt des Platzhalters." },
+      { id: "G11-1b", title: "Gleiche Bearbeitung an ALLEN Stellen", steps: ["Einstellungen → Artikel → „Bearbeiten“ + „Neuen Artikel anlegen“.", "Inventar → FAB „Neuer Artikel“.", "Artikel-Detailseite → „Bearbeiten“."],
+        expect: "Überall öffnet sich DASSELBE Formular mit denselben Feldern (Name*, Marke, EAN, Kategorie, Standard-Einheit, Bild-URL, Beschreibung) und identischer Beschriftung („Name“, nicht „Produktname“). Kein reduziertes Formular mehr." },
+      { id: "G11-1c", title: "EAN-Duplikat wird klar abgelehnt", steps: ["Beim Bearbeiten/Anlegen eine EAN eintragen, die bereits einem anderen Artikel gehört → Speichern."],
+        expect: "Klare Fehlermeldung „Diese EAN ist bereits einem anderen Artikel zugeordnet.“ im Formular; nicht gespeichert." },
+      { id: "G11-2", title: "Abruf-URL ohne {EAN}: sofortiges Feedback (Märkte)", steps: ["Einstellungen → Märkte → Markt anlegen/bearbeiten.", "Gültige URL OHNE {EAN} eintragen → Speichern."],
+        expect: "Das Formular lehnt sofort ab („muss {EAN} enthalten“), ohne Speicherversuch — konsistent zur Server-Prüfung (G10-3)." },
+      { id: "G11-3", title: "Sammel-Abruf: welche Artikel übersprungen", steps: ["Einstellungen → Märkte → beim Markt „Preise abrufen“.", "Nach dem Toast den Bereich „N Artikel nicht abgerufen — anzeigen“ aufklappen."],
+        expect: "Unter dem Markt lässt sich aufklappen, WELCHE Artikel übersprungen/fehlgeschlagen sind — je mit Name, EAN und Grund (keine EAN / keine Abruf-URL / kein Treffer / Fehler). Nicht nur die nackten Zähler." },
+    ]
+  },
+  {
+    tag: "G12", name: "Nährwerte: Abruf & Herkunft", desc: "OpenFoodFacts-Nährwerte werden korrekt übernommen (Slug-Bug behoben); Abruf auf Artikelebene; Herkunft (OFF/manuell) sichtbar.",
+    items: [
+      { id: "G12-1", title: "Nährwerte-Abruf füllt die richtigen Werte", steps: ["Artikel mit echter EAN (z.B. 4306188415978) anlegen/öffnen.", "Auf der Detailseite „Von OpenFoodFacts abrufen“ klicken (oder beim Scannen in easy-add)."],
+        expect: "Die Nährwerte (Energie, Fett, ges. Fettsäuren, Kohlenhydrate, Zucker, Eiweiß, Salz, Ballaststoffe …) erscheinen TATSÄCHLICH unter den korrekten Standard-Typen (vorher: leer/nichts). Wiederholter Abruf überschreibt sauber, keine Dubletten/Falschtypen." },
+      { id: "G12-2", title: "Abruf auf Artikelebene", steps: ["Artikel-Detailseite mit EAN öffnen → Abschnitt Nährwerte."],
+        expect: "Dort gibt es einen Button „Von OpenFoodFacts abrufen“ (nur bei vorhandener EAN). Abruf ohne Treffer → Toast „Keine Nährwerte gefunden“, kein Absturz." },
+      { id: "G12-3", title: "Herkunft je Nährwert sichtbar", steps: ["Nach OFF-Abruf + einer manuellen Änderung die Nährwert-Zeilen betrachten."],
+        expect: "Je Zeile ein Badge „OFF“ (von OpenFoodFacts) bzw. „manuell“ (selbst gepflegt/geändert). Manuelles Überschreiben setzt die Zeile auf „manuell“." },
+      { id: "G13-1", title: "Erneuter OFF-Abruf überschreibt manuelle Änderungen", steps: ["Nährwerte abrufen.", "Einen Wert manuell ändern ODER eine Zeile löschen.", "Erneut „Von OpenFoodFacts abrufen“."],
+        expect: "Die manuellen Änderungen werden mit den frischen OFF-Werten ÜBERSCHRIEBEN; gelöschte Nährwerte kommen zurück (vorher: erneuter Abruf tat nichts, weil 7-Tage-Cache). Die Artikel-Stammdaten (Name/Bild/Kategorie) bleiben dabei UNVERÄNDERT." },
+    ]
+  },
+  {
+    tag: "G15", name: "Feld-Herkunft (OFF / Globus / manuell)", desc: "Jedes Stammdaten-Feld trägt seine Quelle: OFF liefert die initiale Basis, Globus-Katalog aktualisiert selektiv, manuelles Bearbeiten setzt nur geänderte Felder auf 'manuell'.",
+    items: [
+      { id: 'G15-1', title: 'Herkunft-Badges auf der Artikel-Detailseite (IMMER)', steps: ['Beliebigen Artikel oeffnen (auch Bestandsartikel von vorher).', 'Kopf betrachten: Name, Marke, Kategorie, Bild.'],
+        expect: 'Hinter Name/Marke/Kategorie (plus Zeile Bild:) IMMER ein Herkunfts-Badge: OFF, Globus, manuell — oder bei Altartikeln ohne erfasste Herkunft ein neutrales ? (Tooltip Herkunft nicht erfasst). Kein Feld ohne Badge. Badge nur, wo das Feld auch einen Wert hat.' },
+      { id: 'G15-2', title: 'Katalog-Abgleich setzt Herkunft auf Globus', steps: ['Katalog sichern (Sync).', 'Im Katalog-Spiegel bei einem Artikel z.B. Bild ankreuzen und uebernehmen.', 'Artikel-Detailseite oeffnen.'],
+        expect: 'Im Spiegel steht die Legende Aktueller Wert zu Globus-Katalog. Nach dem Uebernehmen zeigt das uebernommene Feld auf der Detailseite das Badge Globus (vorher OFF/?). Nur die angekreuzten Felder wechseln.' },
+      { id: 'G15-3', title: 'Manuelles Bearbeiten setzt NUR geaenderte Felder auf manuell', steps: ['Artikel bearbeiten (Detailseite, Bearbeiten).', 'NUR den Namen aendern, speichern.'],
+        expect: 'Nur das Name-Badge wechselt auf manuell. Bild/Kategorie/Marke behalten ihre bisherige Herkunft (OFF/Globus/?) - unveraenderte Felder werden nicht als manuell markiert.' },
+      { id: 'G15-4', title: 'Bestand hinzufuegen zeigt Kategorie-Wert + Herkunft', steps: ['Bestand hinzufuegen. Einen Artikel per Suche ODER Scan auswaehlen.', 'Den ausgewaehlten Artikel (Pille oben) betrachten.'],
+        expect: 'Der Pill zeigt den KATEGORIE-WERT (Icon + Name) mit Herkunfts-Badge dahinter — oder Keine Kategorie, wenn keine gesetzt ist. Name traegt ebenfalls ein Badge. Herkunft erscheint bei JEDEM ausgewaehlten Artikel, nicht nur nach Scan; ohne erfasste Herkunft neutrales ?. (Kategorie manuell setzbar: siehe G20-2/G22-1.)' },
+    ]
+  },
+  {
+    tag: 'G17', name: 'Kategorie-Mapping & Bild-Persistenz', desc: 'OFF-Kategorie greift jetzt viel oefter; Bilder ueberleben Updates (Volume-Fix auf dem Pi noetig).',
+    items: [
+      { id: 'G17-2', title: 'OFF-Kategorie wird zuverlaessiger uebernommen', steps: ['Mehrere Artikel per Barcode scannen/anlegen (z.B. Wasser, Joghurt, Schokolade, Konserve).', 'Kategorie am Artikel pruefen (Detailseite oder easy-add-Pill).'],
+        expect: 'Artikel bekommen eine der 9 echten Kategorien (Getraenke, Milchprodukte, Suessigkeiten & Snacks, Konserven & Tiefkuehl, ...) — nicht mehr leer und nicht mehr eine nicht existente Kategorie. Frueher zeigte das Mapping auf tote Slugs (meat/fish/frozen/...) und loeste nie auf; jetzt matcht es exakt UND per Schluesselwort auf die Seed-Kategorien.' },
+      { id: 'G17-1', title: 'Bilder ueberleben ein Update', steps: ['VORAUSSETZUNG (einmalig am Pi): neue docker-compose mit /data/media-Mount + neues Image (uid 1001), Verzeichnis chown 1001:1001.', 'Katalog sichern (Bilder laden).', 'stoqr-Stack neu ziehen/neustarten (Update simulieren).', 'Inventar/Detailseite betrachten.'],
+        expect: 'Bilder sind nach dem Update sofort da (keine 404 in der Konsole, keine preload-Warnung). Fehlt eine Datei (Alt-Referenz), wird sie beim ersten Abruf automatisch aus dem Katalog nachgeladen.' },
+    ]
+  },
+  {
+    tag: 'G18', name: 'Regressionen: Katalog-Anzeige, Bild-uid, Bild-Selbstheilung', desc: 'Katalog-Spiegel zeigt IMMER alle Felder; Container-uid gefixt (media schreibbar); verlorene Bilder laden sich selbst nach.',
+    items: [
+      { id: 'G18-2', title: 'Katalog-Spiegel zeigt IMMER alle Felder', steps: ['Katalog sichern.', 'Einen Artikel im Katalog-Spiegel aufklappen, dessen Kategorie/Name bereits stimmen.'],
+        expect: 'Es werden IMMER alle Felder gezeigt (Name, Bild, Kategorie, Preis) mit Artikel-Wert und Katalog-Wert — auch wenn sie uebereinstimmen. Abweichende Felder sind mit abweichend markiert und vorausgewaehlt; uebereinstimmende mit gleich und abgedunkelt. Nicht mehr nur der Preis.' },
+      { id: 'G18-1', title: 'Container darf Bilder schreiben (uid 1001)', steps: ['Neues Image ist deployt (uid 1001), media-Verzeichnis chown 1001:1001.', 'Katalog sichern.', 'In den Container-Logs nach media dir OK (writable) suchen.'],
+        expect: 'Log zeigt media dir OK (writable) statt der WARN-Zeile. Neue Katalog-Bilder werden tatsaechlich gespeichert und angezeigt. (Frueher: falsche uid 1000 -> keine Schreibrechte -> keine Bilder.)' },
+      { id: 'G18-3', title: 'Verlorene Bilder laden sich selbst nach', steps: ['Einen Artikel mit Katalog-Bild oeffnen, dessen Bilddatei fehlt (z.B. nach altem Update).'],
+        expect: 'Das Bild erscheint beim Aufruf automatisch (On-demand-Reload aus dem Snapshot) — kein dauerhaftes 404 mehr fuer Alt-Referenzen.' },
+    ]
+  },
+  {
+    tag: 'G19', name: 'Kategorie-Mapping (Regressionen)', desc: 'OFF-/Globus-Kategorie wird korrekt auf die echten Seed-Kategorien gemappt (alle Pfad-Segmente, Name UND Slug). (Der G19-Einheiten-Ansatz wurde in G20/G21 ersetzt — siehe dort.)',
+    items: [
+      { id: 'G19-2', title: 'Kategorie: Auto-Mapping matcht zuverlaessig', steps: ['Katalog sichern.', 'Einen Artikel im Katalog-Spiegel aufklappen und die Kategorie-Zeile betrachten.'],
+        expect: 'Mappt der Globus-Pfad auf eine der 9 stoqr-Kategorien, ist sie vorbelegt/uebernehmbar. Das Matching prueft alle Pfad-Segmente gegen Name UND Slug. Nicht automatisch mappbare Pfade sind seit G20-2 KEINE Sackgasse mehr — manuelles Zuordnen per Dropdown (siehe G20-2/G22-1).' },
+      { id: 'G19-3', title: 'Uebernahme auf existierende Kategorie funktioniert', steps: ['Einen Artikel mit mappbarer Globus-Kategorie im Spiegel aufklappen.', 'Kategorie ankreuzen und Uebernehmen.', 'Artikel-Detailseite oeffnen.'],
+        expect: 'Die uebernommene Kategorie steht am Artikel (eine der 9 echten Kategorien) mit Herkunft Globus. Das Matching prueft alle Pfad-Segmente gegen Name UND Slug, nicht nur das letzte Segment.' },
+    ]
+  },
+  {
+    tag: 'G20', name: 'Standard-Einheit entklemmt + Kategorie manuell ueberschreibbar', desc: 'Der G19-Einheiten-Fix wird zurueckgebaut und durch Migration + Server-Validierung ersetzt; Kategorie ist im Katalog-Spiegel frei waehlbar (echte Anforderung).',
+    items: [
+      { id: 'G20-1', title: 'Standard-Einheit (Artikel) laesst sich aendern', steps: ['VORAUSSETZUNG: neues Image deployt (Migration 0018 lief).', 'Artikel oeffnen, Standard-Einheit ueber Aendern umstellen, speichern.'],
+        expect: 'Die Artikel-Standard-Einheit laesst sich waehlen/speichern (Liste zeigt Stueck/ml/g/...). HINWEIS: Der Satz Gesamtbestand X piece betrifft die BESTANDS-Einheit, nicht diese — dafuer siehe G21-1.' },
+      { id: 'G20-2', title: 'Kategorie im Katalog-Spiegel manuell zuordnen', steps: ['Katalog sichern.', 'Einen Artikel aufklappen, dessen Globus-Kategorie NICHT automatisch gemappt wird.', 'In der Kategorie-Zeile im Dropdown eine der stoqr-Kategorien waehlen.', 'Uebernehmen. Danach die Artikel-Detailseite oeffnen.'],
+        expect: 'Das Dropdown listet ALLE stoqr-Kategorien und ist auch bei nicht automatisch mappbaren Pfaden waehlbar (keine gesperrte Sackgasse mehr). Nach dem Waehlen ist die Kategorie-Uebernahme automatisch aktiv. Die gewaehlte Kategorie steht danach am Artikel mit Herkunft manuell. (Status/Anzeige-Fixes: siehe G21-2.)' },
+      { id: 'G20-3', title: 'Manuelle Kategorie ueberlebt den naechsten Sync', steps: ['Fuer einen Artikel wie in G20-2 die Kategorie manuell setzen.', 'Katalog erneut sichern (Sync).', 'Artikel-Detailseite betrachten.'],
+        expect: 'Die manuell gesetzte Kategorie (Herkunft manuell) bleibt erhalten — ein erneuter Globus-Sync ueberschreibt sie NICHT (Auto-Match greift nur, wenn keine manuelle Wahl vorliegt).' },
+      { id: 'G20-4', title: 'Ungueltige Artikel-Einheit wird serverseitig abgelehnt', steps: ['Rein technisch/optional — nicht zwingend testbar in der UI. Wer mag: einen PATCH auf /api/products/<id> mit defaultUnit=xyz senden (z.B. per Browser-DevTools-Konsole: fetch mit method PATCH).'],
+        expect: 'Der Server antwortet mit 400 Unbekannte Einheit. Kein UI-Testschritt noetig — dient nur der Absicherung, dass sich kein verwaister Wert festsetzt.' },
+    ]
+  },
+  {
+    tag: 'G21', name: 'Gesamtbestand-Einheit (piece) + Katalog-Kategorie-Anzeige', desc: 'Gesamtbestand zeigt Stueck statt piece und laesst sich via Alle angleichen zuverlaessig aendern; manuelle Kategorie-Wahl zeigt Status + Auswahl korrekt.',
+    items: [
+      { id: 'G21-1', title: 'Gesamtbestand: piece -> Stueck + via Alle angleichen aenderbar', steps: ['Artikel oeffnen, bei dem oben Gesamtbestand X piece aus N Bestand stand (die Eier).', 'Zuerst nur die Anzeige betrachten.', 'Dann Alle angleichen... oeffnen, eine Zieleinheit waehlen (z.B. Stueck oder Packung), Modus nur umbenennen, uebernehmen.', 'Gesamtbestand-Zeile danach betrachten.'],
+        expect: 'Die Anzeige zeigt Stueck statt roh piece (count-Einheiten erscheinen mit Namen). Alle angleichen ist NICHT mehr blockiert — die Zieleinheit ist gueltig vorbelegt (kein Haengenbleiben auf einem verwaisten Wert), das Angleichen setzt Artikel UND alle Bestaende auf die Einheit. Gesamtbestand aktualisiert sich (ggf. nach dem automatischen Reload).' },
+      { id: 'G21-2', title: 'Manuelle Kategorie: Status wird manuell + Auswahl bleibt sichtbar (in Session)', steps: ['Katalog sichern.', 'Einen Artikel aufklappen und in der Kategorie-Zeile im Dropdown eine Kategorie waehlen.', 'Sofort Status-Tag und Dropdown-Inhalt betrachten (ohne Reload).'],
+        expect: 'Der Status-Tag wechselt sofort auf manuell (nicht mehr rot nicht zuordenbar). Das Dropdown zeigt die gewaehlte Kategorie. Fuer das Verhalten NACH Uebernehmen+Reload siehe G22-1.' },
+    ]
+  },
+  {
+    tag: 'G22', name: 'Kategorie bleibt nach Reload sichtbar + Soll-Bestand ohne Einheiten-Feld', desc: 'Uebernommene/gesetzte Kategorie steht nach Reload im Spiegel-Dropdown; der Soll-Bestand-Dialog hat kein separates Einheiten-Feld mehr.',
+    items: [
+      { id: 'G22-1', title: 'Manuelle Kategorie ueberlebt Uebernehmen + Reload', steps: ['Katalog sichern.', 'Bei einem Artikel im Spiegel eine Kategorie im Dropdown waehlen und Uebernehmen.', 'Danach die Seite neu laden (F5) bzw. Katalog erneut oeffnen.', 'Die Kategorie-Zeile desselben Artikels betrachten.'],
+        expect: 'Das Dropdown zeigt weiterhin die gesetzte Kategorie (nicht mehr — Kategorie waehlen —). Der Status-Tag steht auf gesetzt bzw. manuell. Die am Artikel gespeicherte Kategorie wird als Anzeigewert genutzt, auch wenn der Globus-Pfad selbst nicht automatisch zuordenbar war.' },
+      { id: 'G22-2', title: 'Soll-Bestand-Dialog hat KEIN Einheiten-Feld mehr', steps: ['Artikel oeffnen, Soll-Bestand festlegen oeffnen.', 'Die Felder im Dialog betrachten.', 'Einen Soll-Wert speichern und die Soll-Anzeige/den Bedarf pruefen.'],
+        expect: 'Der Dialog zeigt nur noch Soll-Menge (mit Einheiten-Hinweis am Label, z.B. Soll-Menge in Stück) und Mindestbestand — KEIN separates Einheiten-Dropdown mehr. Die Soll-Einheit kommt aus dem Artikel/bestehenden Soll. Speichern + Soll-Ist-Vergleich funktionieren unveraendert.' },
+    ]
+  },
+  {
+    tag: 'G24', name: 'Kategorie-Verwaltung (anlegen/umbenennen/loeschen)', desc: 'Eigene Seite Einstellungen -> Kategorien. Stufe 1 des Kategorie-Ausbaus (Nesting + automatische Mapping-Regeln folgen).',
+    items: [
+      { id: 'G24-1', title: 'Kategorien-Seite listet alle Kategorien', steps: ['Einstellungen oeffnen.', 'Auf Kategorien verwalten tippen.'],
+        expect: 'Die Seite listet die 9 Basis-Kategorien (mit Badge Basis) plus evtl. eigene. Basis-Kategorien haben KEINEN Loeschen-Button, nur Bearbeiten.' },
+      { id: 'G24-2', title: 'Neue Kategorie anlegen (mit Emoji-Picker)', steps: ['Unter Neue Kategorie anlegen auf den Icon-Button tippen → Picker-Modal.', 'Im Picker per Suchfeld ein Emoji finden (z.B. tiefkuehl) und waehlen.', 'Namen (z.B. Tiefkuehlkost) eingeben, Anlegen.', 'Danach einen Artikel bearbeiten und das Kategorie-Dropdown oeffnen.'],
+        expect: 'Der Icon-Button oeffnet den Emoji-Picker (durchsuchbar, nur Farb-Emojis). Das gewaehlte Icon erscheint auf dem Button und spaeter an der Kategorie — konsistent mit den Basis-Icons (kein monochromes Text-Symbol). Die neue Kategorie erscheint sofort in der Liste und ist in den Kategorie-Dropdowns waehlbar.' },
+      { id: 'G24-3', title: 'Kategorie umbenennen + Icon aendern', steps: ['Bei einer Kategorie (auch einer Basis-Kategorie) auf Bearbeiten.', 'Icon ueber den Icon-Button (Picker) und/oder Name aendern, Speichern.', 'Seite neu laden.'],
+        expect: 'Name/Icon sind sofort und nach Reload aktualisiert — auch bei Basis-Kategorien (die sind umbenennbar, nur nicht loeschbar).' },
+      { id: 'G24-4', title: 'Loeschschutz: verwendete + Basis-Kategorien', steps: ['Eine eigene, NICHT verwendete Kategorie loeschen (Loeschen-Button in der Zeile ODER im Bearbeiten-Modus, siehe G25-1).', 'Versuchen, eine Kategorie zu loeschen, die einem Artikel zugeordnet ist.', 'Beobachten, dass Basis-Kategorien keinen Loeschen-Button haben.'],
+        expect: 'Unbenutzte eigene Kategorie wird geloescht (Toast). Verwendete Kategorie -> Fehlermeldung (409) Kategorie wird von N Artikel(n) verwendet, bleibt erhalten. Basis-Kategorien lassen sich nicht loeschen. /aktivitaet zeigt Anlegen/Umbenennen/Loeschen.' },
+    ]
+  },
+  {
+    tag: 'G25', name: 'Kategorie-Feinschliff: Emoji-Picker + Loeschen im Edit-Modus', desc: 'Nachbesserungen aus dem G24-Test: durchsuchbarer Farb-Emoji-Picker statt Freitext-Icon; Loeschen auch im Bearbeiten-Modus.',
+    items: [
+      { id: 'G25-1', title: 'Loeschen-Button auch im Bearbeiten-Modus', steps: ['Eine eigene Kategorie auf Bearbeiten.', 'Im Bearbeiten-Panel nach dem Loeschen-Button schauen (neben Speichern/Abbrechen).'],
+        expect: 'Im Bearbeiten-Modus gibt es fuer eigene Kategorien einen Loeschen-Button (neben Speichern/Abbrechen) — zusaetzlich zu dem in der Zeile. Bei Basis-Kategorien fehlt er (loeschgeschuetzt).' },
+      { id: 'G25-2', title: 'Emoji-Picker mit Suche (nur Farb-Emojis)', steps: ['Kategorie anlegen ODER bearbeiten → auf den Icon-Button tippen.', 'Im Modal ins Suchfeld z.B. kaese, wasser, putzen, hund tippen.', 'Ein Emoji anklicken.'],
+        expect: 'Ein Modal mit durchsuchbarem Emoji-Raster oeffnet sich. Die Suche filtert per Stichwort (deutsch/englisch). Alle angebotenen Icons sind FARB-Emojis (einheitlich mit den Basis-Kategorien) — kein monochromes ❄-Text-Symbol. Das gewaehlte Emoji landet am Icon-Button und wird beim Speichern uebernommen.' },
+    ]
+  },
+  {
+    tag: 'G26', name: 'Raeume/Lagerorte vereinheitlicht (Emoji-Picker, Fach-Icon)', desc: 'Die Orte-Seite nutzt jetzt denselben Emoji-Picker wie Kategorien (kontextabhaengige Vorschlaege), Faecher haben ein Icon, Toasts sind einheitlich.',
+    items: [
+      { id: 'G26-1', title: 'Orte nutzen den geteilten Emoji-Picker (Raum-Vorschlaege)', steps: ['/orte oeffnen.', 'Raum ODER Lagerort anlegen/bearbeiten → auf den Icon-Button tippen.', 'Das Modal betrachten (ohne zu suchen), dann z.B. kueche, kuehlschrank, bad, keller suchen.'],
+        expect: 'Es oeffnet sich dasselbe Emoji-Picker-Modal wie bei Kategorien. OHNE Suche stehen Raum-/Moebel-Emojis (🏠🍳🛋️🗄️🧊❄️…) oben (context place). Die Suche findet alles (auch Lebensmittel). Nur Farb-Emojis. Gewaehltes Icon landet am Button + an der Zeile.' },
+      { id: 'G26-2', title: 'Faecher haben jetzt ein Icon', steps: ['In einem Lagerort ein Fach anlegen → Icon ueber den Icon-Button waehlen, speichern.', 'Ein bestehendes Fach bearbeiten und ein Icon setzen.', 'Die Fach-Chips betrachten.'],
+        expect: 'Fach-Anlegen und -Bearbeiten haben einen Icon-Button (vorher gar kein Icon-Feld). Das gewaehlte Icon erscheint am Fach-Chip und bleibt nach Reload erhalten.' },
+      { id: 'G26-3', title: 'Einheitliche Toasts + unveraendertes Accordion', steps: ['Auf /orte etwas anlegen/loeschen und die Toast-Meldung beobachten.', 'Raeume/Lagerorte auf-/zuklappen.'],
+        expect: 'Toast-Meldungen erscheinen im gewohnten globalen Stil (wie ueberall sonst), nicht mehr im alten Orte-eigenen Stil. Das Auf-/Zuklappen (Accordion) funktioniert unveraendert.' },
+    ]
+  },
+  {
+    tag: 'G27', name: 'Verschachtelte Kategorien (Nesting)', desc: 'Kategorien beliebig tief verschachtelbar mit Zyklus-Schutz; eingerueckte Dropdowns; Unterkategorie-Symbol bei der Wert-Anzeige.',
+    items: [
+      { id: 'G27-1', title: 'Unterkategorie anlegen (erscheint eingerueckt)', steps: ['Einstellungen -> Kategorien.', 'Neue Kategorie anlegen: Name z.B. Wasser, Unterkategorie von = Getraenke.', 'Die Liste betrachten.'],
+        expect: 'Wasser erscheint EINGERUECKT unter Getraenke (mit ↳-Symbol). Beliebig tief moeglich (z.B. Wasser -> Sprudel als weitere Ebene).' },
+      { id: 'G27-2', title: 'Kategorie-Dropdowns zeigen den Baum eingerueckt', steps: ['Einen Artikel bearbeiten -> Kategorie-Dropdown oeffnen.', '(Optional) Im Katalog-Spiegel (Einstellungen) das Kategorie-Dropdown oeffnen.'],
+        expect: 'Die Dropdowns zeigen Oberkategorien und darunter eingerueckt die Unterkategorien (Baum-Reihenfolge). Eine Unterkategorie ist waehlbar und wird korrekt gespeichert.' },
+      { id: 'G27-3', title: 'Unterkategorie-Symbol bei der Anzeige', steps: ['Einem Artikel eine Unterkategorie (z.B. Wasser) zuordnen.', 'Artikel-Detailseite und den easy-add-Auswahl-Pill betrachten.'],
+        expect: 'Bei einer Unterkategorie steht ein vorangestelltes ↳ vor dem Namen (signalisiert Unterkategorie) — nur Symbol + Name, kein voller Pfad.' },
+      { id: 'G27-4', title: 'Zyklus-Schutz beim Verschachteln', steps: ['Eine Kategorie mit Unterkategorie bearbeiten (z.B. Getraenke, hat Kind Wasser).', 'Im Unterkategorie-von-Dropdown versuchen, das eigene Kind (Wasser) als Eltern zu waehlen.'],
+        expect: 'Das eigene Kind/Nachkommen erscheinen NICHT als waehlbare Eltern-Option (Client-Schutz). Selbst wenn erzwungen, lehnt der Server mit einer Meldung ab (409). Eine Kategorie mit Unterkategorien bleibt zudem nicht loeschbar.' },
+    ]
+  },
+  {
+    tag: 'G28', name: 'Kategorie-Nesting-Feinschliff (Einrueckung, Hoehe, Tooltip)', desc: 'Optische Nachbesserungen aus dem G27-Test: sichtbare Dropdown-Einrueckung, normale Select-Hoehe, Tooltip auf ganzem Feld.',
+    items: [
+      { id: 'G28-1', title: 'Dropdown-Optionen sind sichtbar eingerueckt', steps: ['Artikel bearbeiten -> Kategorie-Dropdown; und im Kategorien-Formular das Unterkategorie-von-Dropdown; und Katalog-Spiegel-Kategorie-Dropdown.'],
+        expect: 'Unterkategorien sind in ALLEN Kategorie-Dropdowns sichtbar eingerueckt (nicht mehr alle Optionen buendig). Vorher kollabierten die fuehrenden Leerzeichen.' },
+      { id: 'G28-2', title: 'Unterkategorie-von-Feld hat normale Hoehe', steps: ['Kategorie anlegen/bearbeiten -> das Unterkategorie-von-Auswahlfeld betrachten.'],
+        expect: 'Das Auswahlfeld ist so hoch wie die anderen Felder (~40px), nicht mehr ueberhoch (~200px).' },
+      { id: 'G28-3', title: 'Unterkategorie-Tooltip auf ganzem Feld', steps: ['Einen Artikel mit Unterkategorie oeffnen (Detailseite/easy-add).', 'Mit der Maus irgendwo ueber das Kategorie-Feld fahren (nicht nur ueber das ↳).'],
+        expect: 'Der Tooltip Unterkategorie erscheint beim Hovern ueber das GESAMTE Kategorie-Feld, nicht nur exakt ueber dem ↳-Symbol.' },
+    ]
+  },
+  {
+    tag: 'G29', name: 'Automatische Kategorie-Mapping-Regeln', desc: 'Eigene Regeln (OFF-Tag / Globus-Segment -> Kategorie), die beim Scan und Sync automatisch greifen. Voraussetzung: Migration 0019 gelaufen.',
+    items: [
+      { id: 'G29-1', title: 'Regel anlegen (Verwaltungsseite)', steps: ['Einstellungen -> Kategorie-Zuordnung.', 'Quelle Globus-Katalog waehlen; ins Token-Feld tippen/klicken -> die Vorschlagsliste (datalist) zeigt real vorkommende Katalog-Segmente; eines waehlen.', 'Zielkategorie z.B. Milchprodukte waehlen, Anlegen.'],
+        expect: 'Die Regel erscheint SOFORT korrekt in der Liste: Quelle-Badge + Token -> KATEGORIE-NAME (nicht mehr (geloescht), G30-1). Der Token muss nicht geraten werden — die Liste schlaegt echte Segmente vor (G30-2); Freitext bleibt moeglich. Doppelte Regel -> Fehlermeldung.' },
+      { id: 'G29-2', title: 'Regel greift bei der Uebernahme automatisch', steps: ['Eine Globus-Regel wie in G29-1 anlegen (Token = ein Segment aus dem Globus-Pfad eines Artikels).', 'Katalog sichern (holt Vorschlaege).', 'Im Katalog-Spiegel beim Artikel Uebernehmen (bzw. Alles uebernehmen) druecken.', 'Artikel-Detailseite betrachten.'],
+        expect: 'Nach dem UEBERNEHMEN ist die Kategorie gemaess Regel gesetzt — bei neuen UND bei bestehenden Artikeln (G31). Analog beim Barcode-Scan mit passendem OFF-Tag. Hinweis: reines „Katalog sichern" ordnet noch nicht zu (siehe Legende), erst „Uebernehmen".' },
+      { id: 'G29-3', title: 'Vorrang: manuell schlaegt Regel', steps: ['Einem Artikel manuell eine Kategorie zuweisen (Detailseite bearbeiten ODER im Spiegel manuell + Uebernehmen).', 'Eine Regel anlegen, die etwas anderes vorschlaegt, und im Spiegel Uebernehmen.'],
+        expect: 'Die manuell gesetzte Kategorie (Herkunft manuell) bleibt erhalten — eine Mapping-Regel ueberschreibt sie NICHT (manuell > Regel > Code-Fallback). Nur eine per Regel/Auto gesetzte (nicht-manuelle) Kategorie wird von einer Regel neu zugeordnet.' },
+      { id: 'G29-4', title: 'Schnell-Regel aus dem Katalog-Spiegel', steps: ['Im Katalog-Spiegel bei einem Artikel eine Zielkategorie im Dropdown waehlen.', 'Auf + Regel tippen.', 'Danach Einstellungen -> Kategorie-Zuordnung oeffnen.'],
+        expect: 'Aus dem spezifischsten Globus-Segment + der gewaehlten Kategorie wird eine dauerhafte Globus-Regel angelegt (Toast). Sie erscheint auf der Verwaltungsseite und greift beim naechsten Sync.' },
+      { id: 'G29-5', title: 'Regel loeschen', steps: ['Auf der Verwaltungsseite eine Regel loeschen (bestaetigen).', 'Katalog erneut sichern.'],
+        expect: 'Die Regel ist weg; die Zuordnung faellt fuer betroffene Artikel wieder auf die eingebaute Erkennung (Code-Fallback) zurueck.' },
+    ]
+  },
+  {
+    tag: 'G30', name: 'Mapping-Regeln nachgebessert (Ziel-Anzeige + Token-Auswahl)', desc: 'Nachbesserungen aus dem G29-Test: Ziel-Kategorie wird sofort korrekt angezeigt; Token wird aus echten Werten gewaehlt statt geraten.',
+    items: [
+      { id: 'G30-1', title: 'Ziel-Kategorie sofort korrekt (kein (geloescht))', steps: ['Einstellungen -> Kategorie-Zuordnung.', 'Eine Regel anlegen und die soeben angelegte Zeile in der Liste betrachten (OHNE Reload).'],
+        expect: 'Die neue Regel zeigt sofort den Kategorie-NAMEN als Ziel — nicht mehr (geloescht). (Auch nach Reload korrekt.)' },
+      { id: 'G30-2', title: 'Token-Auswahl aus echten Werten', steps: ['Quelle Globus-Katalog: ins Token-Feld klicken -> Vorschlagsliste zeigt real vorkommende Katalog-Segmente aus deinen Sicherungen.', 'Quelle OpenFoodFacts: Vorschlagsliste zeigt gaengige en:-Tags.', 'Ein Segment/Tag waehlen ODER frei tippen.'],
+        expect: 'Das Token-Feld bietet eine Auswahl echter Werte (Globus: Segmente aus den Snapshots; OFF: kuratierte en:-Tags) — kein blindes Raten mehr. Ein Hinweistext erklaert, dass ein Token ein Pfad-Segment (Globus) bzw. ein en:-Tag (OFF) ist. Freie Eingabe bleibt moeglich.' },
+    ]
+  },
+  {
+    tag: 'G31', name: 'Regel ordnet auch bestehende Artikel neu zu', desc: 'Eine Mapping-Regel wirkt jetzt beim Uebernehmen auch auf bestehende Artikel mit schon gesetzter (nicht-manueller) Kategorie.',
+    items: [
+      { id: 'G31-1', title: 'Regel greift bei bestehendem Artikel (nicht nur neuem)', steps: ['Einen bestehenden Artikel mit bereits gesetzter Kategorie (z.B. aus OFF/Auto) waehlen, dessen Globus-Pfad ein Segment enthaelt.', 'Fuer dieses Segment eine Regel auf eine ANDERE Zielkategorie anlegen.', 'Im Katalog-Spiegel bei dem Artikel Uebernehmen (bzw. Alles uebernehmen).', 'Detailseite betrachten.'],
+        expect: 'Die Kategorie wird jetzt gemaess Regel NEU zugeordnet — auch obwohl der Artikel schon eine (nicht-manuelle) Kategorie hatte. Frueher blieb die alte Kategorie stehen.' },
+      { id: 'G31-2', title: 'Manuelle Kategorie bleibt vor Regel geschuetzt', steps: ['Einem Artikel manuell eine Kategorie setzen (Detailseite bearbeiten -> Herkunft manuell).', 'Eine abweichende Regel fuer sein Globus-Segment anlegen, im Spiegel Uebernehmen (ohne Kategorie-Haken).'],
+        expect: 'Die manuell gesetzte Kategorie bleibt erhalten (Regel ueberschreibt manuelle NICHT). Nur mit bewusst gesetztem Kategorie-Haken laesst sie sich ueberschreiben.' },
+      { id: 'G31-3', title: 'Sichern vs. Uebernehmen ist erklaert', steps: ['Katalog-Spiegel oeffnen, die Legende ueber den Diff-Zeilen lesen.'],
+        expect: 'Die Legende stellt klar: „Katalog sichern" holt nur Vorschlaege; die Zuordnung (auch per Regel) greift erst beim „Uebernehmen".' },
+    ]
+  },
+  {
+    tag: 'G32', name: 'Manuellen Kategorie-Schutz zuruecksetzen', desc: 'Eine manuell gesetzte Kategorie laesst sich wieder regel-empfaenglich machen (Herkunft zuruecksetzen), ohne den Artikel neu anzulegen.',
+    items: [
+      { id: 'G32-1', title: 'Herkunft-zuruecksetzen-Button bei manueller Kategorie', steps: ['Einen Artikel mit MANUELL gesetzter Kategorie bearbeiten (Detailseite ODER Artikel-Katalog in Einstellungen).', 'Beim Kategorie-Feld nach dem kleinen Button „Herkunft zuruecksetzen" schauen.', 'Klicken.'],
+        expect: 'Der Button erscheint NUR wenn die Kategorie-Herkunft „manuell" ist. Nach dem Klick verschwindet er (Toast), die Kategorie-WERT bleibt; auf der Detailseite wird das Herkunfts-Badge zu „?" (nicht erfasst).' },
+      { id: 'G32-2', title: 'Danach greift die Regel wieder', steps: ['Fuer den Artikel aus G32-1 (Herkunft zurueckgesetzt) existiert/erstelle eine Mapping-Regel fuer sein Globus-Segment.', 'Katalog-Spiegel: beim Artikel Uebernehmen.'],
+        expect: 'Die Kategorie wird jetzt wieder per Regel neu zugeordnet — der fruehere manuelle Schutz ist aufgehoben. (Genau der G31-2-Wunsch.)' },
+      { id: 'G32-3', title: 'Button fehlt, wenn nicht manuell', steps: ['Einen Artikel mit Herkunft OFF/Globus oder ohne erfasste Herkunft (?) bearbeiten.'],
+        expect: 'Der „Herkunft zuruecksetzen"-Button ist NICHT sichtbar (es gibt keinen manuellen Schutz zum Aufheben).' },
+    ]
+  },
+  {
+    tag: 'G33', name: 'Herkunft-Reset-Button erscheint zuverlaessig', desc: 'Behebt den G32-Test: der Button erschien nie, weil die Sichtbarkeit an einem stale gespiegelten State hing statt reaktiv am Prop.',
+    items: [
+      { id: 'G33-1', title: 'Button erscheint auch im Artikel-Katalog (lazy geladene Herkunft)', steps: ['Einstellungen -> Artikel: einen Artikel mit MANUELL gesetzter Kategorie bearbeiten (dort wird die Herkunft erst beim Oeffnen nachgeladen).', 'Kurz warten, dann das Kategorie-Feld betrachten.'],
+        expect: 'Der „Herkunft zuruecksetzen"-Button erscheint jetzt zuverlaessig (auch wenn die Herkunft erst nach dem Oeffnen geladen wird). Klick -> Button verschwindet sofort, Toast; danach ist die Kategorie wieder regel-empfaenglich (vgl. G32-2).' },
+      { id: 'G33-2', title: 'Klarstellung: Sichern ordnet neue Artikel nicht zu', steps: ['Einen NEUEN Artikel + Regel anlegen, dann nur „Katalog sichern".'],
+        expect: 'Erwartetes Verhalten (kein Bug): „Sichern" sammelt nur Vorschlaege; die Regel-Zuordnung passiert beim „Uebernehmen" eines im Katalog-Spiegel gelisteten Artikels. Ein Artikel ohne Bestand/Markt-Zuordnung erscheint dort nicht — erst mit Bestand/Markt wird er ein Uebernahme-Kandidat.' },
+    ]
+  },
+  {
+    tag: 'G34', name: 'Katalog-Spiegel: Regel-Vorschlag sofort + Herkunft-Reset im Spiegel', desc: 'Der Katalog-Spiegel (Artikel-Sicherung) zeigt einen abweichenden Regel-Vorschlag sofort und bietet dort den Herkunft-zuruecksetzen-Button.',
+    items: [
+      { id: 'G34-1', title: 'Geaenderte Regel wird im Spiegel sofort als Vorschlag gezeigt', steps: ['Fuer einen im Spiegel gelisteten Artikel eine Regel anlegen (Kategorie A), Spiegel betrachten.', 'Regel loeschen und neu auf Kategorie B mappen.', 'Katalog sichern, Spiegel erneut betrachten (Kategorie-Zeile).'],
+        expect: 'Die Kategorie-Zeile zeigt jetzt SOFORT den frischen Regel-Vorschlag (B) mit Tag „Regel-Vorschlag" — nicht mehr die alte gespeicherte Kategorie (A/test), erst nach Uebernehmen. „Uebernehmen" schreibt dann B (Herkunft Globus).' },
+      { id: 'G34-2', title: 'Herkunft zuruecksetzen direkt im Spiegel', steps: ['Einen Artikel im Spiegel, dessen Kategorie MANUELL gesetzt ist (Tag/Herkunft manuell).', 'In der Kategorie-Zeile den kleinen Button „Herkunft zuruecksetzen" klicken.'],
+        expect: 'Der Button erscheint bei manueller Kategorie-Herkunft direkt in der Spiegel-Zeile (artikelspezifisch). Nach dem Klick ist der manuelle Schutz weg (Toast, Liste aktualisiert); beim naechsten Uebernehmen greift die Regel wieder.' },
+    ]
+  },
+  {
+    tag: 'G35', name: 'Herkunft-Reset: klareres Feedback + zwei-Schritt-Ablauf', desc: 'Klarstellung/UX: der Reset macht nur regel-empfaenglich; die Neuzuordnung passiert beim Uebernehmen. Kein Server-Bug.',
+    items: [
+      { id: 'G35-1', title: 'Reset-Toast erklaert den naechsten Schritt', steps: ['Bei einem Artikel „Herkunft zuruecksetzen" (egal ob Detailseite, Artikel-Katalog oder Spiegel).', 'Die Toast-Meldung lesen.'],
+        expect: 'Der Toast sagt klar, dass die Kategorie beim naechsten Katalog-Abgleich (Artikel-Sicherung → Uebernehmen) neu per Regel zugeordnet wird — der Reset selbst macht nur empfaenglich.' },
+      { id: 'G35-2', title: 'Zwei-Schritt-Ablauf funktioniert (Reset -> Sichern -> Uebernehmen)', steps: ['Herkunft eines Artikels zuruecksetzen.', 'Katalog jetzt sichern.', 'Im Katalog-Spiegel den Artikel Uebernehmen.'],
+        expect: 'Nach diesem Ablauf ist die per Regel gewuenschte Kategorie gesetzt. (Der Reset im Artikel-Katalog wirkt serverseitig identisch zum Spiegel — dort sieht man nur keine unmittelbare Aenderung, weil der Katalog keine Herkunft/keinen Uebernehmen-Flow zeigt.) Sofort-Aktualisierung im Spiegel: siehe G36.' },
+    ]
+  },
+  {
+    tag: 'G36', name: 'Katalog-Spiegel aktualisiert nach Uebernehmen sofort', desc: 'Behebt den G35-Punkt: nach Uebernehmen war die Kategorie erst nach manuellem Refresh sichtbar (stale lokale Overlays).',
+    items: [
+      { id: 'G36-1', title: 'Uebernommene Kategorie erscheint sofort (ohne Refresh)', steps: ['Im Katalog-Spiegel bei einem Artikel eine (Regel-)Kategorie uebernehmen.', 'Die Zeile SOFORT betrachten — ohne Browser-Refresh.'],
+        expect: 'Die uebernommene Kategorie ist sofort sichtbar (linker Wert + Select/Tags), kein manueller Refresh mehr noetig. Die lokale Auswahl-/Checkbox-Ueberlagerung wird nach dem Uebernehmen verworfen, sodass die frisch geladenen Daten durchschlagen.' },
+    ]
+  },
+  {
+    tag: 'G37', name: 'Manuelle Kategorie schlaegt Regel-Vorschlag (Anzeige)', desc: 'Behebt die G36-Regression: eine manuell gesetzte Kategorie liess sich nicht mehr setzen, weil die Anzeige auf den Regel-Vorschlag zuruecksprang.',
+    items: [
+      { id: 'G37-1', title: 'Manuelle Kategorie im Spiegel setzen und behalten', steps: ['Einen Artikel im Spiegel, dessen Globus-Pfad eine Regel-Kategorie ergibt.', 'Im Dropdown bewusst eine ANDERE Kategorie als der Regel-Vorschlag waehlen (manuell).', 'Uebernehmen. Danach die Zeile SOFORT betrachten (ohne Refresh).'],
+        expect: 'Die manuell gewaehlte Kategorie wird gesetzt und BLEIBT angezeigt (Tag „manuell") — die Anzeige springt NICHT mehr auf die Regel-Kategorie zurueck. Die manuelle Wahl gewinnt vor dem Regel-Vorschlag (Vorrang manuell > Regel).' },
+      { id: 'G37-2', title: 'Regel-Vorschlag weiterhin bei nicht-manuellen Kategorien', steps: ['Einen Artikel mit nicht-manueller Kategorie (OFF/Globus/keine) + abweichender Regel.', 'Spiegel betrachten.'],
+        expect: 'Fuer NICHT-manuelle Kategorien wird weiterhin der abweichende Regel-Vorschlag gezeigt (Tag „Regel-Vorschlag", G34) — nur manuell gesetzte Kategorien sind geschuetzt. Nach „Herkunft zuruecksetzen" wird auch eine ehemals manuelle Kategorie wieder regel-empfaenglich.' },
+    ]
+  },
+  {
+    tag: 'G39', name: 'Inventar-Ansicht „nach Artikel" (Bestaende je Artikel aggregiert)', desc: 'Neue Uebersicht: /inventar buendelt Bestaende je Artikel (auf-/zuklappbar) statt einzelner Bestandszeilen; Umschalter zur bisherigen Einzelbestands-Liste.',
+    items: [
+      { id: 'G39-1', title: 'Umschalter + Standard = Artikel-Ansicht, bleibt nach Reload', steps: ['/inventar oeffnen (mit einigen Bestaenden).', 'Auf den Umschalter oben achten (Nach Artikel / Einzelbestaende).', 'Auf „Einzelbestaende" wechseln, dann Seite neu laden.', 'Erneut auf „Nach Artikel" wechseln, neu laden.'],
+        expect: 'Beim ersten Oeffnen ist „Nach Artikel" aktiv (Default). Die gewaehlte Ansicht wird gemerkt (localStorage) und bleibt nach dem Reload erhalten. „Einzelbestaende" zeigt die bisherige flache Karten-Liste unveraendert.' },
+      { id: 'G39-2', title: 'Ein Artikel mit mehreren Bestaenden erscheint EINMAL mit korrekter Gesamtmenge', steps: ['Einen Artikel mit >1 Bestand (z.B. 2 Packung + 1 Packung, oder Gebinde „3 Flasche" bei hinterlegtem Gebinde 1,5 l).', 'In der Artikel-Ansicht die Zeile betrachten.'],
+        expect: 'Der Artikel erscheint als EINE Zeile mit aggregierter Gesamtmenge (z.B. „3 Packung", bei Gebinde dual „3 Flasche (4,5 l)"). Ein Badge zeigt die Anzahl verfuegbarer Bestaende (z.B. „3×"). Die MHD-Ampel zeigt das FRUEHESTE MHD der verfuegbaren Bestaende.' },
+      { id: 'G39-3', title: 'Aufklappen zeigt die einzelnen Bestaende', steps: ['Eine Artikel-Zeile anklappen (Chevron/Klick auf die Zeile).'],
+        expect: 'Darunter erscheinen die einzelnen Bestaende (Menge + MHD-Ampel + Lagerort). Jede Zeile verlinkt auf die Bestands-Detailseite (/inventar/<bestand-id>) — kein 404.' },
+      { id: 'G39-4', title: 'Filter greifen auch in der Artikel-Ansicht', steps: ['In der Artikel-Ansicht die Suche nutzen (Produktname).', 'Einen Lagerplatz-Filter setzen.', '„Nur verfuegbare" umschalten.'],
+        expect: 'Ein Artikel erscheint nur, wenn mind. einer seiner Bestaende durch den Filter kommt; aufgeklappt sind nur die passenden Bestaende zu sehen. Der Kopf-Zaehler zeigt „N Artikel" (nicht Bestaende).' },
+      { id: 'G39-5', title: '0-verfuegbar-Artikel bei „nur verfuegbare" ausgeblendet', steps: ['Einen Artikel, dessen Bestaende alle verbraucht/gespendet/entsorgt sind.', 'Mit aktivem „Nur verfuegbare" die Artikel-Ansicht betrachten, dann Toggle ausschalten.'],
+        expect: 'Bei „Nur verfuegbare" (Default an) ist der komplett verbrauchte Artikel NICHT sichtbar. Nach Ausschalten erscheint er (Gesamtmenge „—", Badge „0×").' },
+      { id: 'G39-6', title: 'MHD-Ampel nutzt die echten Einstellungen', steps: ['In Einstellungen die MHD-Schwellen (gelb/rot) auf ungewoehnliche Werte setzen (z.B. gelb 30 / rot 10).', '/inventar betrachten (beide Ansichten).'],
+        expect: 'Die MHD-Ampeln (Bestands- UND Artikel-Ansicht) folgen den eingestellten Schwellen, nicht mehr fix 7/2 Tage.' },
+    ]
+  },
+  {
+    tag: 'G40', name: 'Verfeinerungen aus G39-Test (MHD-Speichern + Bestands-Deeplink)', desc: 'Zwei kleine Nachbesserungen: MHD-Ampel-Werte bleiben nach dem Speichern sichtbar; Klick auf einen Bestand scrollt auf der Detailseite dorthin + hebt ihn kurz hervor.',
+    items: [
+      { id: 'G40-1', title: 'MHD-Ampel-Werte bleiben nach dem Speichern', steps: ['Einstellungen → MHD-Ampel: gelb/rot/Toleranz auf neue Werte setzen.', 'Speichern. Danach die Felder SOFORT betrachten (ohne Reload).', 'Anschliessend die Seite neu laden.'],
+        expect: 'Die eingegebenen Werte bleiben nach dem Speichern sofort in den Feldern stehen (leeren sich nicht mehr). Nach dem Reload identisch. (Fix: reset:false + Reseed aus data.expiryConfig.)' },
+      { id: 'G40-2', title: 'Ungueltige Kombination weiterhin abgefangen', steps: ['MHD-Ampel: rot GROESSER als gelb setzen (z.B. gelb 3 / rot 10).', 'Speichern.'],
+        expect: 'Fehlermeldung „Rot-Schwelle muss kleiner oder gleich Gelb-Schwelle sein.“ erscheint; die eingegebenen Werte bleiben in den Feldern (kein Leeren).' },
+      { id: 'G40-3', title: 'Klick auf Bestand scrollt + hebt hervor', steps: ['/inventar (Artikel-Ansicht) → Artikel mit MEHREREN Bestaenden aufklappen.', 'Einen HINTEREN Bestand in der Liste anklicken.'],
+        expect: 'Die Detailseite oeffnet und scrollt automatisch zu genau diesem Bestand (zentriert); die Zeile pulsiert kurz (Border-Highlight) und ist als „aktuell“ markiert.' },
+      { id: 'G40-4', title: 'Einzelbestand: kein stoerendes Scrollen', steps: ['Einen Artikel mit nur EINEM Bestand oeffnen (Klick aus der Liste).'],
+        expect: 'Detailseite oeffnet normal; kein unnoetiges Scrollen/Pulsieren (Guard bei nur einem Bestand).' },
+    ]
+  },
+  {
+    tag: 'G41', name: 'Verbraucht-Handling + Wiederherstellen + EAN in Artikel-Ansicht', desc: 'consumedAt wird zuverlaessig gesetzt; nicht-verfuegbare Bestaende lassen sich wiederherstellen; „vor X Tagen" neben dem Status; EAN auch in der Artikel-Ansicht.',
+    items: [
+      { id: 'G41-1', title: 'consumedAt gesetzt + „vor X Tagen"', steps: ['Einen verfuegbaren Bestand als „Verbraucht" markieren (Kontextmenue /inventar ODER Detailseite).', '„Nur verfuegbare" ausschalten, den Bestand betrachten.'],
+        expect: 'Der Bestand zeigt Badge „Verbraucht" + einen Zeitzusatz „· heute" (bzw. gestern / vor N Tagen). Der Zeitstempel wird jetzt bei JEDEM Statuswechsel gesetzt (frueher fehlte er ueber den Haupt-Pfad).' },
+      { id: 'G41-2', title: 'Wiederherstellen (Menge > 0)', steps: ['Einen verbrauchten Bestand mit Menge > 0 nehmen.', 'Kontextmenue (/inventar, nicht-verfuegbar) ODER Detailseite → „Wiederherstellen".'],
+        expect: 'Status wird wieder „available", der Zeitzusatz verschwindet, der Bestand taucht bei „Nur verfuegbare" wieder auf. Menge unveraendert.' },
+      { id: 'G41-3', title: 'Wiederherstellen mit Mengen-Abfrage (Menge 0)', steps: ['Einen Bestand komplett verbrauchen (Menge auf 0).', '„Wiederherstellen".'],
+        expect: 'Es erscheint eine Mengen-Abfrage; nach Eingabe (z.B. 2) ist der Bestand wieder verfuegbar mit der neuen Menge. Abbrechen laesst alles unveraendert.' },
+      { id: 'G41-4', title: 'Gespendet/Entsorgt ebenso wiederherstellbar', steps: ['Einen Bestand „Gespendet" bzw. „Entsorgt" markieren.', '„Wiederherstellen".'],
+        expect: 'Auch gespendete/entsorgte Bestaende lassen sich zurueck auf „available" holen (gleicher Weg, gleiches Verhalten).' },
+      { id: 'G41-5', title: 'EAN in der Artikel-Ansicht', steps: ['/inventar → Artikel-Ansicht → einen Artikel mit hinterlegter EAN betrachten.'],
+        expect: 'Die EAN wird in der Artikel-Karte angezeigt (wie in der Einzelbestands-Ansicht). Artikel ohne EAN zeigen nichts (kein leeres Feld).' },
+    ]
+  },
+  {
+    tag: 'G42', name: 'Bestandskorrektur mit editierbarer Vorschau', desc: 'Zwei-Schritt-Korrektur: Zielmenge -> Vorschau der Verteilung (anpassbar) -> Uebernehmen. Nach oben Wahl bestehende/neu; 0 wird verbraucht; Zeilen sofort aktualisiert.',
+    items: [
+      { id: 'G42-1', title: 'Nach unten: FIFO-Vorschau, anpassbar, sofort sichtbar', steps: ['Artikel mit mehreren Bestandszeilen (z.B. Eistee 1x MHD 2027-01-01 + 3x MHD 2026-12-01 = 4).', 'Detailseite → „Bestand korrigieren" → Ziel 3 → „Weiter".', 'Vorschau ansehen (aeltestes MHD zuerst reduziert), ggf. eine Zeile anpassen → „Uebernehmen".'],
+        expect: 'Schritt 2 zeigt die betroffenen Zeilen alt->neu (die 2026-12-01-Zeile 3->2), Mengen editierbar, Live-Gesamtsumme. Nach Uebernehmen sind die Zeilen SOFORT korrekt (kein manueller Refresh), Gesamt = 3.' },
+      { id: 'G42-2', title: 'Zeile auf 0 → verbraucht', steps: ['Korrektur so waehlen, dass eine Zeile komplett auf 0 faellt.', 'Uebernehmen, dann „Nur verfuegbare" ausschalten.'],
+        expect: 'Die auf 0 gefallene Zeile erscheint als „Verbraucht" (nicht available mit Menge 0) und ist per „Wiederherstellen" (G41) zurueckholbar.' },
+      { id: 'G42-3', title: 'Nach oben: bestehende erhoehen', steps: ['Gleicher Artikel, Ziel 6 → „Weiter".', 'Modus „Bestehende erhoehen" → eine Zeile z.B. von 3 auf 5 setzen → „Uebernehmen".'],
+        expect: 'Es erscheint die Wahl „Bestehende erhoehen / Neue Zeile". Bei „Bestehende" werden die vorhandenen Zeilen editierbar; die erhoehte Zeile wird gespeichert (kein neuer Eintrag). Gesamt = 6.' },
+      { id: 'G42-4', title: 'Nach oben: neue Zeile mit MHD', steps: ['Ziel > Ist → „Weiter" → Modus „Neue Zeile".', 'Menge + MHD (optional) direkt im Dialog eingeben → „Uebernehmen".'],
+        expect: 'Eine NEUE Bestandszeile mit der eingegebenen Menge (und ggf. MHD) wird angelegt; bestehende Zeilen bleiben unveraendert. MHD ist direkt im Dialog setzbar (nicht erst nachtragen).' },
+      { id: 'G42-5', title: 'Aktivitaet: Vorher→Nachher je Zeile', steps: ['Nach einer Korrektur /aktivitaet oeffnen.'],
+        expect: 'Je beruehrter Bestandszeile ein Eintrag mit Alt-Menge/-Status → Neu (statt eines nichtssagenden Summen-Eintrags).' },
+    ]
+  },
+  {
+    tag: 'G43', name: 'Korrektur-Vorschau vollstaendig + Mengen-Modal (aus G42-Test)', desc: 'Zwei Konsistenz-Nachbesserungen: Vorschau nach unten zeigt ALLE Zeilen editierbar; Wiederherstellen-Mengenabfrage als stoqr-Modal statt Browser-Prompt.',
+    items: [
+      { id: 'G43-1', title: 'Korrektur nach unten zeigt ALLE Zeilen', steps: ['Artikel mit mehreren Bestandszeilen → „Bestand korrigieren" → Ziel niedriger → „Weiter".'],
+        expect: 'Schritt 2 zeigt ALLE relevanten Bestandszeilen (nicht nur die FIFO-reduzierten), jede editierbar; der FIFO-Vorschlag ist vorbelegt (aeltestes MHD reduziert, unberuehrte Zeilen unveraendert). Verhalten jetzt konsistent zur „nach oben"-Ansicht.' },
+      { id: 'G43-2', title: 'Wiederherstellen-Menge im stoqr-Modal', steps: ['Einen Bestand mit Menge 0 wiederherstellen — auf /inventar (Kontextmenue) UND auf der Detailseite.'],
+        expect: 'Es erscheint ein stoqr-Modal mit Zahlenfeld (KEIN Browser-Prompt mehr), im gleichen Stil wie die anderen Dialoge. Bestaetigen stellt mit der eingegebenen Menge wieder her; Abbrechen laesst alles unveraendert. Bei Menge > 0 weiterhin direkt ohne Modal.' },
+    ]
+  },
+  {
+    tag: 'G44', name: 'Reichere Globus-Daten (Grundpreis + JSON-LD + Feld-Landkarte)', desc: 'Online-Abruf holt jetzt Grundpreis (PAngV) + Detailseiten-JSON-LD; volles Detail-HTML wird archiviert; je Snapshot ist eine Feld-Landkarte (Feld/Wert/Quelle/Zugehoerigkeit) einsehbar. Voraussetzung: Online-Preis-Abruf AN + Globus-Markt mit Suggest-URL.',
+    items: [
+      { id: 'G44-1', title: 'Grundpreis erscheint an der Preis-Card', steps: ['Online-Preis-Abruf aktiv, Globus-Markt mit Suggest-URL, Artikel mit gefuehrter EAN (z.B. Mineralwasser 4306188415978, Gebinde 1,5 l).', 'Artikel-Detailseite → Preise-Card → beim Markt „Online abrufen", Vorschlag uebernehmen.'],
+        expect: 'Neben dem Preis (0,29 €) erscheint der Grundpreis „0,19 €/l" (gesetzlich ausgezeichnet, nicht selbst gerechnet).' },
+      { id: 'G44-2', title: 'Feld-Landkarte im Katalog-Spiegel', steps: ['Einstellungen → „Katalog jetzt sichern" (mit aktivem Abruf).', 'Beim gesicherten Artikel den Abschnitt „Abgerufene Felder … Herkunft & Zugehoerigkeit" aufklappen.'],
+        expect: 'Eine Tabelle listet die abgerufenen Felder mit Wert, Quelle (suggest-json / suggest-html / detail-jsonld) und Zugehoerigkeit (Artikel/Preis/Markt) — u.a. brand „Jeden Tag", description „1,5L PET EW DUE", basePrice, availability.' },
+      { id: 'G44-3', title: 'Detailseiten-Daten (Marke/Beschreibung) als Vorschlag', steps: ['Nach dem Sichern den Spiegel-Eintrag betrachten.'],
+        expect: 'Marke und Beschreibung aus dem Detailseiten-JSON-LD sind sichtbar/uebernehmbar — Artikel werden NICHT automatisch ueberschrieben (nur Vorschlag; manuelle/Regel-Vorrang-Logik bleibt).' },
+      { id: 'G44-4', title: 'Failsafe: kein Detailtreffer', steps: ['Einen Artikel mit EAN abrufen, dessen Detailseite nicht erreichbar ist / kein JSON-LD hat.'],
+        expect: 'Der Suggest-Preis + Grundpreis bleiben erhalten, kein Crash; die Feld-Landkarte zeigt dann nur die Suggest-Felder. (Migration 0020 lief in CI; Alt-Snapshots ohne extracted zeigen keine Tabelle.)' },
+    ]
+  },
+  {
+    tag: 'G45', name: 'Marke/Beschreibung aus dem Katalog übernehmbar', desc: 'Die aus dem Detailseiten-JSON-LD abgerufenen Werte Marke + Beschreibung lassen sich im Katalog-Spiegel ankreuzen und in den Artikel uebernehmen (mit Herkunfts-Schutz). Voraussetzung: ein Katalog-Sync/Online-Abruf hat den Snapshot mit Feld-Landkarte erzeugt.',
+    items: [
+      { id: 'G45-1', title: 'Marke + Beschreibung als ankreuzbare Diff-Zeilen', steps: ['Einstellungen → Katalog-Sicherung → bei einem gesicherten Artikel (mit Detaildaten) die Diff-Liste betrachten.'],
+        expect: 'Zwischen „Name" und „Bild" erscheinen zwei neue Zeilen „Marke" und „Beschreibung" mit Checkbox, Artikel-Wert → Katalog-Wert und abweichend/gleich-Tag. Leerer Katalog-Wert → Checkbox deaktiviert.' },
+      { id: 'G45-2', title: 'Übernehmen schreibt Marke/Beschreibung in den Artikel', steps: ['Marke und/oder Beschreibung ankreuzen → „Übernehmen".', 'Artikel-Detailseite oeffnen bzw. Artikel bearbeiten.'],
+        expect: 'Die uebernommenen Werte stehen jetzt am Artikel (Marke, Beschreibung). „Alles übernehmen" nimmt sie ebenfalls mit.' },
+      { id: 'G45-3', title: 'Herkunfts-Schutz: manuelle Beschreibung wird nicht ueberschrieben', steps: ['Beschreibung am Artikel manuell aendern (bearbeiten, speichern).', 'Erneut „Katalog sichern"/abrufen und im Spiegel „Übernehmen" OHNE die Beschreibung anzukreuzen.'],
+        expect: 'Die manuell gepflegte Beschreibung bleibt erhalten (manual-Schutz). Nur ausdrueckliches Ankreuzen ueberschreibt sie mit dem Katalog-Wert.' },
+    ]
+  },
+  {
+    tag: 'G46', name: 'Günstigster-Markt-Ranking (Detailseite + Einkaufsliste)', desc: 'Je Artikel wird der günstigste Markt pro Basiseinheit markiert — fair, Grundpreis (PAngV) bevorzugt, Angebote zählen mit. Voraussetzung: Artikel mit >=2 Märkten + Preisen.',
+    items: [
+      { id: 'G46-1', title: 'Badge am günstigsten Markt (Detailseite)', steps: ['Artikel mit mind. 2 zugeordneten Märkten, die je einen aktuellen Preis haben (idealerweise mit Grundpreis, z.B. Mineralwasser 0,69 €/l vs 0,19 €/l).', 'Artikel-Detailseite → Preise-Card.'],
+        expect: 'Der günstigste Markt PRO BASISEINHEIT trägt ein grünes Badge „günstigster". Der Vergleich nutzt den Grundpreis wo vorhanden, sonst Preis/Einheit. Bei nur einem Markt kein Badge.' },
+      { id: 'G46-2', title: 'Nicht vergleichbare Einheit → Hinweis statt Marker', steps: ['Ein Markt mit einer Einheit, die sich nicht fair vergleichen laesst (z.B. Stück vs kg/l).'],
+        expect: 'Diese Zeile zeigt „nicht vergleichbar" (kein Badge), die anderen ranken normal weiter. Kein Crash.' },
+      { id: 'G46-3', title: 'Angebot gewinnt', steps: ['Bei einem Markt einen (günstigeren) Angebotspreis als Dauerpreis übernehmen/setzen, sodass er der billigste ist.'],
+        expect: 'Der Angebotsmarkt wird als „günstigster" markiert (Angebote zählen im Ranking mit; das bestehende „Angebot"-Badge bleibt).' },
+      { id: 'G46-4', title: 'Günstigster-Markt-Hinweis auf der Einkaufsliste', steps: ['Einkaufsliste öffnen; ein Artikel, der bei mehreren Märkten einen aktuellen Preis hat, steht auf der Liste.'],
+        expect: 'Die Listen-Zeile zeigt „günstigster: {Markt}". Bei nur einem Markt / keinem Preis kein Hinweis.' },
+    ]
+  },
+  {
+    tag: 'G47', name: 'Pfand / Leergut', desc: 'Pfand am Artikel (Checkbox + Betrag), Preis-enthält-Pfand-Flag als Fallback, getrennter Ware+Pfand-Ausweis im Estimate, Pfand-ja/nein-Vorschlag aus der Katalog-Sicherung.',
+    items: [
+      { id: 'G47-1', title: 'Pfand am Artikel setzen (Checkbox + Schnellwahl)', steps: ['Artikel bearbeiten → Checkbox „Pfand" aktivieren.', 'Schnellwahl 0,08/0,15/0,16/0,25 € ODER Freieingabe wählen → Speichern.', 'Artikel erneut öffnen.'],
+        expect: 'Die Pfand-Auswahl erscheint erst wenn die Checkbox an ist; der gewählte Betrag bleibt nach dem Speichern/erneuten Öffnen erhalten. Checkbox aus → Betrag wird entfernt.' },
+      { id: 'G47-2', title: 'Preis-Fallback: „Preis enthält Pfand"', steps: ['Beim Artikel Pfand 0,25 € setzen.', 'Preis 0,69 € erfassen mit Häkchen „Preis enthält Pfand" AUS.', 'Einkaufsliste (Markt gewählt) betrachten.'],
+        expect: 'Die Position zeigt Ware getrennt vom Pfand („+ Pfand 0,25 €"); die Gesamtsumme weist „Einkauf X + Pfand Y = Z" aus. Mit Häkchen AN wird kein zusätzliches Pfand addiert (kein Doppelzählen).' },
+      { id: 'G47-3', title: 'Pfand nur bei Stück-Einheiten (G49)', steps: ['Count-Artikel (Einheit Flasche/Dose/Stück) mit Pfand → Einkaufsliste: Pfand = Anzahl × Betrag.', 'Artikel mit Einheit kg/l bearbeiten: Pfand-Checkbox betrachten.'],
+        expect: 'Bei Stück-Artikeln wird das Pfand korrekt je Stück gerechnet + Badge gezeigt. Bei kg/l ist die Pfand-Checkbox GESPERRT mit Hinweis „Pfand nur für Stück-Einheiten"; kein Badge, keine Pfand-Rechnung. (Kein „Pfand ?"/„nicht berechenbar" mehr — Fall entfällt.)' },
+      { id: 'G47-4', title: 'Pfand-ja/nein aus der Katalog-Sicherung', steps: ['„Katalog jetzt sichern" bei einem Einweg-Artikel (Beschreibung enthält z.B. „PET EW DUE").', 'Katalog-Spiegel betrachten.'],
+        expect: 'Es erscheint eine Diff-Zeile „Pfandpflicht" mit Vorschlag „ja (Betrag manuell)". Ankreuzen + Übernehmen setzt has_deposit am Artikel (Betrag pflegst du selbst). Manuell gesetztes Pfand wird durch erneuten Abruf nicht überschrieben.' },
+    ]
+  },
+  {
+    tag: 'G48', name: 'Pfand sichtbar — einheitliches DepositBadge', desc: 'Pfand ist jetzt als einheitliches blaues Badge „Pfand X €" an allen relevanten Stellen erkennbar (kein Inline-Grautext mehr); Summe getrennt in Ware/Pfand/Summe.',
+    items: [
+      { id: 'G48-1', title: 'Pfand-Badge auf Artikel-Seiten', steps: ['Artikel mit gesetztem Pfand betrachten: (a) Artikel-Detailseite, (b) /inventar Einzelbestands-Karte, (c) /inventar Artikel-Ansicht (aufgeklappt/Karte), (d) Einstellungen → Artikel-Liste.'],
+        expect: 'An ALLEN vier Stellen erscheint dasselbe blaue Badge „Pfand 0,25 €" (eigene Farbe, nicht orange/grün). Artikel OHNE Pfand zeigen kein Badge.' },
+      { id: 'G48-2', title: 'Pfand-Badge in Einkaufsliste + Einkauf', steps: ['Einkaufsliste (Markt gewählt) mit einem pfandpflichtigen Stück-Artikel (Flasche/Dose).', 'Denselben Artikel in einem Einkauf (Einkauf-Detailseite).'],
+        expect: 'Je Position erscheint das Pfand-Badge (statt des früheren grauen „+ Pfand"-Textes).' },
+      { id: 'G48-3', title: 'Summe getrennt: Ware / Pfand / Summe', steps: ['Einkaufsliste bzw. Einkauf mit mind. einem pfandpflichtigen Artikel + gewähltem Markt.'],
+        expect: 'Die Summe zeigt drei klare Zeilen „Ware X €", „Pfand Y €", „Summe Z €" (kein langer Rechenstring mehr). Ohne Pfand nur eine „Einkauf X €"-Zeile.' },
+    ]
+  },
+  {
+    tag: 'G49', name: 'Pfand-Fixes — an Stück-Einheit gebunden + Card/Dialog', desc: 'Pfand nur bei count-Einheiten; Pfand-Card auf der Detailseite auch bei nicht-count sichtbar korrigiert; Bearbeiten-Dialog spiegelt uebernommene Werte.',
+    items: [
+      { id: 'G49-1', title: 'Pfand-Card auf Detailseite (auch ohne Gebinde-Block)', steps: ['Stück-Artikel mit Pfand, KEIN Gebinde hinterlegt → Artikel-Detailseite.'],
+        expect: 'Die Pfand-Zeile mit Badge ist sichtbar (frueher verschwand sie, weil sie faelschlich im Gebinde-Block hing). Bei kg/l-Artikel: keine Pfand-Zeile.' },
+      { id: 'G49-2', title: 'Bearbeiten-Dialog spiegelt uebernommene Werte', steps: ['Artikel, dessen Pfand (und ggf. Marke/Beschreibung) per Katalog-Sicherung übernommen wurde.', 'Auf der Detailseite „Bearbeiten" öffnen.'],
+        expect: 'Die Pfand-Checkbox ist VORAUSGEWÄHLT und der Betrag gefüllt; Marke/Beschreibung ebenfalls vorbefüllt — der Dialog spiegelt den tatsächlichen Artikelzustand.' },
+      { id: 'G49-3', title: 'Pfand-Checkbox bei kg/l gesperrt', steps: ['Artikel bearbeiten, Standard-Einheit auf kg/l setzen.'],
+        expect: 'Die Pfand-Checkbox ist deaktiviert + Hinweis „Pfand nur für Stück-Einheiten". Bereits gesetztes Pfand auf kg/l-Artikeln wird ignoriert (kein Badge, keine Rechnung).' },
+    ]
+  },
+  {
+    tag: 'G50', name: 'Pfand-Betrag fehlt — sichtbar anmahnen', desc: 'Ist Pfand gesetzt aber ohne Betrag (z.B. nach Katalog-Sicherung, die nur ja/nein liefert), wird das Badge als Amber/gestrichelter „Betrag?"-Hinweis dargestellt (nachpflegen).',
+    items: [
+      { id: 'G50-1', title: 'Amber-Warn-Badge bei fehlendem Betrag', steps: ['Artikel per Katalog-Sicherung „Pfandpflicht: ja" übernehmen (Betrag nicht mitgeliefert).', 'Artikel auf Detailseite / Inventar-Karte / Artikelliste betrachten.'],
+        expect: 'Das Pfand-Badge erscheint AMBER/gelb gestrichelt mit Text „Pfand — Betrag?" (nicht das ruhige Blau), Tooltip „bitte am Artikel nachpflegen". Nach manuellem Setzen eines Betrags → wieder blaues „Pfand X €".' },
+    ]
+  },
+  {
+    tag: 'G51', name: 'Artikel direkt öffnen ohne Deeplink-Scroll', desc: 'Zusaetzlich zum bestehenden Bestand-Klick (Artikelseite scrollt zum Bestand + rotes Flash) kann man den Artikel selbst oeffnen, ohne Scroll-to-Bestand. Beide Wege parallel. Neue Artikel-Links haengen ?scroll=0 an; die Artikelseite ueberspringt dann im onMount den Deeplink-Scroll+Flash.',
+    items: [
+      { id: 'G51-1', title: 'Bestand-Klick unveraendert (Regression)', steps: ['Inventar → Ansicht „Nach Artikel" (Accordion). Einen Artikel mit MEHREREN Beständen aufklappen.', 'Auf eine einzelne Bestand-Zeile klicken.'],
+        expect: 'Artikelseite oeffnet, scrollt automatisch zu genau diesem Bestand und hebt ihn ~5 s pulsierend rot hervor (wie bisher). URL ohne ?scroll=0.' },
+      { id: 'G51-2', title: 'Product-View: „Zur Artikelübersicht" ohne Scroll', steps: ['Inventar → „Nach Artikel". Einen Artikel aufklappen.', 'Ganz oben im aufgeklappten Bereich — ÜBER den Beständen — auf „Zur Artikelübersicht" klicken.'],
+        expect: 'Artikelseite oeffnet OHNE Scroll und OHNE rotes Flash; die Seite startet oben. Artikel + alle Bestände sind sichtbar. Das Aufklappen/Zuklappen der Karte selbst funktioniert weiterhin normal (Klick auf Kopfzeile/Chevron).' },
+      { id: 'G51-3', title: 'Item-View: Klick auf die Card ohne Scroll', steps: ['Inventar → Ansicht „Einzelbestände" (Grid).', 'Auf die Karten-FLÄCHE klicken (Bild/Name/Menge — NICHT die drei Punkte).'],
+        expect: 'Artikelseite oeffnet OHNE Scroll und OHNE rotes Flash (Seite startet oben) — wie „Bearbeiten" im Menue, nur ohne Scroll.' },
+      { id: 'G51-4', title: 'Item-View: 3-Punkte-Menü „Zur Artikelübersicht"', steps: ['Grid-Ansicht: auf die drei Punkte (⋮) einer Karte klicken.', 'Im Menü „Zur Artikelübersicht" wählen.'],
+        expect: 'Der Klick auf ⋮ oeffnet NUR das Menü (navigiert NICHT). Der Eintrag heisst „Zur Artikelübersicht" (nicht mehr „Bearbeiten", da man dort einsehen UND bearbeiten kann). Er fuehrt zur Artikelseite OHNE Scroll und OHNE rotes Flash (Seite startet oben) — kein automatisch ausgewaehlter/angescrollter Bestand.' },
+    ]
+  },
+  {
+    tag: 'G52', name: 'Angezeigter Name „Die Merbotts"', desc: 'Der oben rechts angezeigte Nutzername kommt aus users.display_name (Kette: display_name → getBypassUser → data.user.name → Navbar). Im AUTH_DISABLED-Modus cached getBypassUser den User prozessweit → nach einer DB-Aenderung muss der Container mit --force-recreate neu erzeugt werden (ein blosser restart/Browser-Refresh reicht NICHT).',
+    items: [
+      { id: 'G52-1', title: 'Name oben rechts zeigt „Die Merbotts"', steps: ['Eingeloggt (bzw. AUTH_DISABLED-Bypass) die App oeffnen.', 'Oben rechts in der Navbar den angezeigten Namen pruefen (Desktop).', 'Am Handy: Menue oeffnen und den Namen dort pruefen.'],
+        expect: 'Der Name lautet „Die Merbotts" — sowohl in der Desktop-Navbar als auch im mobilen Menue (beide lesen dasselbe Feld). Nicht mehr „Christopher".' },
+      { id: 'G52-2', title: 'Cache-Fallstrick (Regression/Doku)', steps: ['Falls der Name nach einer DB-Aenderung noch alt ist: pruefen, ob nur „restart" statt „--force-recreate" gemacht wurde.', 'docker compose up -d --force-recreate stoqr ausfuehren, dann neu laden.'],
+        expect: 'Erst nach --force-recreate schlaegt der neue Name durch. Das dokumentiert bewusst den prozessweiten Cache in getBypassUser (kein Bug).' },
+    ]
+  },
+  {
+    tag: 'G53', name: 'Gefahrenzone: dreistufiger Werksreset', desc: 'Einstellungen → „Gefahrenzone" (letzte Karte). Drei Stufen mit Type-to-Confirm (GitHub-Stil): A = nur Bestaende, B = + Artikel & Preise, C = kompletter Werksreset (Nutzer & Haushalt bleiben). Zwei Bestaetigungen: Modal oeffnen (1.) + feste Phrase exakt eintippen (2.). Serverseitig laufen die Loeschungen children-first in EINER Transaktion (RESTRICT-FKs). Stufe C entfernt auch die geseedeten Referenzdaten (Kategorien, Naehrwert-Typen) und spielt sie in derselben Transaktion AUTOMATISCH wieder ein (Auto-Re-Seed) → kein manuelles seed.sql/psql, keine Nachpflege.',
+    items: [
+      { id: 'G53-1', title: 'Schutz: falsche Phrase → Button disabled (Regression)', steps: ['Einstellungen → Gefahrenzone. Bei einer Stufe auf den Loesch-/Reset-Button klicken → Modal oeffnet.', 'Nichts oder etwas Falsches ins Textfeld tippen.'],
+        expect: 'Der Bestaetigungs-Button im Modal bleibt DEAKTIVIERT, solange der getippte Text nicht exakt der angezeigten Phrase entspricht. Abbrechen/X/Escape schliesst das Modal ohne Aenderung. (Selbst bei manipuliertem Request lehnt der Server mit „Bestätigungstext stimmt nicht" ab.)' },
+      { id: 'G53-2', title: 'Stufe A: nur Bestaende', steps: ['Vorher ein paar Bestaende, Artikel, Orte, Maerkte anlegen.', 'Gefahrenzone → „Bestand löschen" → Phrase „Bestand loeschen" eintippen → bestaetigen.'],
+        expect: 'Alle Bestaende (Inventar) sind weg. Artikel, Preise, Orte, Lager, Maerkte, Einheiten und Kategorien bleiben unveraendert erhalten. Toast „Löschung abgeschlossen".' },
+      { id: 'G53-3', title: 'Stufe B: + Artikel & Preise', steps: ['Gefahrenzone → „Artikel & Bestand löschen" → Phrase „Artikel und Bestand loeschen" eintippen → bestaetigen.'],
+        expect: 'Zusaetzlich zu den Bestaenden sind ALLE Artikel (inkl. Naehrwerte/Feldquellen), Preise und Ziel-Bestaende weg. Orte, Lager, Maerkte, Einheiten und Kategorien bleiben. Einkaufslisten/Einkaeufe bleiben (das ist Stufe C).' },
+      { id: 'G53-4', title: 'Stufe C: kompletter Werksreset (Auto-Re-Seed)', steps: ['Gefahrenzone → „Werksreset" → Warntext lesen (nennt Kategorien/Naehrwert-Typen; KEIN manuelles Re-Seed mehr noetig).', 'Phrase „stoqr zuruecksetzen" eintippen → bestaetigen.', 'OHNE weiteren Schritt: Einstellungen → Kategorien oeffnen und einen Artikel anlegen (Naehrwert-Typen pruefen).'],
+        expect: 'Alle Inhaltsdaten weg (Bestaende, Artikel, Preise, Listen, Einkaeufe, Orte, Lager, Maerkte, eigene Einheiten, Aktivitaetsprotokoll). Nutzer, Session, Haushalt und Mitgliedschaft bleiben — man bleibt eingeloggt. Kategorien & Naehrwert-Typen sind AUTOMATISCH sofort wieder auf Werkszustand vorhanden (9 Kategorien, Naehrwert-Typen in Auswahllisten) — OHNE manuelles seed.sql / psql. Toast bestaetigt „auf Werkszustand zurueckgesetzt".' },
+      { id: 'G53-5', title: 'Zwei-Stufen-Bestaetigung & a11y', steps: ['Eine Stufe oeffnen und den Ablauf beobachten.'],
+        expect: 'Das Oeffnen des Modals ist die 1. Bestaetigung, das exakte Eintippen der Phrase die 2. Die erwartete Phrase steht sichtbar im Modal (anklickbar/markierbar). Kein verschachteltes interaktives Element; Modal per X/Escape/Backdrop schliessbar.' },
+    ]
+  },
+  {
+    tag: 'G16', name: 'Feinschliff (Badges immer, Modal, Naehrstoff-Sortierung)', desc: 'Nachbesserungen aus dem G15-Test: Modal schliesst nicht mehr beim Text-Markieren; Naehrwerte hierarchisch sortiert.',
+    items: [
+      { id: 'G16-3', title: 'Modal schliesst NICHT beim Text-Markieren', steps: ['Ein Modal mit Textfeld oeffnen (z.B. Artikel bearbeiten oder Soll-Bestand).', 'In einem Textfeld Text markieren und die Maus dabei aus dem Modal herausziehen, dann loslassen.'],
+        expect: 'Das Modal bleibt offen. Es schliesst nur bei einem echten Klick auf die dunkle Flaeche ausserhalb (Maus-Down UND -Up ausserhalb) bzw. per X/Escape.' },
+      { id: 'G16-4', title: 'Naehrwerte hierarchisch sortiert', steps: ['Artikel mit Naehrwerten oeffnen (inkl. Fett + ges. Fettsaeuren, Kohlenhydrate + Zucker).'],
+        expect: 'Die Naehrwerte stehen in sinnvoller Reihenfolge (Energie, Fett, davon ges. Fettsaeuren, Kohlenhydrate, davon Zucker, ...). Unterzeilen (davon ...) stehen direkt unter ihrem Oberbegriff und sind eingerueckt — nicht mehr in zufaelliger Reihenfolge.' },
+    ]
+  },
+  {
+    tag: "F2", name: "Online-Preis-Abruf & Staging", desc: "Globus-Scraping (In-App aktivierbar); abgerufene Preise landen als Vorschlag (proposed) und werden erst nach Freigabe maßgeblich. Failsafe.",
+    items: [
+      { id: "F2-0", title: "Online-Preis-Abruf aktivieren (In-App-Schalter)", steps: ["Einstellungen → Abschnitt „Online-Preis-Abruf“.", "Schalter „Online-Preis-Abruf aktivieren“ einschalten."],
+        expect: "Schalter merkt sich den Zustand (bleibt nach Reload an). Kein Env-Setzen / kein Deploy-Eingriff nötig. Bestätigungs-Hinweis erscheint." },
+      { id: "F2-1", title: "Schalter AUS: keine Abruf-UI", steps: ["Schalter wieder ausschalten.", "Artikel-Detailseite + Einstellungen→Märkte öffnen."],
+        expect: "Kein „Online abrufen“-Button (Detailseite) und kein „Preise abrufen“-Button (Märkte). Preise/Vorschläge funktionieren unverändert. Danach für die weiteren Tests wieder einschalten." },
+      { id: "F2-2", title: "Abruf-URL am Markt hinterlegen (Suggest + {EAN})", steps: ["Einstellungen → Märkte → Markt „Globus“ bearbeiten.", "Abruf-URL mit {EAN}-Platzhalter eintragen: https://produkte.globus.de/hockenheim/suggest?search={EAN} (Anleitung unter dem Feld beachten — SUGGEST, nicht search).", "Speichern. Auch eine ungültige URL (z.B. „abc“) testen — auch nach vorherigem gültigen Wert."],
+        expect: "Gültige http/https-URL wird gespeichert; „Online-Abruf aktiv“-Badge erscheint. Ungültige URL → Fehlermeldung und wird NICHT übernommen (auch nach Wechsel gültig→ungültig). Hinweis: Eine gültige URL OHNE {EAN}-Platzhalter wird ebenfalls abgelehnt — Detailtest siehe G10-3." },
+      { id: "F2-3", title: "Online-Preis abrufen → Vorschlag", steps: ["Schalter AN + Markt hat die Suggest-URL. Artikel mit einer bei Globus GEFÜHRTEN EAN öffnen (z.B. Mineralwasser Classic 4306188415978), Markt zugeordnet.", "„Preise“-Card → beim Markt „Online abrufen“."],
+        expect: "Bei Treffer: Toast + neuer Block „Vorschlag: Online-Preis X € / Einheit“ mit Buttons Übernehmen/Korrigieren/Verwerfen. Der Vorschlag zählt NICHT zum aktuellen Preis / Estimate." },
+      { id: "F2-4", title: "Übernehmen macht maßgeblich", steps: ["Beim Vorschlag „Übernehmen“ klicken."],
+        expect: "Der Preis wird aktueller Preis (fließt ins Estimate), der Vorschlag-Block verschwindet." },
+      { id: "F2-5", title: "Korrigieren", steps: ["Erneut abrufen (neuer Vorschlag).", "„Korrigieren“ → Editor öffnet vorbefüllt → Wert ändern → „Speichern“."],
+        expect: "Der korrigierte Wert wird maßgeblich; der offene Vorschlag ist danach erledigt (weg)." },
+      { id: "F2-6", title: "Verwerfen", steps: ["Erneut abrufen (neuer Vorschlag).", "„Verwerfen“ klicken."],
+        expect: "Vorschlag verschwindet; aktueller Preis bleibt unverändert (Vorschlag bleibt als Historie/Audit erhalten)." },
+      { id: "F2-7", title: "Nur ein offener Vorschlag", steps: ["Mehrfach hintereinander „Online abrufen“ beim selben Markt."],
+        expect: "Es steht immer nur EIN offener Vorschlag je Markt (der jüngste); keine Vorschlags-Flut." },
+      { id: "F2-8", title: "Failsafe bei Fehler/Miss", steps: ["Markt-Abruf-URL auf eine tote/ungültige Seite setzen (oder ohne Preis-Element).", "„Online abrufen“."],
+        expect: "Toast „Kein Online-Preis gefunden“ — KEIN Absturz, keine Fehlerseite, kein Server-Fehler." },
+      { id: "F2-9", title: "Sammel-Abruf je Markt", steps: ["Einstellungen → Märkte → beim Markt „Preise abrufen“ klicken."],
+        expect: "Ergebnis-Toast „X Vorschläge, Y übersprungen“. (Hinweis: ohne artikelspezifische URL werden Artikel übersprungen — das ist erwartet, das Gerüst läuft ohne Fehler.)" },
+      { id: "F2-10", title: "Audit protokolliert Übergänge", steps: ["Einstellungen → Aktivität öffnen."],
+        expect: "Preis-Einträge zeigen die Staging-Übergänge (Vorschlag angelegt, dann übernommen/verworfen) mit Status + Quelle „online“." },
+    ]
+  },
+  {
+    tag: "D", name: "Audit / Aktivität", desc: "Vollständiges Änderungsprotokoll (Block D) — alle bisherigen Aktionen sollten hier auftauchen.",
+    items: [
+      { id: "AK1", title: "Aktivitätsseite erreichbar", steps: ["Einstellungen → „Aktivität ansehen“."],
+        expect: "Seite „Aktivität“ öffnet; Einträge sind nach Tag gruppiert, neueste zuerst." },
+      { id: "AK2", title: "Anlegen/Ändern/Löschen protokolliert", steps: ["Die Liste durchsehen (Artikel, Bestand, Soll, Einkauf, Räume …)."],
+        expect: "Aktion-Badges „angelegt“ (grün) / „geändert“ (blau) / „gelöscht“ (rot). Deutsche Entitäts-Labels: Artikel, Bestand, Soll-Bestand, Einheit, Markt, Raum, Einkauf, Einkauf-Position." },
+      { id: "AK3", title: "Vorher→Nachher bei Änderungen", steps: ["Einen „geändert“-Eintrag betrachten (z.B. Soll-Bestand oder EAN-Änderung)."],
+        expect: "Zeigt je geändertem Feld „Feld: alt → neu“ (alter Wert durchgestrichen), Datum/Uhrzeit und Benutzer." },
+    ]
+  },
+  {
+    tag: "Konsistenz", name: "Feinschliff-Checks", desc: "Bewusst geprüfte Detail-/Konsistenzpunkte, die beim Feinschliff helfen.",
+    items: [
+      { id: "K1", title: "Spenden/Entsorgen-Aktion + Label",
+        steps: ["Inventar → 3-Punkt-Menü eines verfügbaren Bestands öffnen.", "„Gespendet“ bzw. „Entsorgt“ wählen.", "Status-Text in der Übersicht mit dem auf der Artikel-Detailseite vergleichen."],
+        expect: "Aktionen „Gespendet“ und „Entsorgt“ sind vorhanden (auch auf der Detailseite pro Bestand). Nach dem Klick: Status-Badge erscheint, Bestand zählt nicht mehr zum verfügbaren Gesamtbestand. Bezeichnung „Gespendet“ ist in Übersicht UND Detailseite identisch (nicht mehr „Verschenkt“ vs. „Gespendet“)." },
+      { id: "K2", title: "Navigation vollständig", steps: ["Menü prüfen: Dashboard, Inventar, Räume, Einkaufsliste, Einkauf, Einstellungen."],
+        expect: "Alle sechs Menüpunkte vorhanden und führen auf die richtige Seite. „Einkauf“ und „Einkaufsliste“ sind getrennt." },
+      { id: "K3", title: "Mobile-Darstellung (falls am Handy getestet)", steps: ["Auf dem Smartphone durch die Hauptseiten navigieren."],
+        expect: "Kein horizontales Scrollen/Overflow; Buttons und Felder gut bedienbar; FABs erreichbar." },
+    ]
+  },
+  {
+    tag: "G54", name: "stoqr Android Offline-App (Phase 1)", desc: "Die eigenstaendige Android-App laeuft komplett offline (On-Device-SQLite), unabhaengig vom Pi. Getestet wird die aus dem GitHub-Release installierte APK OHNE Netz (Flugmodus).",
+    items: [
+      { id: "G54-1", title: "APK installiert + startet offline",
+        steps: ["APK aus dem GitHub-Release herunterladen und auf dem Android-Geraet installieren (Installation aus unbekannten Quellen ggf. erlauben).", "Flugmodus einschalten (kein WLAN, kein Mobilfunk).", "App starten."],
+        expect: "App oeffnet ohne Netz, keine Ladefehler/Netzfehler-Blocker, das Dashboard erscheint. Kein Login noetig (feste lokale Identitaet)." },
+      { id: "G54-2", title: "Werkszustand geseedet (First Launch)",
+        steps: ["Beim ersten Start: Einstellungen oeffnen.", "Kategorien und Naehrwert-Typen ansehen.", "Beim Anlegen die Einheiten-Auswahl oeffnen."],
+        expect: "Kategorien und Naehrwert-Typen sind vorhanden (Seeds gelaufen). Die 9 System-Einheiten (Stueck, g, kg, ml, l, Packung, Dose, Flasche, Tetrapak) stehen zur Auswahl. Ein lokaler Haushalt existiert." },
+      { id: "G54-3", title: "Anlegen offline",
+        steps: ["Einen Artikel anlegen (Name, Kategorie, Einheit).", "Bestand dazu erfassen.", "Optional einen Raum/Ort anlegen."],
+        expect: "Artikel, Bestand und Raum werden ohne Netz gespeichert und erscheinen sofort in den Listen. Keine Fehlermeldung." },
+      { id: "G54-4", title: "Barcode-Scan offline (ZXing)",
+        steps: ["Beim Artikel-Anlegen den Barcode-Scanner oeffnen.", "Einen EAN/Barcode scannen."],
+        expect: "Kamera oeffnet, der Code wird erkannt und uebernommen. Der reine Scan funktioniert ohne Netz. (Online-Produktdaten-Lookup ist offline erwartungsgemaess nicht verfuegbar -> manuelle Eingabe moeglich, kein Absturz.)" },
+      { id: "G54-5", title: "Bestand / Soll-Ist offline",
+        steps: ["Inventar/Dashboard oeffnen.", "Gesamtbestand und Soll-Ist eines Artikels pruefen.", "Bestand teilweise verbrauchen."],
+        expect: "Aggregation (Gesamtbestand, Soll-Ist) rechnet korrekt in der App (JS-Aggregation gegen SQLite). Verbrauch reduziert den verfuegbaren Bestand." },
+      { id: "G54-6", title: "Persistenz nach Neustart",
+        steps: ["App vollstaendig beenden (aus dem App-Switcher entfernen).", "App erneut starten (weiter im Flugmodus)."],
+        expect: "Alle zuvor angelegten Daten sind noch da (On-Device-SQLite persistent). Das Seeding laeuft NICHT erneut (meta-Guard), es entstehen keine Dubletten." },
+      { id: "G54-7", title: "Sync-Abschnitt: waehlbares fuehrendes System (Phase-1-Stub)",
+        steps: ["Einstellungen -> Abschnitt „Sync“ oeffnen.", "Auswahl „fuehrendes System“ ansehen (App / Pi).", "Optional eine Pi-URL eintragen und speichern.", "Einstellungen erneut oeffnen."],
+        expect: "Abschnitt „Sync“ mit Badge „In Vorbereitung“ ist da. Default ist „Diese App (Standalone)“. Ohne gepflegte Pi-URL gilt die App als Standalone und selbst als fuehrendes System. Die Auswahl wird lokal gespeichert (ueberlebt Neu-Oeffnen), hat in Phase 1 aber noch KEINE Wirkung (kein Sync-Netzverkehr)." },
+    ]
+  },
+];
+
+// ── Rendering ───────────────────────────────────────────────────────────────
+const STORAGE_KEY = "stoqr-test-manifest-v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (e) { state = {}; }
+
+const manifestEl = document.getElementById("manifest");
+const allIds = [];
+
+for (const block of BLOCKS) {
+  const sec = document.createElement("section");
+  sec.className = "block";
+  const head = document.createElement("div");
+  head.className = "block-head";
+  head.innerHTML = `<span class="block-tag">${block.tag}</span><h2>${block.name}</h2>`;
+  sec.appendChild(head);
+  const desc = document.createElement("p");
+  desc.className = "block-desc";
+  desc.textContent = block.desc;
+  sec.appendChild(desc);
+
+  for (const it of block.items) {
+    allIds.push(it.id);
+    const item = document.createElement("div");
+    item.className = "item";
+    item.id = "item-" + it.id;
+
+    const checked = !!(state[it.id] && state[it.id].done);
+    if (checked) item.classList.add("done");
+
+    const stepsHtml = (it.steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join("");
+    const flagCls = it.flag ? ' style="border-color:var(--warn)"' : "";
+
+    item.innerHTML = `
+      <div class="item-top">
+        <input type="checkbox" class="item-cb" ${checked ? "checked" : ""} data-id="${it.id}" aria-label="erledigt" />
+        <div class="item-body">
+          <div class="item-id">${it.id}${it.flag ? ' · <span class="flag">Konsistenz-Check</span>' : ""}</div>
+          <div class="item-title">${escapeHtml(it.title)}</div>
+          <ol class="item-steps">${stepsHtml}</ol>
+          <div class="expect"><b>Erwartung:</b> ${escapeHtml(it.expect)}</div>
+          <div class="note-wrap">
+            <label for="note-${it.id}">Notiz / Abweichung</label>
+            <textarea class="note" id="note-${it.id}" data-id="${it.id}" placeholder="Alles wie erwartet? Sonst hier notieren…">${escapeHtml(state[it.id] && state[it.id].note ? state[it.id].note : "")}</textarea>
+          </div>
+        </div>
+      </div>`;
+    if (it.flag) item.setAttribute("style", "border-color:var(--warn)");
+    sec.appendChild(item);
+  }
+  manifestEl.appendChild(sec);
+}
+
+// ── Interaktion ───────────────────────────────────────────────────────────
+manifestEl.addEventListener("change", (e) => {
+  const cb = e.target.closest(".item-cb");
+  if (cb) {
+    const id = cb.dataset.id;
+    ensure(id).done = cb.checked;
+    document.getElementById("item-" + id).classList.toggle("done", cb.checked);
+    save();
+    updateProgress();
+  }
+});
+manifestEl.addEventListener("input", (e) => {
+  const ta = e.target.closest(".note");
+  if (ta) { ensure(ta.dataset.id).note = ta.value; save(); }
+});
+
+function ensure(id) { if (!state[id]) state[id] = { done: false, note: "" }; return state[id]; }
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function updateProgress() {
+  const done = allIds.filter(id => state[id] && state[id].done).length;
+  const total = allIds.length;
+  document.getElementById("count").textContent = `${done} / ${total} erledigt`;
+  document.getElementById("fill").style.width = total ? (done / total * 100) + "%" : "0%";
+}
+updateProgress();
+
+// ── Export (Markdown → Zwischenablage) ──────────────────────────────────────
+function buildMarkdown(onlyOpen = false) {
+  const done = allIds.filter(id => state[id] && state[id].done).length;
+  const lines = [];
+  lines.push("# stoqr — Test-Ergebnis A–E");
+  lines.push("");
+  lines.push(`Stand: ${done} / ${allIds.length} erledigt`);
+  if (onlyOpen) lines.push("_Gefiltert: nur offene Punkte und Punkte mit Notiz_");
+  lines.push("");
+  let bodyCount = 0;
+  for (const block of BLOCKS) {
+    const blockLines = [];
+    for (const it of block.items) {
+      const st = state[it.id] || {};
+      const note = (st.note || "").trim();
+      // Im Filter-Modus: erledigte Punkte OHNE Notiz überspringen.
+      if (onlyOpen && st.done && !note) continue;
+      const box = st.done ? "[x]" : "[ ]";
+      blockLines.push(`- ${box} **${it.id}** — ${it.title}`);
+      if (note) {
+        for (const nl of note.split("\n")) blockLines.push(`    - 📝 ${nl}`);
+      }
+    }
+    // Leere Blöcke (im Filter-Modus komplett weggefiltert) ganz überspringen.
+    if (blockLines.length === 0) continue;
+    lines.push(`## [${block.tag}] ${block.name}`);
+    lines.push(...blockLines);
+    lines.push("");
+    bodyCount += blockLines.length;
+  }
+  // Edge-Case: alles erledigt, keine Notizen → kein Body.
+  if (bodyCount === 0) {
+    lines.push("Alle Punkte erledigt, keine offenen Hinweise.");
+    lines.push("");
+  }
+  return lines.join("\n");
+}
+
+function copyExport(onlyOpen = false) {
+  const md = buildMarkdown(onlyOpen);
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = md; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); showToast("In Zwischenablage kopiert ✓"); }
+    catch (e) { showToast("Kopieren nicht möglich — Text manuell markieren"); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(md).then(() => showToast("In Zwischenablage kopiert ✓"), fallback);
+  } else { fallback(); }
+}
+
+function resetAll() {
+  if (!confirm("Alle Häkchen und Notizen zurücksetzen?")) return;
+  state = {}; save();
+  document.querySelectorAll(".item-cb").forEach(cb => cb.checked = false);
+  document.querySelectorAll(".note").forEach(ta => ta.value = "");
+  document.querySelectorAll(".item").forEach(el => el.classList.remove("done"));
+  updateProgress();
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+}
+</script>
+</body>
+</html>

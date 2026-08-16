@@ -1,0 +1,200 @@
+name: Release
+
+# Baut bei einem SemVer-Tag (v*) eine signierte Android-APK aus dem
+# Capacitor-Projekt, testet vorher (Gate) und veroeffentlicht die APK als
+# GitHub Release. Muster angelehnt an die uebrigen Android-Apps des Nutzers
+# (Wickelfinder), adaptiert von Flutter auf Capacitor.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build, Test & Release APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Java (fuer Android-Build)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync SvelteKit
+        run: pnpm --filter @stoqr/web exec svelte-kit sync
+
+      # Gate zuerst — kein Release bei rotem Test / Typfehler.
+      - name: Lint (Gate)
+        run: pnpm run lint
+
+      - name: Typecheck (Gate)
+        run: pnpm run typecheck
+
+      - name: Tests (Gate - kein Release bei rotem Test)
+        run: pnpm run test
+
+      # Statisches SPA-Bundle bauen (adapter-static), das die WebView laedt.
+      - name: App-Bundle bauen (STOQR_TARGET=app)
+        run: pnpm --filter @stoqr/web build
+        env:
+          STOQR_TARGET: app
+
+      # Android-Plattform-Ordner wird in CI generiert (nicht im Repo eingecheckt),
+      # damit das Repo frei von generiertem Scaffolding bleibt. Idempotent: cap add
+      # ueberspringt, wenn android/ schon existiert.
+      - name: Capacitor Android-Plattform generieren + syncen
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          if [ ! -d android ]; then
+            pnpm exec cap add android
+          fi
+          pnpm exec cap sync android
+
+      # Permissions ins RELEASE-Manifest injizieren (idempotenter grep-Guard).
+      # CAMERA (Barcode/OCR-Scan) + REQUEST_INSTALL_PACKAGES (APK-Update).
+      # INTERNET erst fuer den spaeteren Sync (Phase 2) noetig - Capacitor setzt
+      # INTERNET ohnehin per Default; wir sichern CAMERA/INSTALL explizit ab.
+      - name: Android-Permissions ins Manifest injizieren
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          test -f "$MANIFEST"
+          add_perm() {
+            local perm="$1"
+            if ! grep -q "android.permission.$perm" "$MANIFEST"; then
+              sed -i "s#</manifest>#    <uses-permission android:name=\"android.permission.$perm\"/>\n</manifest>#" "$MANIFEST"
+              echo "added $perm"
+            else
+              echo "$perm already present"
+            fi
+          }
+          add_perm CAMERA
+          add_perm REQUEST_INSTALL_PACKAGES
+          echo '--- uses-permission im Release-Manifest ---'
+          grep 'uses-permission' "$MANIFEST" || true
+
+      # Release-Signierung: Keystore aus GitHub-Secrets rekonstruieren und eine
+      # signingConfig in das (von cap add generierte) build.gradle injizieren.
+      # Ohne diesen Schritt signiert Gradle mit dem WECHSELNDEN Debug-Key ->
+      # Updates scheitern (INSTALL_FAILED_UPDATE_INCOMPATIBLE). Fehlt das
+      # Keystore-Secret, wird der Schritt uebersprungen (Build bleibt
+      # debug-signiert, statt hart zu failen). Idempotent + fail-fast.
+      - name: Release-Signierung einrichten
+        working-directory: apps/web
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_KEYSTORE_BASE64:-}" ]; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 fehlt -> APK bleibt debug-signiert (Updates erfordern Deinstallieren)."
+            exit 0
+          fi
+
+          # 1) Keystore rekonstruieren (nie geloggt).
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
+
+          # 2) key.properties schreiben (Werte aus Secrets, nicht im Log).
+          cat > android/key.properties <<EOF
+          storeFile=release.jks
+          storePassword=${ANDROID_KEYSTORE_PASSWORD}
+          keyAlias=${ANDROID_KEY_ALIAS}
+          keyPassword=${ANDROID_KEY_PASSWORD}
+          EOF
+
+          # 3) signingConfig in build.gradle (Capacitor = Groovy-DSL) idempotent
+          #    injizieren. Python-basiert -> robuster als sed fuer mehrzeilige Bloecke.
+          python3 - <<'PY'
+          import re, pathlib, sys
+          groovy = pathlib.Path("android/app/build.gradle")
+          if not groovy.exists():
+              print("::error::android/app/build.gradle nicht gefunden"); sys.exit(1)
+          src = groovy.read_text()
+          if 'release.jks' in src:
+              print("release signing already configured (groovy)"); sys.exit(0)
+          header = (
+              'def keystoreProperties = new Properties()\n'
+              'def keystorePropertiesFile = rootProject.file("key.properties")\n'
+              'if (keystorePropertiesFile.exists()) {\n'
+              '    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }\n'
+              '}\n'
+          )
+          src = header + src
+          sign_block = (
+              '\n    signingConfigs {\n'
+              '        release {\n'
+              '            keyAlias keystoreProperties["keyAlias"]\n'
+              '            keyPassword keystoreProperties["keyPassword"]\n'
+              '            storeFile file(keystoreProperties["storeFile"])\n'
+              '            storePassword keystoreProperties["storePassword"]\n'
+              '        }\n'
+              '    }\n'
+          )
+          src = re.sub(r'android\s*\{', 'android {' + sign_block, src, count=1)
+          # release-buildType auf die release-signingConfig umstellen (Capacitor
+          # generiert per Default signingConfig signingConfigs.debug im release-Block).
+          src = re.sub(
+              r'signingConfig\s+signingConfigs\.debug',
+              'signingConfig signingConfigs.release',
+              src, count=1)
+          groovy.write_text(src)
+          assert 'signingConfigs.release' in groovy.read_text(), "groovy inject failed"
+          print("release signing configured (groovy)")
+          PY
+
+      - name: Release-APK bauen (Gradle assembleRelease)
+        working-directory: apps/web/android
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+
+      - name: APK umbenennen (mit Version)
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n1)
+          test -n "$APK"
+          cp "$APK" "dist/stoqr-android-${GITHUB_REF_NAME}.apk"
+          echo "APK: dist/stoqr-android-${GITHUB_REF_NAME}.apk"
+
+      - name: GitHub Release mit APK erstellen
+        uses: softprops/action-gh-release@v2
+        with:
+          files: apps/web/dist/*.apk
+          generate_release_notes: true
+          body: |
+            ## stoqr Android ${{ github.ref_name }}
+
+            Eigenstaendige Offline-App. Automatisch gebaut und getestet via GitHub Actions.
+
+            **Installation:** APK herunterladen und auf dem Android-Geraet oeffnen
+            (Installation aus unbekannten Quellen ggf. erlauben).
+
+            Voll offline nutzbar: Anlegen, Barcode-Scan, Vorrat/Bedarf. Optionaler
+            bidirektionaler Sync mit der Pi-Instanz ist in Vorbereitung (Phase 2-4),
+            das fuehrende System ist dann waehlbar.
+
+            Alle Tests und Typechecks sind vor dem Build gruen durchgelaufen.

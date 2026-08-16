@@ -1,0 +1,159 @@
+{
+  "version": "7",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783460232092,
+      "tag": "0000_real_mastermind",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783510288069,
+      "tag": "0001_foamy_snowbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783600000000,
+      "tag": "0002_households_units",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783600001000,
+      "tag": "0003_household_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783700000000,
+      "tag": "0004_stores_city",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783800000000,
+      "tag": "0005_inventory_gtin_drop_product_stores",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783800001000,
+      "tag": "0006_products_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783800002000,
+      "tag": "0007_units_dimension_factor",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783800003000,
+      "tag": "0008_product_stores_mn",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783800004000,
+      "tag": "0009_audit_log_household",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1783800005000,
+      "tag": "0010_shopping_trips",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1783800006000,
+      "tag": "0011_product_prices",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1783800007000,
+      "tag": "0012_price_staging",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1783800008000,
+      "tag": "0013_stores_scrape_region",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1783800009000,
+      "tag": "0014_price_scrape_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1783800010000,
+      "tag": "0015_globus_snapshots",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1783800011000,
+      "tag": "0016_snapshots_name_trgm",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1783800012000,
+      "tag": "0017_product_field_sources",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783800013000,
+      "tag": "0018_seed_system_units",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783800014000,
+      "tag": "0019_category_mappings",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783800015000,
+      "tag": "0020_globus_rich_data",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1783800016000,
+      "tag": "0021_deposit_fields",
+      "breakpoints": true
+    }
+  ]
+}
