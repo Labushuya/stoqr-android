@@ -20,12 +20,14 @@ export interface ExportResult {
   scope: ExportTier
   filename: string
   uri: string
+  shared: boolean
 }
 
 /**
  * Exportiert den gewaehlten Tier: holt den Envelope-Text vom App-Router, schreibt
  * ihn als .stoqr-Datei ins Cache-Verzeichnis und oeffnet den nativen Teilen-Dialog
- * (Drive/Mail/…). Wirft bei Fehler (Aufrufer zeigt die Meldung).
+ * (Drive/Mail/…). Ein abgebrochenes Teilen ist KEIN Fehler — die Datei ist bereits
+ * geschrieben; dann shared:false. Wirft nur, wenn Export/Schreiben selbst scheitert.
  */
 export async function exportToFile(scope: ExportTier): Promise<ExportResult> {
   const res = await apiFetch(`/api/transfer/export?scope=${encodeURIComponent(scope)}`)
@@ -45,14 +47,23 @@ export async function exportToFile(scope: ExportTier): Promise<ExportResult> {
     encoding: Encoding.UTF8,
   })
 
-  await Share.share({
-    title: 'stoqr-Export',
-    text: `stoqr-Export (${scope})`,
-    url: written.uri,
-    dialogTitle: 'stoqr-Datei teilen',
-  })
+  // Teilen ist optional: der Nutzer kann den Dialog abbrechen (Share wirft dann),
+  // oder auf manchen Geraeten fehlt ein Ziel. Die Datei liegt bereits im Cache —
+  // das darf den Export nicht als Fehler markieren.
+  let shared = false
+  try {
+    await Share.share({
+      title: 'stoqr-Export',
+      text: `stoqr-Export (${scope})`,
+      url: written.uri,
+      dialogTitle: 'stoqr-Datei teilen',
+    })
+    shared = true
+  } catch {
+    shared = false
+  }
 
-  return { scope, filename, uri: written.uri }
+  return { scope, filename, uri: written.uri, shared }
 }
 
 export interface ImportResult {
