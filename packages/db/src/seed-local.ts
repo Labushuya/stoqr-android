@@ -81,7 +81,7 @@ export async function seedLocal(db: SqliteDatabase): Promise<void> {
     .insert(households)
     .values({
       id: LOCAL_HOUSEHOLD_ID,
-      name: 'Mein Haushalt',
+      name: 'Die Merbotts',
       createdBy: LOCAL_USER_ID,
     })
     .onConflictDoNothing({ target: households.id })

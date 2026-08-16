@@ -10,7 +10,15 @@ export { createSqliteDb } from './client.sqlite'
 export type { SqliteExecutor, SqliteDatabase } from './client.sqlite'
 
 // On-Device-DDL (CREATE TABLE/INDEX), zur Laufzeit aus dem Schema abgeleitet.
-export { getSqliteDdl, getSqliteDdlSql } from './ddl.sqlite'
+// selfHealSchema: additives ALTER TABLE ADD COLUMN fuer Alt-Installationen
+// (kein Migrationspfad on-device -> fehlende Spalten nachruesten).
+export {
+  getSqliteDdl,
+  getSqliteDdlSql,
+  getSqliteColumnDefs,
+  selfHealSchema,
+} from './ddl.sqlite'
+export type { SqliteColumnDef, SelfHealExec } from './ddl.sqlite'
 
 // First-Launch-Seeding + lokale Identitaets-Konstanten.
 export {

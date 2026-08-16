@@ -886,6 +886,23 @@ const BLOCKS = [
         expect: "Abschnitt „Sync“ mit Badge „In Vorbereitung“ ist da. Default ist „Diese App (Standalone)“. Ohne gepflegte Pi-URL gilt die App als Standalone und selbst als fuehrendes System. Die Auswahl wird lokal gespeichert (ueberlebt Neu-Oeffnen), hat in Phase 1 aber noch KEINE Wirkung (kein Sync-Netzverkehr)." },
     ]
   },
+  {
+    tag: 'G55', name: 'App-Fixes nach .stoqr-Import (500, Pfand, Auth-Einstellungen)', desc: 'Vier Nachbesserungen fuer die Standalone-App nach dem Datei-Import: (1) Artikel-Detailseite wirft keinen 500 mehr, wenn ein Bestand auf ein fehlendes Produkt zeigt (defensiver 404-Guard in beiden Loadern; Ursache war GTIN-Dedup + globaler Produkt-Wipe -> haengende FK, den SQLite ohne PRAGMA foreign_keys still schreibt). (2) Additive Schema-Selbstheilung beim Boot: fehlende Spalten (z.B. G47 has_deposit/deposit_ct) werden per ALTER TABLE ADD COLUMN nachgeruestet, weil on-device KEINE Migrationen laufen (nur CREATE TABLE IF NOT EXISTS). Alt-Installationen verloren so das Pfand beim Import. (3) Haushaltsname „Die Merbotts" (siehe auch G52). (4) Auth-/Mitglieder-Einstellungen werden im App-Target ausgeblendet (kein Login/Account in der App).',
+    items: [
+      { id: 'G55-1', title: 'Artikel einsehen: kein 500 mehr',
+        steps: ['Ein .stoqr (Tier „alles") vom Pi exportieren und in die App importieren.', 'Danach im Inventar einen importierten Artikel oeffnen (Detailseite).', 'Mehrere Artikel durchklicken, auch solche die per GTIN mit vorhandenen zusammengefuehrt wurden.'],
+        expect: 'Die Detailseite laedt normal (kein „Error 500"). Falls ein Bestand ausnahmsweise auf ein fehlendes Produkt zeigt, erscheint eine saubere 404-Meldung „Artikel nicht gefunden" statt eines Serverfehlers.' },
+      { id: 'G55-2', title: 'Schema-Selbstheilung: fehlende Spalten werden nachgeruestet',
+        steps: ['Eine App-Installation verwenden, die VOR dem Pfand-Feature (G47) angelegt wurde (products ohne has_deposit/deposit_ct).', 'Die aktualisierte App starten (Boot laeuft).', 'Optional (Dev): adb logcat / Konsole auf „[boot.app] schema self-heal" pruefen.'],
+        expect: 'Beim Boot werden fehlende Spalten additiv ergaenzt (ALTER TABLE ADD COLUMN), OHNE Datenverlust. Bestehende Zeilen bekommen den Spalten-Default (has_deposit=0, deposit_ct=NULL). Ein zweiter Start ergaenzt nichts mehr (idempotent).' },
+      { id: 'G55-3', title: 'Pfand nach Re-Import sichtbar (Einkauf + Einkaufsliste)',
+        steps: ['NACH der Selbstheilung (G55-2) dasselbe .stoqr vom Pi ERNEUT importieren (Werte landen jetzt in den nachgeruesteten Spalten).', 'Einen Einkauf mit pfandpflichtigen Artikeln (Flasche/Dose, Preis OHNE enthaltenes Pfand) oeffnen.', 'Dieselben Artikel in der Einkaufsliste betrachten.'],
+        expect: 'Pfand erscheint wieder als blauer Chip an der Position UND ist in der Gesamtsumme oben separat ausgewiesen — genau wie auf dem Pi fuer dieselben Bestaende. (Ein Import VOR der Selbstheilung/ohne Re-Import zeigt kein Pfand, weil die Werte damals ins Leere liefen — Re-Import ist noetig.)' },
+      { id: 'G55-4', title: 'Auth-/Mitglieder-Einstellungen in der App ausgeblendet',
+        steps: ['In der App die Einstellungen oeffnen.', 'Nach dem Abschnitt „Haushaltsmitglieder" / „Mitglieder verwalten" suchen.'],
+        expect: 'Der Abschnitt „Haushaltsmitglieder" ist in der App NICHT sichtbar (kein Login/Account in der Standalone-App). Auf dem Pi (Node-Target) bleibt er unveraendert vorhanden.' },
+    ]
+  },
 ];
 
 // ── Rendering ───────────────────────────────────────────────────────────────

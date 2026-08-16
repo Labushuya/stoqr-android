@@ -80,6 +80,13 @@ export const load: PageLoad = async (event) => {
       error(404, 'Artikel nicht gefunden')
     }
 
+    // Defensive: bei einem verwaisten Bestand (product-Referenz zeigt ins Leere)
+    // lieber 404 als ein 500 weiter unten (item.product.id) — z.B. nach einem
+    // fehlerhaften Import, der ein Produkt geloescht statt wiederverwendet hat.
+    if (!item.product) {
+      error(404, 'Artikel nicht gefunden')
+    }
+
     // Alle Bestände desselben Produkts (aggregierte Ansicht)
     const siblingRows = await listInventoryForProduct(item.productId, householdId)
     const siblings = siblingRows.map((s) => ({

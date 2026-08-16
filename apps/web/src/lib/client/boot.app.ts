@@ -19,6 +19,7 @@ import {
   createSqliteDb,
   seedLocal,
   getSqliteDdl,
+  selfHealSchema,
   type SqliteExecutor,
 } from '@stoqr/db/sqlite'
 import { setDb } from '$data/db'
@@ -111,6 +112,19 @@ export async function bootApp(): Promise<void> {
     // 1) DDL VOR dem Seeding fahren (idempotent durch IF NOT EXISTS).
     for (const stmt of getSqliteDdl()) {
       await conn.execute(stmt, false)
+    }
+
+    // 1b) Additive Selbstheilung: Alt-Installationen (Tabelle existierte schon,
+    //     bevor eine Spalte ins Schema kam, z.B. G47 Pfand) bekommen fehlende
+    //     Spalten via ALTER TABLE ADD COLUMN nachgeruestet. Ohne diesen Schritt
+    //     verliert der Import Felder still (transfer.ts schreibt nur existierende
+    //     Spalten). Idempotent + rein additiv.
+    const healed = await selfHealSchema(async (sql, params) => {
+      const res = await conn.query(sql, (params ?? []) as unknown[])
+      return (res.values ?? []) as Array<Record<string, unknown>>
+    })
+    if (healed.length > 0) {
+      console.info(`[boot.app] schema self-heal: ${healed.length} Spalte(n) ergaenzt`, healed)
     }
 
     // 2) Drizzle-Instanz bauen + als aktive DB setzen — ab jetzt darf routeApp()

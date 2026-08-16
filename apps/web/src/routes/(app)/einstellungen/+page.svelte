@@ -368,21 +368,26 @@
   </header>
 
   <!-- ── Haushaltsmitglieder ───────────────────────────────────────────────── -->
-
-  <section class="settings-section">
-    <div class="section-header">
-      <h2 class="section-title">Haushaltsmitglieder</h2>
-      <span class="section-desc">Mitglieder einladen und verwalten</span>
-    </div>
-    <div class="section-body">
-      <a href="/einstellungen/mitglieder" class="members-link">
-        <span>Mitglieder verwalten</span>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </a>
-    </div>
-  </section>
+  <!-- Nur im Pi-Target: die App hat kein Auth (Single-Household, kein Login),
+       daher ist Mitglieder-Einladung/-Verwaltung dort funktionslos. Der Guard
+       ist eine Compile-time-Konstante -> im Pi-Bundle bleibt die Section exakt
+       erhalten (DCE), im App-Bundle wird sie entfernt. -->
+  {#if __STOQR_TARGET__ !== 'app'}
+    <section class="settings-section">
+      <div class="section-header">
+        <h2 class="section-title">Haushaltsmitglieder</h2>
+        <span class="section-desc">Mitglieder einladen und verwalten</span>
+      </div>
+      <div class="section-body">
+        <a href="/einstellungen/mitglieder" class="members-link">
+          <span>Mitglieder verwalten</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </section>
+  {/if}
 
   <!-- ── Artikel ────────────────────────────────────────────────────────────── -->
 

@@ -471,15 +471,17 @@ export function remapImport(input: RemapInput): RemapResult {
   for (const row of productRows) {
     const srcId = String(row.id)
     const gtin = row.gtin == null ? null : String(row.gtin)
-    if (gtin && existingProductsByGtin.has(gtin)) {
-      // vorhandenes Produkt wiederverwenden — nicht einfuegen.
-      const localId = existingProductsByGtin.get(gtin)!
-      productIdMap.set(srcId, localId)
-      reusedProductIds.set(srcId, localId)
-      continue
-    }
-    const localId = newId()
+    // GTIN-Dedup: existiert das Produkt am Ziel schon (global unique gtin),
+    // behalten wir dessen lokale id bei — statt eine neue zu vergeben. WICHTIG:
+    // das Produkt wird trotzdem als (voller) Insert eingeplant, denn der
+    // wipeUserContent-Schritt loescht ALLE Produkte global; ein blosses
+    // "continue" wuerde die Zeile nach dem Wipe verschwinden lassen und die
+    // referenzierenden inventoryItems/prices etc. auf eine geloeschte id
+    // zeigen lassen (dangling FK -> 500 beim Lesen bzw. FK-Abbruch auf dem Pi).
+    const reused = gtin != null && existingProductsByGtin.has(gtin)
+    const localId = reused ? existingProductsByGtin.get(gtin)! : newId()
     productIdMap.set(srcId, localId)
+    if (reused) reusedProductIds.set(srcId, localId)
     const out: Record<string, unknown> = { ...row, id: localId }
     // categoryId per Sidecar aufloesen (nullable -> null + Warnung).
     if ('categoryId' in out) {
