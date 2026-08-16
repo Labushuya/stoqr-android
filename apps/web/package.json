@@ -16,6 +16,8 @@
     "@capacitor-community/sqlite": "^8.1.1",
     "@capacitor/android": "^8.5.0",
     "@capacitor/core": "^8.5.0",
+    "@capacitor/filesystem": "^8",
+    "@capacitor/share": "^8",
     "@opentelemetry/api": "^1.9.1",
     "@stoqr/db": "workspace:*",
     "@zxing/browser": "^0.1.0",

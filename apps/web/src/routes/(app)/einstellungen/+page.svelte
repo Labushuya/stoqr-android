@@ -458,6 +458,23 @@
     </div>
   </section>
 
+  <!-- ── Import / Export ───────────────────────────────────────────────── -->
+
+  <section class="settings-section">
+    <div class="section-header">
+      <h2 class="section-title">Import / Export</h2>
+      <span class="section-desc">Daten als Datei sichern und zwischen Pi und App uebertragen</span>
+    </div>
+    <div class="section-body">
+      <a href="/einstellungen/datentransfer" class="members-link">
+        <span>Daten uebertragen</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
   <!-- ── Aktivität ─────────────────────────────────────────────────────── -->
 
   <section class="settings-section">

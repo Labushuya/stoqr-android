@@ -12,6 +12,9 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
+        // Vite-`define`-Konstante (Build-Target), deklariert in src/app.d.ts.
+        // Fuer .svelte-Dateien greift no-undef, daher hier als readonly-Global.
+        __STOQR_TARGET__: 'readonly',
       },
     },
   },
