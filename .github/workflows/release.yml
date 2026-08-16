@@ -92,6 +92,39 @@ jobs:
           echo '--- uses-permission im Release-Manifest ---'
           grep 'uses-permission' "$MANIFEST" || true
 
+      # versionCode/versionName aus dem Git-Tag ableiten. Ohne diesen Schritt
+      # bleiben beide auf dem Capacitor-Default (versionCode 1 / versionName "1.0")
+      # stehen -> jedes Release traegt dieselbe versionCode und Android verweigert
+      # das Update (INSTALL_FAILED_VERSION_DOWNGRADE bzw. kein Update erkannt).
+      # versionName = Tag ohne fuehrendes 'v'; versionCode = X*10000 + Y*100 + Z
+      # (monoton steigend, solange Minor/Patch < 100 bleiben).
+      - name: versionCode/versionName aus Tag ableiten
+        working-directory: apps/web
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os, re, pathlib, sys
+          ref = os.environ["REF_NAME"]
+          m = re.match(r'^v?(\d+)\.(\d+)\.(\d+)', ref)
+          if not m:
+              print(f"::error::Tag '{ref}' ist kein SemVer (vX.Y.Z)"); sys.exit(1)
+          major, minor, patch = (int(g) for g in m.groups())
+          if minor >= 100 or patch >= 100:
+              print(f"::error::minor/patch >= 100 sprengt versionCode-Schema ({ref})"); sys.exit(1)
+          version_name = f"{major}.{minor}.{patch}"
+          version_code = major * 10000 + minor * 100 + patch
+          groovy = pathlib.Path("android/app/build.gradle")
+          src = groovy.read_text()
+          src, nc = re.subn(r'versionCode\s+\d+', f'versionCode {version_code}', src, count=1)
+          src, nn = re.subn(r'versionName\s+"[^"]*"', f'versionName "{version_name}"', src, count=1)
+          if nc == 0 or nn == 0:
+              print(f"::error::versionCode/versionName nicht gefunden (nc={nc}, nn={nn})"); sys.exit(1)
+          groovy.write_text(src)
+          print(f"versionCode {version_code}, versionName {version_name}")
+          PY
+
       # Release-Signierung: Keystore aus GitHub-Secrets rekonstruieren und eine
       # signingConfig in das (von cap add generierte) build.gradle injizieren.
       # Ohne diesen Schritt signiert Gradle mit dem WECHSELNDEN Debug-Key ->
@@ -152,14 +185,32 @@ jobs:
               '    }\n'
           )
           src = re.sub(r'android\s*\{', 'android {' + sign_block, src, count=1)
-          # release-buildType auf die release-signingConfig umstellen (Capacitor
-          # generiert per Default signingConfig signingConfigs.debug im release-Block).
-          src = re.sub(
-              r'signingConfig\s+signingConfigs\.debug',
-              'signingConfig signingConfigs.release',
-              src, count=1)
+          # release-buildType auf die release-signingConfig umstellen. Aeltere
+          # Capacitor-Templates generierten 'signingConfig signingConfigs.debug'
+          # im release-Block; Capacitor 8 hat KEINE signingConfig-Zeile im
+          # release {}-Block. Beide Faelle abdecken:
+          #   - existiert die debug-Zeile: ersetzen.
+          #   - sonst: 'signingConfig signingConfigs.release' direkt nach
+          #     'release {' im buildTypes-Block einfuegen.
+          if re.search(r'signingConfig\s+signingConfigs\.debug', src):
+              src = re.sub(
+                  r'signingConfig\s+signingConfigs\.debug',
+                  'signingConfig signingConfigs.release',
+                  src, count=1)
+          else:
+              # 'buildTypes { ... release {' -> nur den release-Block im
+              # buildTypes-Kontext treffen (nicht den signingConfigs.release-Block).
+              src, n = re.subn(
+                  r'(buildTypes\s*\{[^}]*?release\s*\{)',
+                  r'\1\n            signingConfig signingConfigs.release',
+                  src, count=1, flags=re.DOTALL)
+              if n == 0:
+                  print("::error::release-buildType nicht gefunden (build.gradle-Template unerwartet)")
+                  sys.exit(1)
           groovy.write_text(src)
-          assert 'signingConfigs.release' in groovy.read_text(), "groovy inject failed"
+          out = groovy.read_text()
+          assert 'signingConfigs.release' in out, "groovy inject failed (signingConfigs block)"
+          assert 'signingConfig signingConfigs.release' in out, "groovy inject failed (release buildType)"
           print("release signing configured (groovy)")
           PY
 
