@@ -238,13 +238,17 @@ describe('transfer — remapImport (Pi -> lokale Identitaet)', () => {
     })
   }
 
-  it('GTIN-Match wird wiederverwendet, nicht eingefuegt', () => {
+  it('GTIN-Match behaelt die lokale id + wird als Insert eingeplant', () => {
     const { inserts, reusedProductIds } = run()
-    // A (GTIN-EXISTING) wird NICHT eingefuegt
+    // A (GTIN-EXISTING) wird mit der BESTEHENDEN lokalen id eingeplant (Option B):
+    // wipeUserContent loescht global alle Produkte, daher muss auch das
+    // wiederverwendete Produkt neu eingefuegt werden, sonst haengen die FKs.
+    const byGtin = new Map((inserts.products ?? []).map((r) => [r.gtin, r]))
+    expect(byGtin.has('GTIN-EXISTING')).toBe(true)
+    expect(byGtin.get('GTIN-EXISTING')!.id).toBe('local-prod-existing')
+    // Alle drei Produkte sind eingeplant: A (reuse), B (neu), C (neue GTIN).
     const insertedGtins = (inserts.products ?? []).map((r) => r.gtin)
-    expect(insertedGtins).not.toContain('GTIN-EXISTING')
-    // Es bleiben B (neu) und C (neue GTIN, unbekannte Kategorie)
-    expect(insertedGtins.sort()).toEqual(['GTIN-C', 'GTIN-NEW'])
+    expect(insertedGtins.sort()).toEqual(['GTIN-C', 'GTIN-EXISTING', 'GTIN-NEW'])
     expect(reusedProductIds.get('pi-prod-A')).toBe('local-prod-existing')
   })
 
@@ -301,8 +305,9 @@ describe('transfer — remapImport (Pi -> lokale Identitaet)', () => {
     }
     for (const rows of Object.values(inserts)) {
       for (const r of rows ?? []) {
-        // id selbst darf keine Quell-id sein (ausser bei GTIN-Reuse, das ist aber
-        // eine lokale id und nicht in inserts.products enthalten)
+        // id selbst darf keine Quell-id sein. Auch das GTIN-wiederverwendete
+        // Produkt ist jetzt in inserts.products (Option B), traegt aber die
+        // LOKALE id (local-prod-existing) — also ebenfalls keine Quell-id.
         expect(srcIds.has(String((r as { id: unknown }).id))).toBe(false)
         // und kein FK-Wert darf eine Quell-id sein
         for (const [, v] of Object.entries(r)) {
