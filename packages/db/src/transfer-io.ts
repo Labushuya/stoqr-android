@@ -227,7 +227,18 @@ export async function wipeUserContent(opts: WipeOpts): Promise<void> {
   await tx.delete(s.stores).where(eq(s.stores.householdId, hid))
   // Eigene (nicht-System-)Einheiten des Haushalts.
   await tx.delete(s.units).where(and(eq(s.units.householdId, hid), eq(s.units.isSystem, false)))
-  // Artikel global hart (product_nutrients & product_field_sources cascaden mit).
+  // Artikel global hart. WICHTIG: product_nutrients & product_field_sources
+  // haengen per ON DELETE CASCADE an products, ABER die App laesst PRAGMA
+  // foreign_keys AUS (ddl.sqlite.ts) -> der Cascade feuert dort NICHT und die
+  // Kind-Zeilen ueberleben den products-Wipe. Beim naechsten Import kollidiert
+  // dann product_nutrients auf dem UNIQUE-Index (product_id, nutrient_type_id)
+  // -> "UNIQUE constraint failed". Deshalb die Cascade-Kinder EXPLIZIT zuerst
+  // loeschen (idempotent + FK-unabhaengig; auf dem Pi mit aktiven FKs ist der
+  // zusaetzliche Delete harmlos, weil dann ohnehin leer). Beide Tabellen haben
+  // kein household_id, sind also global (Single-Household-Setup wie beim Wipe).
+  await tx.delete(s.productNutrients)
+  await tx.delete(s.productFieldSources)
+  // Artikel global hart (Rest cascadet auf dem Pi mit; App: s.o. explizit).
   // Bewusst wie beim Werksreset: Single-Household-Setup, Import legt neu an.
   await tx.delete(s.products)
   // NICHT geloescht: categories, nutrient_types (Slug-Aufloesung), System-Units,

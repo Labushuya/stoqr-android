@@ -925,6 +925,14 @@ const BLOCKS = [
         expect: 'Der Schalter wirft keinen Fehler mehr und behaelt seinen Zustand ueber Neustart (Flag ist on-device in expiry_config gespeichert). Der Online-Abruf selbst bleibt offline gnaedig degradiert.' },
     ]
   },
+  {
+    tag: 'G58', name: 'App: Re-Import ohne UNIQUE-Fehler (Wipe loescht Cascade-Kinder explizit)', desc: 'Ein ZWEITER .stoqr-Import schlug fehl mit "UNIQUE constraint failed: product_nutrients (product_id, nutrient_type_id)". Ursache: wipeUserContent loeschte nur products und verliess sich fuer product_nutrients + product_field_sources auf ON DELETE CASCADE. Die App laesst PRAGMA foreign_keys jedoch AUS -> der Cascade feuert nicht, die Kind-Zeilen ueberlebten den Wipe und kollidierten beim Re-Import auf dem UNIQUE-Index (GTIN-Dedup verwendet dieselbe product_id wieder). Auf dem Pi (Postgres, FKs aktiv) trat das nie auf. Fix: die beiden Cascade-Kinder werden im Wipe EXPLIZIT (FK-unabhaengig) vor products geloescht.',
+    items: [
+      { id: 'G58-1', title: 'Zweiter Import derselben .stoqr laeuft durch',
+        steps: ['Ein .stoqr (Tier „alles") mit Artikeln inkl. Naehrwerten importieren (Erst-Import).', 'Danach dasselbe (oder ein aktualisiertes) .stoqr ERNEUT importieren (Re-Import).'],
+        expect: 'Der Re-Import laeuft ohne „UNIQUE constraint failed: product_nutrients" durch. Nach dem Import gibt es je Artikel/Naehrwert genau EINE Zeile (keine Waisen aus dem vorigen Import, keine Duplikate).' },
+    ]
+  },
 ];
 
 // ── Rendering ───────────────────────────────────────────────────────────────
