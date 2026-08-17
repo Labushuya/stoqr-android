@@ -131,7 +131,7 @@ export async function getCurrentPricesForProductAllStores(productId: string, hou
 export async function getCurrentPricesForListProducts(householdId: string, productIds: string[]) {
   const db = getDb()
   if (productIds.length === 0) return []
-  return db
+  const rows = await db
     .select({
       productId: productPrices.productId,
       storeId: productPrices.storeId,
@@ -152,6 +152,18 @@ export async function getCurrentPricesForListProducts(householdId: string, produ
         inArray(productPrices.productId, productIds),
       ),
     )
+  // WICHTIG (App/SQLite): eine rohe .select({...})-Projektion durchlaeuft NICHT
+  // den drizzle mode:'boolean'-Codec (anders als db.query.*.findMany). Auf der
+  // On-Device-SQLite kommen boolean-Spalten daher als integer 0/1 zurueck. Der
+  // Estimate prueft `priceIncludesDeposit === false` strikt -> 0 === false ist
+  // false -> Pfand wuerde NIE ausgewiesen (Chip + Summenzeile fehlten). Auf dem
+  // Pi (Postgres) liefert .select() echte Booleans, daher nur App betroffen.
+  // Hier defensiv auf echte Booleans normalisieren (idempotent fuer beide Ziele).
+  return rows.map((r) => ({
+    ...r,
+    isReduced: Boolean(r.isReduced),
+    priceIncludesDeposit: Boolean(r.priceIncludesDeposit),
+  }))
 }
 
 /** Preis-Historie eines Artikels (alle Maerkte), neueste zuerst. */

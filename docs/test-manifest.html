@@ -914,6 +914,17 @@ const BLOCKS = [
         expect: 'Saubere 404-Meldung „Artikel nicht gefunden" (der legitime Not-Found-Pfad ist intakt, kein Schein-Datensatz).' },
     ]
   },
+  {
+    tag: 'G57', name: 'App: Pfand-Ausweis + Preis-Abfrage-Toggle (SQLite-Boolean-Codec / Server-Action-Luecke)', desc: 'Zwei App-Target-Fixes: (1) In der Einkaufsliste/Einkauf fehlten die blauen Pfand-Chips und die separate Pfand-Summe, obwohl die Daten korrekt importiert waren. Ursache: eine rohe drizzle .select({...})-Projektion durchlaeuft auf der On-Device-SQLite NICHT den mode:boolean-Codec -> product_prices.price_includes_deposit kam als integer 0 statt boolean false; der Estimate prueft strikt `=== false` (0 === false ist false) -> Pfand wurde nie ausgewiesen. Auf dem Pi (Postgres, echte Booleans) korrekt. Fix: getCurrentPricesForListProducts normalisiert die projizierten Booleans (Boolean(...)). (2) Der Schalter „Online-Preis-Abruf" postete an eine SvelteKit-Server-Form-Action, die im App-SPA (kein Server) nie laeuft -> Fehler/keine Persistenz. Fix: im App-Target ueber apiFetch -> routeApp (PATCH /api/settings/price-scrape) das expiry_config-Flag on-device upserten; Pi nutzt weiter die Form-Action.',
+    items: [
+      { id: 'G57-1', title: 'Pfand-Chips + separate Pfand-Summe nach Import',
+        steps: ['Ein .stoqr (Tier „alles") vom Pi mit pfandpflichtigen Artikeln (Flasche/Dose, Preis OHNE enthaltenes Pfand, count-Einheit) importieren.', 'Einkaufsliste oeffnen, oben den Markt waehlen (z.B. Globus).', 'Positionen mit Pfand betrachten + die Kopf-Summe.'],
+        expect: 'Pfandpflichtige count-Positionen zeigen den blauen „Pfand X €"-Chip; die Kopfzeile weist „Ware / Pfand / Summe" separat aus — identisch zum Pi fuer dieselben Artikel.' },
+      { id: 'G57-2', title: 'Online-Preis-Abruf-Schalter persistiert offline',
+        steps: ['In der App die Einstellungen oeffnen.', 'Den Schalter „Online-Preis-Abruf aktivieren" umlegen.', 'App neu starten / Seite neu laden.'],
+        expect: 'Der Schalter wirft keinen Fehler mehr und behaelt seinen Zustand ueber Neustart (Flag ist on-device in expiry_config gespeichert). Der Online-Abruf selbst bleibt offline gnaedig degradiert.' },
+    ]
+  },
 ];
 
 // ── Rendering ───────────────────────────────────────────────────────────────

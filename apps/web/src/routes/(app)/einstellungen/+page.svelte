@@ -38,6 +38,32 @@
   let priceScrapeEnabled = $state(data.priceScrapeEnabled ?? false)
   let priceScrapeSaving = $state(false)
 
+  // App-Target: es gibt keinen Server -> die SvelteKit-Form-Action
+  // ?/updatePriceScrape laeuft nie (Fehler). Statt dessen ueber apiFetch ->
+  // routeApp den Flag on-device persistieren (wie die uebrigen App-Mutationen
+  // dieser Seite, z.B. runCatalogSync). Der Pi nutzt weiter die Form-Action.
+  async function togglePriceScrapeApp(next: boolean) {
+    priceScrapeSaving = true
+    try {
+      const res = await apiFetch('/api/settings/price-scrape', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: next }),
+      })
+      if (!res.ok) {
+        priceScrapeEnabled = !next // zuruecksetzen
+        toast.error('Konnte den Online-Preis-Abruf nicht speichern.')
+        return
+      }
+      await invalidateAll()
+    } catch {
+      priceScrapeEnabled = !next
+      toast.error('Netzwerkfehler.')
+    } finally {
+      priceScrapeSaving = false
+    }
+  }
+
   // ── Katalog-Sicherung: EAN-Spiegel des Bestands (G10) ────────────────────────
   type FieldDiff = { differs: boolean; fillsGap: boolean }
   type MirrorRow = {
@@ -654,36 +680,49 @@
       </p>
     </div>
 
-    <form
-      method="POST"
-      action="?/updatePriceScrape"
-      use:enhance={() => {
-        priceScrapeSaving = true
-        return async ({ update }) => {
-          await update({ reset: false })
-          priceScrapeSaving = false
-        }
-      }}
-    >
-      <input type="hidden" name="enabled" value={priceScrapeEnabled ? 'true' : 'false'} />
+    {#if __STOQR_TARGET__ === 'app'}
+      <!-- App: kein Server -> Flag per apiFetch/routeApp on-device persistieren. -->
       <label class="toggle-row">
         <input
           type="checkbox"
           bind:checked={priceScrapeEnabled}
           disabled={priceScrapeSaving}
-          onchange={(e) => (e.currentTarget.closest('form') as HTMLFormElement)?.requestSubmit()}
+          onchange={(e) => togglePriceScrapeApp(e.currentTarget.checked)}
         />
         <span>Online-Preis-Abruf aktivieren</span>
       </label>
-      {#if priceScrapeSuccess}
-        <p class="toggle-saved" role="status">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 8l3 3 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Gespeichert — Online-Preis-Abruf ist {priceScrapeEnabled ? 'aktiv' : 'deaktiviert'}.
-        </p>
-      {/if}
-    </form>
+    {:else}
+      <form
+        method="POST"
+        action="?/updatePriceScrape"
+        use:enhance={() => {
+          priceScrapeSaving = true
+          return async ({ update }) => {
+            await update({ reset: false })
+            priceScrapeSaving = false
+          }
+        }}
+      >
+        <input type="hidden" name="enabled" value={priceScrapeEnabled ? 'true' : 'false'} />
+        <label class="toggle-row">
+          <input
+            type="checkbox"
+            bind:checked={priceScrapeEnabled}
+            disabled={priceScrapeSaving}
+            onchange={(e) => (e.currentTarget.closest('form') as HTMLFormElement)?.requestSubmit()}
+          />
+          <span>Online-Preis-Abruf aktivieren</span>
+        </label>
+        {#if priceScrapeSuccess}
+          <p class="toggle-saved" role="status">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M4 8l3 3 5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Gespeichert — Online-Preis-Abruf ist {priceScrapeEnabled ? 'aktiv' : 'deaktiviert'}.
+          </p>
+        {/if}
+      </form>
+    {/if}
   </section>
 
   <!-- ── Section: Katalog-Sicherung — EAN-Spiegel des Bestands (G10) ─────── -->

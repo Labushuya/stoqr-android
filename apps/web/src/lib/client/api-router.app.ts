@@ -1214,6 +1214,30 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
     }
 
     // -----------------------------------------------------------------------
+    // /api/settings/price-scrape  (Einstellungs-Flag, App-Ersatz fuer die
+    // gleichnamige SvelteKit-Server-Form-Action, die im SPA nicht laeuft)
+    // -----------------------------------------------------------------------
+    // expiry_config.price_scrape_enabled ist eine reine gespeicherte Praeferenz
+    // (der Online-Preis-Abruf selbst degradiert offline ohnehin gnaedig, s.u.
+    // prices/fetch -> reason:'offline'). Upsert wie der Pi-Server (+page.server.ts
+    // updatePriceScrape), nur gegen die On-Device-SQLite + lokale Identitaet.
+    if (r === 'settings' && seg[2] === 'price-scrape') {
+      if (method !== 'PATCH' && method !== 'POST') return errRes('Method not allowed', 405)
+      const db = getSqliteDb()
+      const b = parseBody(init) as { enabled?: unknown }
+      const enabled = b.enabled === true || b.enabled === 'true'
+      const EC = sqliteSchema.expiryConfig
+      await db
+        .insert(EC)
+        .values({ id: crypto.randomUUID(), householdId: hh, priceScrapeEnabled: enabled })
+        .onConflictDoUpdate({
+          target: EC.householdId,
+          set: { priceScrapeEnabled: enabled },
+        })
+      return jsonRes({ action: 'updatePriceScrape', success: true, enabled })
+    }
+
+    // -----------------------------------------------------------------------
     // /api/transfer/export | /api/transfer/import  (Datei-Erstbefuellung)
     // -----------------------------------------------------------------------
     // Identisch zu den Pi-Endpoints (api/transfer/*), nur gegen die On-Device-
