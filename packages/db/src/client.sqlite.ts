@@ -23,9 +23,13 @@ import * as schema from './schema.sqlite'
 //   'all'    — mehrere Zeilen (SELECT)
 //   'get'    — genau eine Zeile (SELECT ... LIMIT 1)
 //   'values' — rohe Werte-Tupel
-// Der Executor MUSS Zeilen als Array-of-Arrays (rows: unknown[][]) liefern,
-// also positionsbasiert in Spaltenreihenfolge — nicht als Objekte.
-export type SqliteExecutor = (sql: string, params: unknown[], method: 'run' | 'all' | 'values' | 'get') => Promise<{ rows: unknown[][] }>
+// Row-Shape je method (sqlite-proxy erwartet unterschiedliche Formen!):
+//   'all'/'values' -> rows als Array-of-Arrays (positionsbasiert, Spaltenreihenfolge).
+//   'get'          -> rows ist die EINE Zeile FLACH (Werte-Array) bzw. undefined,
+//                     wenn kein Datensatz existiert. Der Executor muss das
+//                     beruecksichtigen, sonst kommen relationale findFirst-Relationen
+//                     doppelt verschachtelt an (Relation -> undefined).
+export type SqliteExecutor = (sql: string, params: unknown[], method: 'run' | 'all' | 'values' | 'get') => Promise<{ rows: unknown[][] | unknown[] | undefined }>
 
 export function createSqliteDb(executor: SqliteExecutor) {
   return drizzle(executor as any, { schema })

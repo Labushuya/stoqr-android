@@ -903,6 +903,17 @@ const BLOCKS = [
         expect: 'Der Abschnitt „Haushaltsmitglieder" ist in der App NICHT sichtbar (kein Login/Account in der Standalone-App). Auf dem Pi (Node-Target) bleibt er unveraendert vorhanden.' },
     ]
   },
+  {
+    tag: 'G56', name: 'App-SQLite: findFirst-Relationen (Detailseite kein 404 mehr)', desc: 'Latenter Bug im On-Device-Executor (boot.app.ts makeExecutor): sqlite-proxy erwartet je nach method unterschiedliche Row-Formen — fuer \'get\' (findFirst) die EINE Zeile FLACH als Werte-Array, fuer \'all\'/\'values\' Array-of-Arrays. Der Executor lieferte immer Array-of-Arrays; dadurch kam bei relationalen findFirst(with:{...})-Queries die Relation doppelt verschachtelt an und war undefined. Auf der Artikel-Detailseite griff dann der defensive Guard (item.product fehlt -> 404), obwohl das Produkt existierte: JEDER importierte Artikel gab beim Anklicken 404. Fix: fuer \'get\' die erste Zeile flach zurueckgeben (mapped[0]; undefined bei kein Treffer, damit der legitime 404 erhalten bleibt). Kein Import-Datenproblem — reine Executor-Row-Shape.',
+    items: [
+      { id: 'G56-1', title: 'Importierten Artikel oeffnen: Detailseite laedt (kein 404)',
+        steps: ['Ein .stoqr (Tier „alles") in die App importieren.', 'Im Inventar einen beliebigen importierten Artikel anklicken.', 'Mehrere verschiedene Artikel oeffnen.'],
+        expect: 'Die Detailseite laedt mit vollstaendigen Stammdaten (Produktname, Kategorie, Naehrwerte). KEIN „Artikel nicht gefunden"/404 mehr fuer real vorhandene Bestaende.' },
+      { id: 'G56-2', title: 'Echter Nicht-Treffer bleibt 404',
+        steps: ['Eine Detail-URL mit einer nicht existierenden Bestand-id aufrufen (z.B. manuell /inventar/does-not-exist).'],
+        expect: 'Saubere 404-Meldung „Artikel nicht gefunden" (der legitime Not-Found-Pfad ist intakt, kein Schein-Datensatz).' },
+    ]
+  },
 ];
 
 // ── Rendering ───────────────────────────────────────────────────────────────

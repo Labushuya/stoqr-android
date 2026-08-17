@@ -61,7 +61,21 @@ function makeExecutor(conn: SQLiteDBConnection): SqliteExecutor {
     // SELECT (all/get/values).
     const res = await conn.query(sql, values)
     const objRows = (res.values ?? []) as Array<Record<string, unknown>>
-    const rows = objRows.map((row) => Object.values(row))
+    const mapped = objRows.map((row) => Object.values(row))
+
+    // WICHTIG (sqlite-proxy Row-Shape je method):
+    //   'all'/'values' -> Array-of-Arrays (mehrere Zeilen), Drizzle mappt per rows.map().
+    //   'get'          -> die EINE Zeile FLACH als Werte-Array (rows = row), denn
+    //                     mapGetResult() nimmt `const row = rows` und reicht das
+    //                     direkt an mapResultRow bzw. customResultMapper([rows]).
+    // Gaeben wir fuer 'get' ebenfalls Array-of-Arrays zurueck, waere die Zeile
+    // doppelt verschachtelt -> relationale findFirst(... with:{...}) liefert die
+    // Relation als undefined (z.B. item.product fehlt -> 404 auf der Detailseite).
+    // Kein Treffer: mapped[0] ist undefined -> mapGetResult() gibt void 0 zurueck
+    // (echtes "nicht gefunden"), damit der legitime 404 erhalten bleibt. NICHT
+    // auf [] defaulten -> Drizzle wuerde [] als Zeile werten und ein Schein-
+    // Objekt {id: undefined, ...} bauen.
+    const rows = method === 'get' ? mapped[0] : mapped
     return { rows }
   }
 }
