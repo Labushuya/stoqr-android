@@ -151,30 +151,80 @@ jobs:
             exit 0
           fi
 
-          # 1) Keystore rekonstruieren (nie geloggt).
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/app/release.jks
-
-          # 1b) Keystore + Passwort + Alias VOR der Gradle-Injektion validieren.
-          #     Schlaegt das fehl (falsches Passwort/Alias, korruptes base64), NICHT
-          #     hart failen, sondern Release-Signierung ueberspringen -> Debug-Fallback.
-          #     keytool-Ausgabe verwerfen (koennte Zertifikatsdetails zeigen; kein Secret,
-          #     aber unnoetig im Log). exit 0 => Debug-Build-Fallback (signed=false).
-          if ! keytool -list \
-                -keystore android/app/release.jks \
-                -storepass "${ANDROID_KEYSTORE_PASSWORD}" \
-                -alias "${ANDROID_KEY_ALIAS}" >/dev/null 2>&1; then
-            echo "::warning::Keystore/Passwort/Alias nicht verifizierbar (KeytoolException-Ursache) -> APK wird debug-signiert. Bitte ANDROID_KEYSTORE_PASSWORD/ANDROID_KEY_ALIAS/ANDROID_KEYSTORE_BASE64 pruefen."
+          # 1) Keystore rekonstruieren (nie geloggt). Guarded: ist das Secret kein
+          #    gueltiges base64 (CRLF/Whitespace/Padding-Schaden beim Paste ueber
+          #    Web-UI ist haeufig), NICHT hart failen -> Debug-Fallback. Whitespace
+          #    vorher defensiv entfernen, damit ein reiner Zeilenumbruch nicht stoert.
+          if ! printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > android/app/release.jks 2>/dev/null; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 ist kein gueltiges base64 (CRLF/Whitespace/Padding?) -> APK wird debug-signiert. Secret neu setzen (z.B. 'base64 -w0 release.jks')."
             rm -f android/app/release.jks
             exit 0
           fi
-          echo "keystore verified (alias + storepass ok)"
 
-          # 2) key.properties schreiben (Werte aus Secrets, nicht im Log).
+          # 1b) Keystore VOR der Gradle-Injektion validieren und das TATSAECHLICH
+          #     funktionierende Key-Passwort ermitteln.
+          #
+          #     Hintergrund (empirisch verifiziert): Der Keystore ist ein PKCS12-
+          #     Store (JDK-Default, auch bei .jks-Endung). PKCS12 kennt KEIN vom
+          #     Store-Passwort getrenntes Key-Passwort - keytool ignoriert -keypass
+          #     beim Erzeugen ("Different store and key passwords not supported for
+          #     PKCS12 KeyStores"). Uebergibt Gradle dann ein ABWEICHENDES
+          #     keyPassword, scheitert :app:packageRelease mit
+          #     'UnrecoverableKeyException: Get Key failed: Given final block not
+          #     properly padded'. 'keytool -list'/'keytool -certreq' erkennen das
+          #     NICHT (sie liefern exit 0 trotz falschem -keypass auf PKCS12).
+          #
+          #     Verlaesslich ist nur ein echter KeyStore.getKey()-Aufruf - genau
+          #     das, was Gradle/apksigner intern tut. Wir probieren das mitgelieferte
+          #     ANDROID_KEY_PASSWORD und - falls das den Key nicht entsperrt - als
+          #     Fallback das Store-Passwort (auf PKCS12 der korrekte Key-Schluessel).
+          #     Das gefundene Passwort landet in key.properties; so wird auch OHNE
+          #     Secret-Korrektur release-signiert. Entsperrt KEINES den Key, faellt
+          #     der Build auf Debug-Signierung zurueck (statt hart zu failen).
+          cat > /tmp/KeyProbe.java <<'JAVA'
+          import java.security.KeyStore;
+          import java.io.FileInputStream;
+          public class KeyProbe {
+            public static void main(String[] a) throws Exception {
+              String file=a[0], storePw=a[1], alias=a[2];
+              KeyStore ks=KeyStore.getInstance("PKCS12");
+              try(FileInputStream f=new FileInputStream(file)){ ks.load(f, storePw.toCharArray()); }
+              if(!ks.containsAlias(alias)){ System.err.println("alias missing"); System.exit(2); }
+              // Kandidaten fuer das Key-Passwort in Reihenfolge (a[3..]).
+              for(int i=3;i<a.length;i++){
+                try{ if(ks.getKey(alias, a[i].toCharArray())!=null){ System.out.println(i); return; } }
+                catch(Exception e){ /* naechsten Kandidaten probieren */ }
+              }
+              System.exit(1);
+            }
+          }
+          JAVA
+          javac -d /tmp /tmp/KeyProbe.java
+
+          # Store-Passwort + Alias zuerst pruefen (laedt den Store ueberhaupt?).
+          if ! java -cp /tmp KeyProbe android/app/release.jks "${ANDROID_KEYSTORE_PASSWORD}" "${ANDROID_KEY_ALIAS}" "${ANDROID_KEY_PASSWORD}" "${ANDROID_KEYSTORE_PASSWORD}" >/tmp/keyidx 2>/dev/null; then
+            echo "::warning::Keystore nicht entsperrbar (Store-Passwort/Alias falsch, korruptes base64, oder Key mit keinem der Passwoerter lesbar) -> APK wird debug-signiert. Bitte ANDROID_KEYSTORE_PASSWORD/ANDROID_KEY_ALIAS/ANDROID_KEYSTORE_BASE64 pruefen."
+            rm -f android/app/release.jks
+            exit 0
+          fi
+          # KeyProbe druckt den Index des funktionierenden Kandidaten:
+          #   3 = ANDROID_KEY_PASSWORD, 4 = ANDROID_KEYSTORE_PASSWORD (Fallback).
+          KEYIDX=$(cat /tmp/keyidx)
+          if [ "${KEYIDX}" = "4" ]; then
+            EFFECTIVE_KEY_PASSWORD="${ANDROID_KEYSTORE_PASSWORD}"
+            echo "::warning::ANDROID_KEY_PASSWORD entsperrt den Key nicht; Store-Passwort greift (PKCS12: key==store). Fuer Release-Signierung ANDROID_KEY_PASSWORD gleich ANDROID_KEYSTORE_PASSWORD setzen."
+          else
+            EFFECTIVE_KEY_PASSWORD="${ANDROID_KEY_PASSWORD}"
+          fi
+          echo "keystore verified (store + alias + key ok, keyidx=${KEYIDX})"
+
+          # 2) key.properties schreiben (Werte aus Secrets, nicht im Log). Das
+          #    effektive Key-Passwort ist das, das KeyProbe verifiziert hat.
           cat > android/key.properties <<EOF
           storeFile=release.jks
           storePassword=${ANDROID_KEYSTORE_PASSWORD}
           keyAlias=${ANDROID_KEY_ALIAS}
-          keyPassword=${ANDROID_KEY_PASSWORD}
+          keyPassword=${EFFECTIVE_KEY_PASSWORD}
           EOF
 
           # 3) signingConfig in build.gradle (Capacitor = Groovy-DSL) idempotent
@@ -238,15 +288,28 @@ jobs:
           echo "signed=true" >> "$GITHUB_OUTPUT"
 
       - name: Release-APK bauen (Gradle assembleRelease/Debug)
+        id: build
         working-directory: apps/web/android
         env:
           SIGNED: ${{ steps.signing.outputs.signed }}
         run: |
           set -euo pipefail
           chmod +x ./gradlew
+          # 'variant' meldet dem Rename-Schritt, welche APK-Variante tatsaechlich
+          # gebaut wurde (release|debug) - unabhaengig davon, was geplant war.
           if [ "${SIGNED}" = "true" ]; then
             echo "release signing aktiv -> assembleRelease"
-            ./gradlew assembleRelease
+            if ./gradlew assembleRelease; then
+              echo "variant=release" >> "$GITHUB_OUTPUT"
+            else
+              # Sicherheitsnetz: sollte assembleRelease trotz vorab verifiziertem
+              # Keystore doch scheitern (z.B. unerwartete Signatur-Edgecase), NICHT
+              # rot enden, sondern Debug-APK bauen -> es entsteht immer eine
+              # installierbare APK.
+              echo "::warning::assembleRelease fehlgeschlagen -> Fallback auf Debug-APK."
+              ./gradlew assembleDebug
+              echo "variant=debug" >> "$GITHUB_OUTPUT"
+            fi
           else
             # Kein gueltiger Keystore -> Debug-Variante bauen. Sie ist mit dem
             # Android-Debug-Key signiert und damit direkt installierbar (im
@@ -255,16 +318,17 @@ jobs:
             # greift.
             echo "::warning::Keine gueltige Release-Signierung -> Debug-APK (installierbar, aber Update erfordert Deinstallieren)."
             ./gradlew assembleDebug
+            echo "variant=debug" >> "$GITHUB_OUTPUT"
           fi
 
       - name: APK umbenennen (mit Version)
         working-directory: apps/web
         env:
-          SIGNED: ${{ steps.signing.outputs.signed }}
+          VARIANT: ${{ steps.build.outputs.variant }}
         run: |
           set -euo pipefail
           mkdir -p dist
-          if [ "${SIGNED}" = "true" ]; then
+          if [ "${VARIANT}" = "release" ]; then
             APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n1)
             SUFFIX=""
           else
