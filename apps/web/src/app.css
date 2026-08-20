@@ -241,6 +241,37 @@
    BASE STYLES
    ============================================================ */
 
+/* Globaler Button-Normalizer: gibt JEDEM Button (und btn-artigen Links) app-weit
+   dieselbe Grundgeometrie — Inhalt zentriert (flex center), keine Overflow-
+   Abschnitte, touch-taugliche Mindesthoehe, gleicher Font. Die pro-Seite scoped
+   .btn-*-Regeln setzen weiterhin Farbe/Groesse/Radius (hoehere Spezifitaet), aber
+   Zentrierung + Overflow-Verhalten kommen ab jetzt konsistent von hier — behebt
+   die uneinheitliche/verrutschte Button-Darstellung in Accordions, Listen,
+   Modalen und Pop-Ups zentral. Icon-Buttons (nur ein SVG) sind davon unberuehrt,
+   weil sie ohnehin quadratisch/zentriert definiert sind. */
+button {
+  font-family: var(--font-body);
+}
+button:not(:disabled) {
+  cursor: pointer;
+}
+:where(
+  [class*='btn-'],
+  [class*='btn--'],
+  button[class~='btn']
+) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+  max-width: 100%;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--color-base);

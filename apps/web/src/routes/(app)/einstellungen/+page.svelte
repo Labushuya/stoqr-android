@@ -1757,12 +1757,20 @@
     -webkit-overflow-scrolling: touch;
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
+    /* Auf die Container-Breite begrenzen, damit overflow-x:auto WIRKLICH greift
+       und die Tabelle INNERHALB der Card scrollt, statt sie (und die rechte
+       Button-Spalte) ueber den Kartenrand/Viewport zu schieben. */
+    max-width: 100%;
   }
 
   .table {
     width: 100%;
+    /* Tabelle darf schmaler werden als ihr natuerlicher Inhalt (sonst zwingt
+       min-content-Breite die Card zum Ueberlaufen). Bei Bedarf scrollt .table-wrap. */
+    min-width: 0;
     border-collapse: collapse;
     font-size: var(--text-sm);
+    table-layout: fixed;
   }
 
   .th {

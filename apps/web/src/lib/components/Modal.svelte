@@ -148,15 +148,37 @@
   .modal-footer {
     display: flex;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: var(--space-3);
     padding: var(--space-4) var(--space-6);
     border-top: 1px solid var(--color-border-subtle);
     background: var(--color-surface);
     flex-shrink: 0;
   }
+  /* Alle Footer-Buttons/Links duerfen schrumpfen + zentrieren ihren Inhalt,
+     damit lange Labels (z.B. "System auf Werkseinstellung zuruecksetzen") nicht
+     aus dem Modal laufen. Gilt fuer JEDES Modal (Slot-Inhalt), unabhaengig von
+     dessen scoped Klassen — der Nachfahren-Selektor greift trotz Svelte-Scoping,
+     weil er im Modal-Scope steht und auf die projizierten Elemente zielt. */
+  .modal-footer :global(button),
+  .modal-footer :global(a) {
+    min-width: 0;
+    text-align: center;
+    justify-content: center;
+  }
 
   @media (max-width: 480px) {
     .modal-backdrop { padding: var(--space-2); align-items: flex-end; }
     .modal { max-height: 92dvh; }
+    /* Auf schmalen Screens: Footer-Buttons voll breit stapeln (kein Overflow,
+       gut erreichbar). Primaeraktion oben durch row-reverse. */
+    .modal-footer {
+      flex-direction: column-reverse;
+      align-items: stretch;
+    }
+    .modal-footer :global(button),
+    .modal-footer :global(a) {
+      width: 100%;
+    }
   }
 </style>
