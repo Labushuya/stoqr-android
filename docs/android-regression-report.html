@@ -26,50 +26,49 @@
 </head>
 <body>
   <h1>stoqr Android — Regressions-Report &amp; Test-Leitfaden</h1>
-  <p class="sub">Deine gemeldeten Beobachtungen (Test der Version v0.2.6), die jeweilige Ursache, der durchgefuehrte Fix und wie/wo zu testen ist. Stand: Phase 1 (Datenpfad) abgeschlossen; Phase 2 (UI/Design-System) folgt.</p>
+  <p class="sub">Deine gemeldeten Beobachtungen (Test der Version v0.2.6), die jeweilige Ursache, der durchgefuehrte Fix und wie/wo zu testen ist. Stand: Phase 1 (Datenpfad) UND Phase 2 (UI/Design-System) abgeschlossen.</p>
   <p class="legend">
-    <span class="tag ok">BEHOBEN</span> in Phase 1 (Datenschicht) &nbsp;·&nbsp;
-    <span class="tag pend">PHASE 2</span> UI/Usability, folgt &nbsp;·&nbsp;
-    Detaillierte technische Testfaelle: <code>docs/test-manifest.html</code> Bloecke <b>G59</b> (Schreiboperationen), G56–G58.
+    <span class="tag ok">BEHOBEN</span> = im aktuellen Release enthalten (Phase 1 Datenschicht + Phase 2 UI). &nbsp;·&nbsp;
+    Detaillierte technische Testfaelle: <code>docs/test-manifest.html</code> Bloecke <b>G59</b> (Schreiboperationen), <b>G60</b> (UI/Design-System), G56–G58.
   </p>
 
   <h2>Generell</h2>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> App-Logo &amp; Drawer fehlen</h3>
+    <h3><span class="tag ok">BEHOBEN</span> App-Logo &amp; Drawer fehlen</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Die Schrift (Sora/Inter) wird per Remote-<code>@import</code> von Google Fonts geladen — offline im WebView tot, daher degradiert der „stoqr"-Schriftzug. Der Drawer selbst ist korrekt verdrahtet.</dd>
-      <dt>Fix</dt><dd>Phase 2: Schriften lokal buendeln (<code>@font-face</code> + WOFF2 in <code>static/</code>).</dd>
-      <dt>Test</dt><dd>Nach Phase-2-Build: Schriftzug „stoqr" in der gewohnten Schrift; Hamburger-Menue oeffnet den Drawer.</dd>
+      <dt>Fix</dt><dd>Schriften lokal gebuendelt (<code>@font-face</code> + WOFF2 in <code>static/fonts/</code>) statt Remote-@import. <code>G60-1</code>.</dd>
+      <dt>Test</dt><dd>Schriftzug „stoqr" in der gewohnten Schrift; Hamburger-Menue oeffnet den Drawer.</dd>
     </dl>
   </div>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Einheiten in Select-Feldern doppelt</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Einheiten in Select-Feldern doppelt</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Keine Eindeutigkeit auf <code>units.symbol</code>; Seed-System-Einheiten und importierte/zugefuegte Haushalts-Einheiten mit gleichem Symbol koexistieren; <code>getUnits</code> merged ohne Dedupe.</dd>
-      <dt>Fix</dt><dd>Phase 2: Dedupe in <code>getUnits</code> (System bevorzugt) + Symbol-Kollisionsschutz beim Anlegen/Import.</dd>
-      <dt>Test</dt><dd>Nach Phase 2: in jedem Einheiten-Dropdown jedes Symbol nur EINMAL.</dd>
+      <dt>Fix</dt><dd>Dedupe nach Symbol in <code>getUnits</code> (System bevorzugt). <code>G60-3</code>.</dd>
+      <dt>Test</dt><dd>In jedem Einheiten-Dropdown jedes Symbol nur EINMAL.</dd>
     </dl>
   </div>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Pruefungs-Pill „Pruefung nicht moeglich" / falsche Version</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Pruefungs-Pill „Pruefung nicht moeglich" / falsche Version</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Offline-Stub liefert <code>reason:'offline'</code> (nicht als benigne Meldung gemappt) und eine hart codierte Version <code>0.1.0</code>.</dd>
-      <dt>Fix</dt><dd>Phase 2: <code>offline</code>-Meldung freundlich mappen; echte Build-Version anzeigen.</dd>
-      <dt>Test</dt><dd>Nach Phase 2: Pill zeigt aktuelle Version + neutralen Offline-Hinweis statt Fehler.</dd>
+      <dt>Fix</dt><dd><code>offline</code>-Meldung freundlich gemappt; echte Build-Version (aus package.json) angezeigt. <code>G60-4</code>.</dd>
+      <dt>Test</dt><dd>Pill zeigt aktuelle Version + neutralen Offline-Hinweis statt Fehler.</dd>
     </dl>
   </div>
 
   <h2>Einstellungen</h2>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Scroll-Position bei Breadcrumb-Zurueck verloren</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Scroll-Position bei Breadcrumb-Zurueck verloren</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Unterseiten sind eigene Routes; Breadcrumb ist ein normaler Link -> SvelteKit scrollt nach oben; keine Scroll-Wiederherstellung.</dd>
-      <dt>Fix</dt><dd>Phase 2: <code>snapshot</code>/<code>history.back()</code> fuer Scroll-Erhalt.</dd>
-      <dt>Test</dt><dd>Nach Phase 2: Zurueck ueber Breadcrumb behaelt die Scroll-Position.</dd>
+      <dt>Fix</dt><dd>Breadcrumb nutzt <code>history.back()</code> -> SvelteKit-Scroll-Restore. <code>G60-5</code>.</dd>
+      <dt>Test</dt><dd>Zurueck ueber Breadcrumb behaelt die Scroll-Position.</dd>
     </dl>
   </div>
 
@@ -128,20 +127,20 @@
   </div>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> „Sync in Vorbereitung"-Karte sieht wie Textwueste aus</h3>
+    <h3><span class="tag ok">BEHOBEN</span> „Sync in Vorbereitung"-Karte sieht wie Textwueste aus</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Cross-Component Scope-Leakage: die Komponente nutzt Parent-CSS-Klassen, die Svelte-Scoping nicht durchreicht. Speichern warf zusaetzlich „Not found".</dd>
-      <dt>Fix</dt><dd>„Not found" ist BEHOBEN (routeApp <code>settings/sync</code>-Zweig, <code>G59-4</code>). Die Darstellung folgt in Phase 2 (globale Primitiven).</dd>
-      <dt>Test</dt><dd>Jetzt: Speichern der Sync-Karte wirft keinen „Not found" mehr. Nach Phase 2: Karte korrekt gestylt.</dd>
+      <dt>Fix</dt><dd>„Not found" behoben (routeApp <code>settings/sync</code>-Zweig, <code>G59-4</code>). Darstellung ueber globale Control-Primitiven in <code>app.css</code> (Scope-Leakage behoben). <code>G60-2</code>.</dd>
+      <dt>Test</dt><dd>Sync-Karte korrekt gestylt (nicht mehr wie Textwueste); Speichern ohne „Not found".</dd>
     </dl>
   </div>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Gefahrenzone-Modals: Buttons ausserhalb/abgeschnitten</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Gefahrenzone-Modals: Buttons ausserhalb/abgeschnitten</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Modal-Footer nutzt Parent-Klassen (Scope-Leakage) + fehlendes <code>max-height/overflow</code>.</dd>
-      <dt>Fix</dt><dd>Funktion BEHOBEN (Werksreset A/B/C laeuft on-device, <code>G59-4/5</code>); Darstellung in Phase 2.</dd>
-      <dt>Test</dt><dd>Jetzt: Werksreset A/B/C mit korrekter Phrase fuehrt aus (Stufe C stellt Kategorien/Naehrwerte wieder her). Nach Phase 2: Modal-Buttons korrekt im Rahmen.</dd>
+      <dt>Fix</dt><dd>Funktion behoben (Werksreset A/B/C laeuft on-device, <code>G59-4/5</code>); Modal-Footer-Buttons ueber globale Primitiven gestylt (Scope-Leakage behoben). <code>G60-2</code>.</dd>
+      <dt>Test</dt><dd>Werksreset A/B/C mit korrekter Phrase fuehrt aus (Stufe C stellt Kategorien/Naehrwerte wieder her); Modal-Buttons korrekt im Rahmen.</dd>
     </dl>
   </div>
 
@@ -179,7 +178,7 @@
     <dl class="grid">
       <dt>Ursache</dt><dd>ROOT A (Produkt-Update).</dd>
       <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Standard-Einheit (Flasche->Glas) und Gebinde aendern — ok. (Doppelte Einheiten-Anzeige selbst = Phase 2.)</dd>
+      <dt>Test</dt><dd>Standard-Einheit (Flasche->Glas) und Gebinde aendern — ok. (Doppelte Einheiten-Anzeige separat behoben, s.o.)</dd>
     </dl>
   </div>
 
@@ -231,11 +230,11 @@
   </div>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Raum-Anlegen/-Bearbeiten: Eingabemaske zu schmal / laeuft aus dem Screen</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Raum-Anlegen/-Bearbeiten: Eingabemaske zu schmal / laeuft aus dem Screen</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Fehlende mobile Breakpoints (Inline-Formular stackt nicht; Buttons/Selects verdraengen das Textfeld).</dd>
-      <dt>Fix</dt><dd>Phase 2: mobile Layouts + einheitliche Feldbreiten.</dd>
-      <dt>Test</dt><dd>Nach Phase 2: Textfeld voll breit, Buttons erreichbar, kein Horizontal-Scroll.</dd>
+      <dt>Fix</dt><dd>Mobile Breakpoints: Add-/Inline-Edit-Masken stapeln, Textfeld voll breit. <code>G60-2</code>.</dd>
+      <dt>Test</dt><dd>Textfeld voll breit, Buttons erreichbar, kein Horizontal-Scroll.</dd>
     </dl>
   </div>
 
@@ -251,22 +250,22 @@
   </div>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Globus-Karte mit „Preise abrufen" laeuft aus dem Card-Rahmen</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Globus-Karte mit „Preise abrufen" laeuft aus dem Card-Rahmen</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>3-Button-Cluster bricht erst zu spaet um (mobile Breakpoint).</dd>
-      <dt>Fix</dt><dd>Phase 2: frueheres Umbrechen / Layout.</dd>
-      <dt>Test</dt><dd>Nach Phase 2: Buttons bleiben im Kartenrahmen.</dd>
+      <dt>Fix</dt><dd>Button-Cluster darf umbrechen (flex-wrap) statt ueberlaufen. <code>G60-2</code>.</dd>
+      <dt>Test</dt><dd>Buttons bleiben im Kartenrahmen.</dd>
     </dl>
   </div>
 
   <h2>Einkaufsliste</h2>
 
   <div class="item">
-    <h3><span class="tag pend">PHASE 2</span> Zeilen-Formatierung ineinandergeschoben + uneinheitliche Feld-/Button-Groessen</h3>
+    <h3><span class="tag ok">BEHOBEN</span> Zeilen-Formatierung ineinandergeschoben + uneinheitliche Feld-/Button-Groessen</h3>
     <dl class="grid">
       <dt>Ursache</dt><dd>Desktop-Zeilenlayout ohne mobilen Breakpoint; kein gemeinsames Control-Design-System.</dd>
-      <dt>Fix</dt><dd>Phase 2: Zeilen stacken auf schmalem Screen + globale, einheitliche Primitiven (Buttons/Felder/Checkboxen).</dd>
-      <dt>Test</dt><dd>Nach Phase 2: Name/Menge/Buttons klar getrennt; App-weit einheitliche Bedienelemente.</dd>
+      <dt>Fix</dt><dd>Mobile Breakpoint: Zeile als Grid, Aktionen stacken unter Name/Menge; globale Control-Primitiven. <code>G60-2</code>.</dd>
+      <dt>Test</dt><dd>Name/Menge/Buttons klar getrennt; einheitlichere Bedienelemente ueber globale Primitiven.</dd>
     </dl>
   </div>
 

@@ -1,5 +1,29 @@
 @import 'tailwindcss';
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Schriften LOKAL gebuendelt (static/fonts) statt Remote-@import. Der Capacitor-
+   WebView hat offline keinen Netzzugang -> ein Google-Fonts-@import wuerde tot
+   laufen und den Wordmark/Drawer auf System-Fallback degradieren. Sora/Inter
+   sind Variable Fonts (wght-Achse), ein File deckt alle Gewichte ab. */
+@font-face {
+  font-family: 'Sora';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/sora-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/jetbrainsmono-latin.woff2') format('woff2');
+}
 
 /* ============================================================
    STOQR DESIGN TOKEN SYSTEM
@@ -304,7 +328,86 @@ body {
   color: var(--color-text-inverse);
 }
 
-/* ── Dark-Mode: native Form-Controls sichtbar machen ──────────────────────── */
+/* ============================================================
+   GLOBALE CONTROL-PRIMITIVEN (Design-System-Fallback)
+   ============================================================
+   Diese Klassen existierten bisher NUR in den scoped <style>-Bloecken
+   einzelner Seiten. Wird eine Komponente (z.B. SyncSettings) oder ein in eine
+   andere Komponente projizierter Slot/Snippet (z.B. der Modal-Footer der
+   Danger-Zone) mit denselben Klassen gerendert, greift Svelte-Scoping NICHT ->
+   der Inhalt erscheint unstyled (Textwueste / Buttons ausserhalb des Modals).
+   Diese globalen Definitionen sind der Fallback. Seiten mit eigener scoped
+   Definition ueberschreiben sie dank hoeherer Attribut-Selektor-Spezifitaet
+   weiterhin — die Optik bestehender Seiten aendert sich also nicht. */
+
+.settings-section {
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+.section-header { margin-bottom: var(--space-6); }
+.section-title {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700;
+  color: var(--color-text-primary); margin: 0 0 var(--space-2); flex-wrap: wrap;
+}
+.section-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: var(--radius-md);
+  background-color: var(--color-primary-subtle); color: var(--color-primary); flex-shrink: 0;
+}
+.section-desc { font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0; line-height: 1.6; }
+
+.field { display: flex; flex-direction: column; gap: var(--space-1); }
+.label { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); font-weight: 600; color: var(--color-text-secondary); }
+.field-hint { font-size: var(--text-xs); color: var(--color-text-muted); margin: 0; line-height: 1.5; }
+
+.input {
+  height: 40px; padding: 0 var(--space-3); border-radius: var(--radius-md);
+  border: 1px solid var(--color-border); background-color: var(--color-surface);
+  color: var(--color-text-primary); font-family: var(--font-body); font-size: var(--text-base);
+  outline: none; width: 100%; box-sizing: border-box; appearance: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.input:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 3px var(--color-primary-subtle); }
+
+.form-footer { display: flex; justify-content: flex-end; gap: var(--space-2); }
+
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 40px; padding: 0 var(--space-5); border-radius: var(--radius-md); border: none;
+  background-color: var(--color-primary); color: var(--color-text-inverse);
+  font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-danger {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-md);
+  border: 1px solid var(--color-danger, #dc2626); background: var(--color-danger, #dc2626);
+  color: #fff; font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-cancel {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-md);
+  border: 1px solid var(--color-border); background: var(--color-surface);
+  color: var(--color-text-primary); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: white; border-radius: 50%;
+  animation: spin 600ms linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   DARK-MODE FORM-CONTROLS
+   ============================================================ */
 /* Im Dark Mode faerbt der Browser den nativen Kalender-Picker (type="date")
    und andere Indikatoren dunkel → auf dunklem Grund unsichtbar. color-scheme
    weist den Browser an, die Controls dunkel zu rendern (helles Icon); der

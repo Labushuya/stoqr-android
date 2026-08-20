@@ -483,6 +483,29 @@
     .page { padding: var(--space-4) var(--space-3) var(--space-12); }
     .card { padding: var(--space-4); }
     .add-row .input:first-child { flex-basis: 100%; }
+
+    /* Zeile stapeln: Checkbox + Name/Meta oben, Aktionen in eigener Zeile
+       darunter (statt neben dem mehrzeiligen Namen -> kein Ineinanderschieben).
+       Grid: Spalte 1 = Checkbox (auto), Spalte 2 = Inhalt; Aktionen spannen
+       ueber Spalte 2 in die naechste Zeile. */
+    .item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: start;
+      column-gap: var(--space-3);
+      row-gap: var(--space-2);
+      padding: var(--space-3) 0;
+    }
+    .item-main { grid-column: 2; }
+    .item-actions {
+      grid-column: 2;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    /* Buttons in der Aktionszeile duerfen wachsen, damit sie touchbar sind. */
+    .item-actions .btn-book { flex: 1 1 auto; text-align: center; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
+    .item-actions .btn-x { flex: 0 0 auto; min-width: 36px; min-height: 36px; }
+    .item-actions .move-select { flex: 1 1 100%; height: 36px; }
   }
 
   /* ── Kosten-Schätzung (Block F) ───────────────────────────────────────── */

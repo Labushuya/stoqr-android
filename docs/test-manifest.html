@@ -953,6 +953,26 @@ const BLOCKS = [
         expect: 'Bearbeiten/Loeschen ohne Fehler; „Alles loeschen" entfernt Artikel + Bestand + Naehrwerte ohne Waisen.' },
     ]
   },
+  {
+    tag: 'G60', name: 'UI / Design-System (Smartphone-Usability)', desc: 'Ganzheitliche UI-Ueberarbeitung fuer das App-Target: (1) Schriften lokal gebuendelt (WOFF2 in static/fonts, @font-face) statt Remote-Google-Fonts-@import, der offline im WebView tot lief -> Wordmark/Drawer korrekt. (2) Gemeinsame Control-Primitiven (.input/.btn-primary/.btn-danger/.btn-cancel/.settings-section/.section-*/.field/.label/.form-footer/.spinner) global in app.css als Fallback -> behebt die Cross-Component-Scope-Leakage (SyncSettings-Karte + Reset-Modal-Footer erschienen unstyled) und vereinheitlicht Bedienelemente; seitenscoped Styles behalten Vorrang. (3) Mobile Breakpoints: Einkaufslisten-Zeile (Grid, Aktionen unter Name), Raeume Add-/Inline-Edit (stapeln, Textfeld voll breit), Maerkte-Karte (Button-Cluster flex-wrap). (4) Einheiten-Dedupe nach Symbol in getUnits (System bevorzugt). (5) Versions-Pill: offline-reason freundlich gemappt + echte Build-Version (aus package.json via vite define). (6) Scroll-Erhalt: Einstellungen-Breadcrumb nutzt history.back().',
+    items: [
+      { id: 'G60-1', title: 'Schrift + Wordmark + Drawer (offline)',
+        steps: ['App offline (WebView) oeffnen.', 'Kopfzeile „stoqr" + Hamburger-Menue pruefen.'],
+        expect: 'Wordmark in Sora-Schrift (lokal gebuendelt, kein Remote-Fetch); Hamburger oeffnet den Drawer.' },
+      { id: 'G60-2', title: 'Layout/Darstellung: Einkaufsliste, Raeume, Maerkte, Sync-Karte, Reset-Modal',
+        steps: ['Einkaufsliste auf dem Smartphone: Zeilen pruefen (Name/Menge/Buttons nicht ineinander).', 'Raeume: neuen Raum anlegen + bestehenden bearbeiten (Maske im Screen, Textfeld breit).', 'Maerkte: Globus-Karte mit „Preise abrufen" (Buttons im Kartenrahmen).', 'Einstellungen: „Sync in Vorbereitung"-Karte + Werksreset-Modal (korrekt gestylt, Buttons im Modal).'],
+        expect: 'Keine ineinandergeschobenen/abgeschnittenen Elemente; Bedienelemente einheitlicher; kein Horizontal-Scroll; Modal-Buttons im Rahmen.' },
+      { id: 'G60-3', title: 'Einheiten-Dropdown ohne Duplikate',
+        steps: ['In einem Einheiten-Select (z.B. Artikel-Standard-Einheit) die Liste oeffnen.'],
+        expect: 'Jedes Symbol (g, kg, Flasche, ...) erscheint nur EINMAL.' },
+      { id: 'G60-4', title: 'Versions-Pill',
+        steps: ['Versions-/Update-Pill in der Kopfzeile antippen.'],
+        expect: 'Zeigt die aktuelle App-Version + neutralen Offline-Hinweis (kein „Pruefung nicht moeglich"-Fehler).' },
+      { id: 'G60-5', title: 'Scroll-Position bei Breadcrumb-Zurueck',
+        steps: ['Einstellungen weit runterscrollen -> eine Unterseite oeffnen (z.B. Einheiten) -> ueber Breadcrumb zurueck.'],
+        expect: 'Die Einstellungen-Seite steht wieder an der vorigen Scroll-Position (nicht ganz oben).' },
+    ]
+  },
 ];
 
 // ── Rendering ───────────────────────────────────────────────────────────────

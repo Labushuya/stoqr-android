@@ -52,10 +52,26 @@ export async function createHousehold(
 
 export async function getUnits(householdId: string) {
   const db = getDb()
-  return db.query.units.findMany({
+  const rows = await db.query.units.findMany({
     where: (u, { or, isNull, eq }) => or(isNull(u.householdId), eq(u.householdId, householdId)),
     orderBy: (u) => [asc(u.sortOrder)],
   })
+  // Dedupe nach symbol: kollidiert eine Haushalts-Einheit mit einer System-
+  // Einheit gleichen Symbols (z.B. durch Import), erscheint das Symbol sonst
+  // DOPPELT in jedem Einheiten-Dropdown. System bevorzugen (isSystem=true /
+  // householdId=null), sonst den ersten Treffer. Behebt die sichtbare
+  // Verdopplung read-seitig, ohne Datenaenderung.
+  const bySymbol = new Map<string, (typeof rows)[number]>()
+  for (const u of rows) {
+    const existing = bySymbol.get(u.symbol)
+    if (!existing) {
+      bySymbol.set(u.symbol, u)
+    } else if (!existing.isSystem && u.isSystem) {
+      // System schlaegt Haushalt.
+      bySymbol.set(u.symbol, u)
+    }
+  }
+  return [...bySymbol.values()].sort((a, b) => a.sortOrder - b.sortOrder)
 }
 
 export async function createInvite(

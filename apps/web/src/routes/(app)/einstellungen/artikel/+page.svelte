@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types'
   import { apiFetch } from '$lib/client/api'
+  import { backToSettings } from '$lib/client/back-to-settings'
   import { toast } from '$lib/stores/toast'
   import ConfirmModal from '$lib/components/ConfirmModal.svelte'
   import ProductForm from '$lib/components/ProductForm.svelte'
@@ -140,7 +141,7 @@
   <!-- ── Breadcrumb ─────────────────────────────────────────────────────────── -->
 
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/einstellungen" class="breadcrumb-back">
+    <a href="/einstellungen" class="breadcrumb-back" onclick={backToSettings}>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>

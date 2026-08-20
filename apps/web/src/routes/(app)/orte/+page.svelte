@@ -1338,5 +1338,39 @@
       min-width: 0;
       flex: 1 1 auto;
     }
+
+    /* Name-Feld voll breit, damit es nicht auf 2 Buchstaben zusammenfaellt;
+       Icon-Feld + Aktionen wandern in die naechste Zeile. */
+    .add-form .field--grow {
+      flex: 1 1 100%;
+    }
+    .add-form .field--actions {
+      flex: 1 1 100%;
+    }
+    .add-form .field--actions .btn-save,
+    .add-form .field--actions .btn-cancel {
+      flex: 1 1 auto;
+    }
+
+    /* Inline-Edit (bestehenden Raum/Lager bearbeiten): NICHT mehr neben dem
+       flex:1-Toggle in einer nicht-umbrechenden Zeile -> stapeln, damit die
+       Speichern/Abbrechen-Buttons nicht aus dem Screen laufen und das Textfeld
+       volle Breite bekommt. */
+    .location-header {
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .inline-edit {
+      flex: 1 1 100%;
+      flex-wrap: wrap;
+    }
+    .inline-edit .input {
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+    .inline-edit .btn-save,
+    .inline-edit .btn-cancel {
+      flex: 1 1 auto;
+    }
   }
 </style>

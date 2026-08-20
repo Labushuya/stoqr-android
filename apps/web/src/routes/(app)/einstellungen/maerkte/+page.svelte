@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { PageData } from './$types'
   import { apiFetch } from '$lib/client/api'
+  import { backToSettings } from '$lib/client/back-to-settings'
   import { toast } from '$lib/stores/toast'
   import AddressAutocomplete from '$lib/components/AddressAutocomplete.svelte'
   import type { GeoSuggestion } from '$lib/utils/geo'
@@ -343,7 +344,7 @@
   <!-- ── Breadcrumb ─────────────────────────────────────────────────────────── -->
 
   <nav class="breadcrumb" aria-label="Breadcrumb">
-    <a href="/einstellungen" class="breadcrumb-back">
+    <a href="/einstellungen" class="breadcrumb-back" onclick={backToSettings}>
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -896,6 +897,10 @@
     align-items: center;
     gap: var(--space-2);
     flex-shrink: 0;
+    /* Nicht ueber den Kartenrand laufen: der Button-Cluster (inkl. optionalem
+       "Preise abrufen") darf umbrechen, statt zu ueberlaufen. */
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   /* ── Inline edit form ─────────────────────────────────────────────────── */

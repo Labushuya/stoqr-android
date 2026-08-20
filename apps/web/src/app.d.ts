@@ -6,6 +6,8 @@ declare global {
   // import/export-Zeilen ein Modul, ein top-level `declare const` waere sonst
   // modul-lokal und global nicht sichtbar (TS2304 an den Nutzungsstellen).
   const __STOQR_TARGET__: 'node' | 'app'
+  // App-Version (Vite `define`, aus package.json). Fuer die Versions-Pill.
+  const __STOQR_VERSION__: string
 
   namespace App {
     interface Locals {

@@ -48,6 +48,8 @@
 
   // Uebersetzt den reason des /api/version-Endpunkts in eine verstaendliche Ursache.
   function updateCheckReason(reason?: string): string {
+    // App-Target (offline, kein Server): kein Fehler, sondern Bauart-bedingt.
+    if (reason === 'offline') return 'Offline-App — Updates kommen ueber neue APK-Releases'
     if (reason === 'fetch-failed') return 'Prüfung nicht möglich — kein Internetzugang zu GitHub'
     if (reason === 'no-build-sha') return 'Prüfung nicht möglich — Build ohne Versions-SHA'
     if (reason?.startsWith('github-')) {

@@ -1216,9 +1216,10 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
     // Netz → statischer Fallback, updateAvailable nicht pruefbar.)
     // -----------------------------------------------------------------------
     if (r === 'version' && method === 'GET') {
+      const v = `v${__STOQR_VERSION__}`
       return jsonRes({
-        current: { gitSha: '0.1.0', gitShaShort: '0.1.0', gitRef: 'app', buildTime: 'unknown' },
-        version: '0.1.0',
+        current: { gitSha: v, gitShaShort: v, gitRef: 'app', buildTime: 'unknown' },
+        version: __STOQR_VERSION__,
         latest: null,
         updateAvailable: null,
         reason: 'offline',
