@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { nutrientTypes, productNutrients } from '@stoqr/db'
+import { nutrientTypes, productNutrients } from '$data/schema'
 import { and, asc, eq } from 'drizzle-orm'
 
 // ---------------------------------------------------------------------------

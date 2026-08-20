@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { productStores } from '@stoqr/db'
+import { productStores } from '$data/schema'
 import { eq } from 'drizzle-orm'
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>stoqr Android — Regressions-Report & Test-Leitfaden</title>
+  <style>
+    :root { --ok:#166534; --okbg:#dcfce7; --pend:#9a3412; --pendbg:#ffedd5; --line:#e5e0d5; --ink:#2b2b2b; --muted:#6b6b6b; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background:#f7f3ec; margin:0; padding:1.5rem; line-height:1.5; }
+    h1 { font-size:1.5rem; margin:0 0 .25rem; }
+    h2 { font-size:1.05rem; margin:2rem 0 .5rem; border-bottom:2px solid var(--line); padding-bottom:.3rem; }
+    .sub { color:var(--muted); margin:0 0 1rem; font-size:.9rem; }
+    .item { border:1px solid var(--line); border-radius:10px; background:#fff; padding:.85rem 1rem; margin:.6rem 0; }
+    .item h3 { margin:0 0 .35rem; font-size:.98rem; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+    .tag { font-size:.7rem; font-weight:700; padding:.12rem .5rem; border-radius:999px; letter-spacing:.02em; }
+    .tag.ok { background:var(--okbg); color:var(--ok); }
+    .tag.pend { background:var(--pendbg); color:var(--pend); }
+    .grid { display:grid; grid-template-columns: max-content 1fr; gap:.2rem .8rem; font-size:.9rem; margin-top:.35rem; }
+    .grid dt { color:var(--muted); font-weight:600; }
+    .grid dd { margin:0; }
+    code { background:#f0ebe1; padding:.05rem .3rem; border-radius:4px; font-size:.85em; }
+    .legend { font-size:.85rem; color:var(--muted); margin-bottom:1rem; }
+    .g { color:var(--ok); font-weight:600; }
+  </style>
+</head>
+<body>
+  <h1>stoqr Android — Regressions-Report &amp; Test-Leitfaden</h1>
+  <p class="sub">Deine gemeldeten Beobachtungen (Test der Version v0.2.6), die jeweilige Ursache, der durchgefuehrte Fix und wie/wo zu testen ist. Stand: Phase 1 (Datenpfad) abgeschlossen; Phase 2 (UI/Design-System) folgt.</p>
+  <p class="legend">
+    <span class="tag ok">BEHOBEN</span> in Phase 1 (Datenschicht) &nbsp;·&nbsp;
+    <span class="tag pend">PHASE 2</span> UI/Usability, folgt &nbsp;·&nbsp;
+    Detaillierte technische Testfaelle: <code>docs/test-manifest.html</code> Bloecke <b>G59</b> (Schreiboperationen), G56–G58.
+  </p>
+
+  <h2>Generell</h2>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> App-Logo &amp; Drawer fehlen</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Die Schrift (Sora/Inter) wird per Remote-<code>@import</code> von Google Fonts geladen — offline im WebView tot, daher degradiert der „stoqr"-Schriftzug. Der Drawer selbst ist korrekt verdrahtet.</dd>
+      <dt>Fix</dt><dd>Phase 2: Schriften lokal buendeln (<code>@font-face</code> + WOFF2 in <code>static/</code>).</dd>
+      <dt>Test</dt><dd>Nach Phase-2-Build: Schriftzug „stoqr" in der gewohnten Schrift; Hamburger-Menue oeffnet den Drawer.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Einheiten in Select-Feldern doppelt</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Keine Eindeutigkeit auf <code>units.symbol</code>; Seed-System-Einheiten und importierte/zugefuegte Haushalts-Einheiten mit gleichem Symbol koexistieren; <code>getUnits</code> merged ohne Dedupe.</dd>
+      <dt>Fix</dt><dd>Phase 2: Dedupe in <code>getUnits</code> (System bevorzugt) + Symbol-Kollisionsschutz beim Anlegen/Import.</dd>
+      <dt>Test</dt><dd>Nach Phase 2: in jedem Einheiten-Dropdown jedes Symbol nur EINMAL.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Pruefungs-Pill „Pruefung nicht moeglich" / falsche Version</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Offline-Stub liefert <code>reason:'offline'</code> (nicht als benigne Meldung gemappt) und eine hart codierte Version <code>0.1.0</code>.</dd>
+      <dt>Fix</dt><dd>Phase 2: <code>offline</code>-Meldung freundlich mappen; echte Build-Version anzeigen.</dd>
+      <dt>Test</dt><dd>Nach Phase 2: Pill zeigt aktuelle Version + neutralen Offline-Hinweis statt Fehler.</dd>
+    </dl>
+  </div>
+
+  <h2>Einstellungen</h2>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Scroll-Position bei Breadcrumb-Zurueck verloren</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Unterseiten sind eigene Routes; Breadcrumb ist ein normaler Link -> SvelteKit scrollt nach oben; keine Scroll-Wiederherstellung.</dd>
+      <dt>Fix</dt><dd>Phase 2: <code>snapshot</code>/<code>history.back()</code> fuer Scroll-Erhalt.</dd>
+      <dt>Test</dt><dd>Nach Phase 2: Zurueck ueber Breadcrumb behaelt die Scroll-Position.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Artikel anlegen/bearbeiten scheitert still</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A: geteilte Query-Fns nutzten Postgres-Tabellen -> <code>gen_random_uuid()</code>/<code>now()</code> gegen SQLite.</dd>
+      <dt>Fix</dt><dd>Schema-Provider (App nutzt SQLite-Tabellen) + id-Default. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Neuen Artikel anlegen; bestehenden bearbeiten (inkl. Pfand). Speichern ohne Fehler, Werte sichtbar.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Neue Kategorie (Haupt/Unter) wirft SQL-Fehler</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-2</code>.</dd>
+      <dt>Test</dt><dd>Haupt- und Unterkategorie anlegen — beide erscheinen ohne Fehler.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Kategorie-Zuordnung: neue Regel wirft SQL-Fehler</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>, <code>now()</code>).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-2</code>.</dd>
+      <dt>Test</dt><dd>Regel „Globus-Katalog: Getraenke -> Getraenke" anlegen — ok.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> MHD-Ampel speichern wirft 500 / „Unexpected token &lt;"</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT B: Server-Form-Action laeuft im App-SPA nicht -> 404-HTML.</dd>
+      <dt>Fix</dt><dd>App-Zweig <code>apiFetch -> /api/settings/expiry-tolerance</code>. <code>G59-4</code>.</dd>
+      <dt>Test</dt><dd>Schwellen aendern + speichern; kein 500; Werte bleiben nach Neuladen.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> MHD-Toleranz nach Kategorie nicht aenderbar</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT B: Server-Form-Action ohne App-Pfad -> stiller Fehlschlag.</dd>
+      <dt>Fix</dt><dd>App-Zweig <code>PATCH /api/categories/:id</code> (defaultExpiryToleranceDays). <code>G59-4</code>.</dd>
+      <dt>Test</dt><dd>Toleranz einer Kategorie tippen + speichern — Wert uebernommen.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Katalog-Sicherung: „Offline: nicht verfuegbar"</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Erwartet: Katalog-Sync ist ein reiner Online-Netzabruf; offline (App) bewusst degradiert. Kein Fehler, sondern korrektes Verhalten.</dd>
+      <dt>Fix</dt><dd>Keiner noetig (die Meldung ist gewollt; der Preis-Abruf-Schalter ist eine getrennte, on-device gespeicherte Praeferenz).</dd>
+      <dt>Test</dt><dd>Meldung bleibt — das ist beabsichtigt, solange die App offline arbeitet.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> „Sync in Vorbereitung"-Karte sieht wie Textwueste aus</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Cross-Component Scope-Leakage: die Komponente nutzt Parent-CSS-Klassen, die Svelte-Scoping nicht durchreicht. Speichern warf zusaetzlich „Not found".</dd>
+      <dt>Fix</dt><dd>„Not found" ist BEHOBEN (routeApp <code>settings/sync</code>-Zweig, <code>G59-4</code>). Die Darstellung folgt in Phase 2 (globale Primitiven).</dd>
+      <dt>Test</dt><dd>Jetzt: Speichern der Sync-Karte wirft keinen „Not found" mehr. Nach Phase 2: Karte korrekt gestylt.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Gefahrenzone-Modals: Buttons ausserhalb/abgeschnitten</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Modal-Footer nutzt Parent-Klassen (Scope-Leakage) + fehlendes <code>max-height/overflow</code>.</dd>
+      <dt>Fix</dt><dd>Funktion BEHOBEN (Werksreset A/B/C laeuft on-device, <code>G59-4/5</code>); Darstellung in Phase 2.</dd>
+      <dt>Test</dt><dd>Jetzt: Werksreset A/B/C mit korrekter Phrase fuehrt aus (Stufe C stellt Kategorien/Naehrwerte wieder her). Nach Phase 2: Modal-Buttons korrekt im Rahmen.</dd>
+    </dl>
+  </div>
+
+  <h2>Inventar (Artikel-Detailseite)</h2>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Pfand setzen wirft SQL-Fehler (product_field_sources)</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>, <code>now()</code>).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Bier-Artikel: Pfand 16 ct setzen + speichern — ok.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Bestandskorrektur (neue Zeile) wirft SQL-Fehler</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>inventory_items</code> insert).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Bestand von 4 auf 5 (neue Zeile) korrigieren — ok; auch bestehende Zeilen anpassen.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Soll-/Mindestbestand setzen wirft SQL-Fehler</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>stock_targets</code> upsert).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Soll 2 / Mindest 1 setzen (mit + ohne Mindestbestand) — ok.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Standard-Einheit / Gebinde aendern scheitert</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (Produkt-Update).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Standard-Einheit (Flasche->Glas) und Gebinde aendern — ok. (Doppelte Einheiten-Anzeige selbst = Phase 2.)</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Markt-Zuordnung scheitert</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (Junction-Insert).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Artikel einem Markt zuordnen + speichern — ok.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Preis-Aenderung wirft SQL-Fehler (im Modal)</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>product_prices</code> insert, transaktional).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
+      <dt>Test</dt><dd>Preis mit „reduziert"/„Dauerpreis"/„enthaelt Pfand"/Kategorie erfassen — ok.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Naehrwerte von OpenFoodFacts abrufen: „nicht gefunden"</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Erwartet: OFF-Abruf ist ein Online-Netzabruf; offline liefert die App bewusst „nicht gefunden". Kein Datenbank-Fehler.</dd>
+      <dt>Fix</dt><dd>Keiner noetig (Offline-Verhalten). Manuell erfasste Naehrwerte funktionieren.</dd>
+      <dt>Test</dt><dd>Naehrwerte manuell eintragen + speichern — ok (nutzt ROOT-A-Fix).</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> „Alles loeschen" (Artikel + Bestand)</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT B: Server-Form-Action ohne App-Pfad.</dd>
+      <dt>Fix</dt><dd>App-Zweig <code>POST /api/products/:id/delete-all</code> (inkl. expliziter Kinder-Loeschung). <code>G59-5</code>.</dd>
+      <dt>Test</dt><dd>„Alles loeschen" auf einer Detailseite — Artikel + Bestand + Naehrwerte weg, keine Fehler.</dd>
+    </dl>
+  </div>
+
+  <h2>Raeume</h2>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Neuen Raum / Lagerort anlegen: „Fehler beim Hinzufuegen"</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>).</dd>
+      <dt>Fix</dt><dd>Schema-Provider. <code>G59-3</code>.</dd>
+      <dt>Test</dt><dd>Raum, Lagerort und Fach anlegen — alle drei ohne Fehler.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Raum-Anlegen/-Bearbeiten: Eingabemaske zu schmal / laeuft aus dem Screen</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Fehlende mobile Breakpoints (Inline-Formular stackt nicht; Buttons/Selects verdraengen das Textfeld).</dd>
+      <dt>Fix</dt><dd>Phase 2: mobile Layouts + einheitliche Feldbreiten.</dd>
+      <dt>Test</dt><dd>Nach Phase 2: Textfeld voll breit, Buttons erreichbar, kein Horizontal-Scroll.</dd>
+    </dl>
+  </div>
+
+  <h2>Maerkte</h2>
+
+  <div class="item">
+    <h3><span class="tag ok">BEHOBEN</span> Markt bearbeiten/loeschen (funktional)</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>ROOT B: rohe <code>fetch('?/editStore'|'?/deleteStore')</code> Server-Action.</dd>
+      <dt>Fix</dt><dd>App-Zweig <code>PATCH/DELETE /api/stores/:id</code>. <code>G59-5</code>.</dd>
+      <dt>Test</dt><dd>Markt bearbeiten + (falls unreferenziert) loeschen — ok.</dd>
+    </dl>
+  </div>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Globus-Karte mit „Preise abrufen" laeuft aus dem Card-Rahmen</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>3-Button-Cluster bricht erst zu spaet um (mobile Breakpoint).</dd>
+      <dt>Fix</dt><dd>Phase 2: frueheres Umbrechen / Layout.</dd>
+      <dt>Test</dt><dd>Nach Phase 2: Buttons bleiben im Kartenrahmen.</dd>
+    </dl>
+  </div>
+
+  <h2>Einkaufsliste</h2>
+
+  <div class="item">
+    <h3><span class="tag pend">PHASE 2</span> Zeilen-Formatierung ineinandergeschoben + uneinheitliche Feld-/Button-Groessen</h3>
+    <dl class="grid">
+      <dt>Ursache</dt><dd>Desktop-Zeilenlayout ohne mobilen Breakpoint; kein gemeinsames Control-Design-System.</dd>
+      <dt>Fix</dt><dd>Phase 2: Zeilen stacken auf schmalem Screen + globale, einheitliche Primitiven (Buttons/Felder/Checkboxen).</dd>
+      <dt>Test</dt><dd>Nach Phase 2: Name/Menge/Buttons klar getrennt; App-weit einheitliche Bedienelemente.</dd>
+    </dl>
+  </div>
+
+  <h2>So testest Du die Phase-1-Fixes (jetzt)</h2>
+  <div class="item">
+    <p style="margin:.2rem 0;">Sobald das naechste App-Release installiert ist, die mit <span class="g">BEHOBEN</span> markierten Punkte durchgehen — alle Schreib-Aktionen sollten ohne SQL-Fehler speichern. Empfohlene Reihenfolge:</p>
+    <ol style="margin:.4rem 0 0; padding-left:1.2rem; font-size:.92rem;">
+      <li>Einstellungen &rarr; Danger-Zone &rarr; Werksreset Stufe C (frischer, konsistenter Stand).</li>
+      <li>Raum + Lagerort + Fach anlegen.</li>
+      <li>Kategorie (Haupt + Unter) + Kategorie-Zuordnungsregel anlegen.</li>
+      <li>Artikel anlegen, Pfand setzen, Bestand korrigieren, Soll-/Mindestbestand, Markt-Zuordnung, Preis erfassen.</li>
+      <li>MHD-Ampel + MHD-Toleranz je Kategorie speichern; Preis-Abruf-Schalter; Sync-Karte speichern.</li>
+      <li>„Alles loeschen" auf einem Testartikel.</li>
+    </ol>
+    <p style="margin:.6rem 0 0; font-size:.85rem; color:var(--muted);">Technische Detail-Testfaelle mit Schritten &amp; Erwartung: <code>docs/test-manifest.html</code> &rarr; Block <b>G59</b> (und G56–G58 fuer die vorherigen Fixes).</p>
+  </div>
+</body>
+</html>

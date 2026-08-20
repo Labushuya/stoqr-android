@@ -1097,8 +1097,23 @@
     goto('/inventar')
   }
 
-  // deleteAll uses the server action (transaction: product + all stock)
-  function submitDeleteAll() {
+  // deleteAll: Pi nutzt die Server-Action (Form-POST); App hat keinen Server ->
+  // per apiFetch->routeApp (POST /api/products/:id/delete-all) loeschen.
+  async function submitDeleteAll() {
+    if (__STOQR_TARGET__ === 'app') {
+      try {
+        const res = await apiFetch(`/api/products/${product.id}/delete-all`, { method: 'POST' })
+        if (!res.ok && res.status !== 204) {
+          const b = (await res.json().catch(() => ({}))) as { error?: string }
+          showToast(String(b?.error ?? 'Fehler beim Löschen'), 'error')
+          return
+        }
+        goto('/inventar')
+      } catch {
+        showToast('Fehler beim Löschen', 'error')
+      }
+      return
+    }
     ;(document.getElementById('frm-del-all') as HTMLFormElement)?.submit()
   }
 </script>

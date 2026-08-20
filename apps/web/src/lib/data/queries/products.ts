@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { products, inventoryItems, categories, productFieldSources } from '@stoqr/db'
+import { products, inventoryItems, categories, productFieldSources, productNutrients, productStores, productPrices, stockTargets } from '$data/schema'
 import { eq, asc, desc, and, ilike } from 'drizzle-orm'
 import { getUnits } from './households'
 import { buildUnitMetaMap, aggregateStock, buildPackSize, type StockTotals } from '$lib/utils/stock'
@@ -368,6 +368,45 @@ export async function deleteProduct(id: string) {
 		.where(eq(products.id, id))
 		.returning({ id: products.id });
 	return record ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Produkt inkl. Bestand + aller abhaengigen Kinder loeschen ("Alles loeschen").
+// ---------------------------------------------------------------------------
+// Ersetzt die frueher rein auf ON DELETE CASCADE bauende Server-Action. Auf der
+// App ist PRAGMA foreign_keys AUS -> Cascade feuert nicht -> product_nutrients/
+// product_field_sources/product_stores/product_prices/stock_targets muessen
+// EXPLIZIT (children-first) geloescht werden, sonst bleiben Waisen bzw. der
+// erneute Insert kollidiert. Auf dem Pi (FKs aktiv) sind die zusaetzlichen
+// Deletes harmlos (dann bereits leer). Transaktional.
+export async function deleteProductWithInventory(productId: string, householdId: string) {
+	const db = getDb();
+	const item = await db.query.inventoryItems.findFirst({
+		where: (i, { and, eq }) => and(eq(i.productId, productId), eq(i.householdId, householdId)),
+		columns: { id: true },
+	});
+	// (item kann null sein, wenn kein Bestand mehr existiert — Produkt trotzdem loeschen.)
+	void item;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	await db.transaction(async (tx: any) => {
+		await tx.delete(inventoryItems).where(
+			and(eq(inventoryItems.productId, productId), eq(inventoryItems.householdId, householdId)),
+		);
+		await tx.delete(stockTargets).where(
+			and(eq(stockTargets.productId, productId), eq(stockTargets.householdId, householdId)),
+		);
+		await tx.delete(productPrices).where(
+			and(eq(productPrices.productId, productId), eq(productPrices.householdId, householdId)),
+		);
+		await tx.delete(productStores).where(
+			and(eq(productStores.productId, productId), eq(productStores.householdId, householdId)),
+		);
+		// Cascade-Kinder ohne household_id explizit (App: FKs aus).
+		await tx.delete(productNutrients).where(eq(productNutrients.productId, productId));
+		await tx.delete(productFieldSources).where(eq(productFieldSources.productId, productId));
+		await tx.delete(products).where(eq(products.id, productId));
+	});
+	return { id: productId };
 }
 
 // ---------------------------------------------------------------------------

@@ -37,6 +37,7 @@ import * as productStoresQ from '$data/queries/product-stores'
 import * as shoppingListQ from '$data/queries/shopping-list'
 import * as tripsQ from '$data/queries/shopping-trips'
 import * as targetsQ from '$data/queries/stock-targets'
+import * as resetQ from '$data/queries/reset'
 import { getUnits } from '$data/queries/households'
 import {
   buildUnitMetaMap,
@@ -284,11 +285,16 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
         }
       } else {
         if (method === 'PATCH') {
-          const b = parseBody(init) as { name?: string; icon?: string; parentId?: string }
+          const b = parseBody(init) as { name?: string; icon?: string; parentId?: string; defaultExpiryToleranceDays?: number }
           if (b.name !== undefined && b.name.trim() === '') return errRes('Name darf nicht leer sein', 400)
           const before = await categoriesQ.getCategoryById(id)
           if (!before) return errRes('Not found', 404)
-          const res = await categoriesQ.updateCategory(id, { name: b.name, icon: b.icon, parentId: b.parentId })
+          const res = await categoriesQ.updateCategory(id, {
+            name: b.name,
+            icon: b.icon,
+            parentId: b.parentId,
+            defaultExpiryToleranceDays: b.defaultExpiryToleranceDays,
+          })
           if (!res.ok) {
             if (res.reason === 'cycle') return errRes(res.detail ?? 'Ungueltige Verschachtelung.', 409)
             return errRes('Not found', 404)
@@ -602,6 +608,12 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
 
       // /api/products/[id]/<sub>...
       if (id && sub) {
+        // ---- delete-all (POST): Produkt inkl. Bestand + Kinder loeschen -------
+        // App-Ersatz fuer die Server-Action deleteAll (inventar/[id]).
+        if (sub === 'delete-all' && method === 'POST') {
+          await productsQ.deleteProductWithInventory(id, hh)
+          return noContent()
+        }
         // ---- inventory-adjust (POST): Preview + Commit -----------------------
         if (sub === 'inventory-adjust' && method === 'POST') {
           const b = parseBody(init) as Record<string, any>
@@ -1235,6 +1247,98 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           set: { priceScrapeEnabled: enabled },
         })
       return jsonRes({ action: 'updatePriceScrape', success: true, enabled })
+    }
+
+    // -----------------------------------------------------------------------
+    // /api/settings/expiry-tolerance  (MHD-Ampel global, on-device)
+    // -----------------------------------------------------------------------
+    // App-Ersatz fuer die Server-Form-Action updateGlobalTolerance. Upsert der
+    // yellow/red/grace-Schwellen in expiry_config; rot<=gelb wie auf dem Pi.
+    if (r === 'settings' && seg[2] === 'expiry-tolerance') {
+      if (method !== 'PATCH' && method !== 'POST') return errRes('Method not allowed', 405)
+      const db = getSqliteDb()
+      const b = parseBody(init) as {
+        yellowDaysBefore?: unknown
+        redDaysBefore?: unknown
+        graceDaysAfter?: unknown
+      }
+      const yellowDaysBefore = Number(b.yellowDaysBefore)
+      const redDaysBefore = Number(b.redDaysBefore)
+      const graceDaysAfter = Number(b.graceDaysAfter)
+      if (
+        !Number.isInteger(yellowDaysBefore) ||
+        !Number.isInteger(redDaysBefore) ||
+        !Number.isInteger(graceDaysAfter) ||
+        yellowDaysBefore < 0 ||
+        redDaysBefore < 0 ||
+        graceDaysAfter < 0 ||
+        redDaysBefore > yellowDaysBefore
+      ) {
+        return errRes('Ungueltige Werte. Rot-Schwelle muss kleiner oder gleich Gelb-Schwelle sein.', 422)
+      }
+      const EC = sqliteSchema.expiryConfig
+      await db
+        .insert(EC)
+        .values({ id: crypto.randomUUID(), householdId: hh, yellowDaysBefore, redDaysBefore, graceDaysAfter })
+        .onConflictDoUpdate({
+          target: EC.householdId,
+          set: { yellowDaysBefore, redDaysBefore, graceDaysAfter },
+        })
+      return jsonRes({ action: 'updateGlobalTolerance', success: true })
+    }
+
+    // -----------------------------------------------------------------------
+    // /api/settings/sync  (App-Sync-Konfiguration, on-device in `meta`)
+    // -----------------------------------------------------------------------
+    // Der Pi-Endpoint ist ein Phase-1-Stub; im App-Target persistiert die
+    // gemeinsame SyncSettings-Komponente hier gegen die meta-Tabelle
+    // (key/value). leader ('app'|'pi') + piUrl. Ohne diesen Zweig lief die POST
+    // in die 404-Fallthrough ("Not found").
+    if (r === 'settings' && seg[2] === 'sync') {
+      const db = getSqliteDb()
+      const M = sqliteSchema.meta
+      if (method === 'GET') {
+        const rows = await db
+          .select({ key: M.key, value: M.value })
+          .from(M)
+          .where(inArray(M.key, ['sync.leader', 'sync.piUrl']))
+        const map = new Map(rows.map((x) => [x.key, x.value]))
+        const leader = map.get('sync.leader') === 'pi' ? 'pi' : 'app'
+        return jsonRes({ leader, piUrl: map.get('sync.piUrl') ?? '' })
+      }
+      if (method === 'POST') {
+        const b = parseBody(init) as { leader?: unknown; piUrl?: unknown }
+        const leader = b.leader === 'pi' ? 'pi' : 'app'
+        const piUrl = typeof b.piUrl === 'string' ? b.piUrl.trim() : ''
+        const upsert = async (key: string, value: string) => {
+          await db
+            .insert(M)
+            .values({ key, value })
+            .onConflictDoUpdate({ target: M.key, set: { value, updatedAt: new Date() } })
+        }
+        await upsert('sync.leader', leader)
+        await upsert('sync.piUrl', piUrl)
+        return jsonRes({ ok: true, leader, piUrl })
+      }
+      return errRes('Method not allowed', 405)
+    }
+
+    // -----------------------------------------------------------------------
+    // /api/settings/reset  (Werksreset A/B/C, on-device)
+    // -----------------------------------------------------------------------
+    // App-Ersatz fuer die Server-Form-Action resetHousehold. Phrase muss exakt
+    // zur Stufe passen (Type-to-Confirm, ASCII). Ohne Audit (routeApp-Konvention).
+    if (r === 'settings' && seg[2] === 'reset' && method === 'POST') {
+      const b = parseBody(init) as { stage?: unknown; confirm?: unknown }
+      const stage = String(b.stage ?? '')
+      const confirm = String(b.confirm ?? '')
+      const expected = resetQ.RESET_PHRASES[stage]
+      if (!expected) return errRes('Unbekannte Reset-Stufe.', 422)
+      if (confirm !== expected) {
+        return errRes('Bestaetigungstext stimmt nicht. Bitte die angezeigte Phrase exakt eintippen.', 422)
+      }
+      await resetQ.resetHousehold(hh, stage as resetQ.ResetStage)
+      return jsonRes({ action: 'resetHousehold', success: true, stage })
     }
 
     // -----------------------------------------------------------------------

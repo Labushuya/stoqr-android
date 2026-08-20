@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { auditLog, users } from '@stoqr/db'
+import { auditLog, users } from '$data/schema'
 import { and, desc, eq } from 'drizzle-orm'
 
 // ---------------------------------------------------------------------------

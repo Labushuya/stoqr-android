@@ -33,6 +33,36 @@
   let graceDays = $state(data.expiryConfig.graceDaysAfter)
   let globalSaving = $state(false)
 
+  // App-Target: die MHD-Ampel-Form-Action laeuft ohne Server nicht. Im App-Zweig
+  // den Submit abfangen und per apiFetch->routeApp persistieren (Pi behaelt die
+  // Form-Action). preventDefault verhindert die (im SPA scheiternde) Navigation.
+  async function submitGlobalToleranceApp(e: SubmitEvent) {
+    e.preventDefault()
+    globalSaving = true
+    try {
+      const res = await apiFetch('/api/settings/expiry-tolerance', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          yellowDaysBefore: yellowDays,
+          redDaysBefore: redDays,
+          graceDaysAfter: graceDays,
+        }),
+      })
+      if (!res.ok) {
+        const b = (await res.json().catch(() => ({}))) as { error?: string }
+        toast.error(String(b?.error ?? 'MHD-Schwellen konnten nicht gespeichert werden.'))
+        return
+      }
+      toast.success('MHD-Schwellen gespeichert.')
+      await invalidateAll()
+    } catch {
+      toast.error('Speichern fehlgeschlagen.')
+    } finally {
+      globalSaving = false
+    }
+  }
+
   // ── Online-Preis-Abruf-Schalter (G4) ────────────────────────────────────────
   // svelte-ignore state_referenced_locally
   let priceScrapeEnabled = $state(data.priceScrapeEnabled ?? false)
@@ -303,6 +333,34 @@
   let editingTolerance = $state(0)
   let categorySaving = $state(false)
 
+  // App-Target: die per-Kategorie MHD-Toleranz-Form-Action laeuft ohne Server
+  // nicht. Im App-Zweig den Submit abfangen und per apiFetch->routeApp
+  // (PATCH /api/categories/:id, defaultExpiryToleranceDays) persistieren.
+  async function submitCategoryToleranceApp(e: SubmitEvent, catId: string) {
+    e.preventDefault()
+    categorySaving = true
+    try {
+      const res = await apiFetch(`/api/categories/${catId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ defaultExpiryToleranceDays: editingTolerance }),
+      })
+      if (!res.ok) {
+        const b = (await res.json().catch(() => ({}))) as { error?: string }
+        toast.error(String(b?.error ?? 'Toleranz konnte nicht gespeichert werden.'))
+        return
+      }
+      categoryRows = categoryRows.map((c) =>
+        c.id === catId ? { ...c, defaultExpiryToleranceDays: editingTolerance } : c,
+      )
+      editingCategoryId = null
+    } catch {
+      toast.error('Speichern fehlgeschlagen.')
+    } finally {
+      categorySaving = false
+    }
+  }
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   function startEditCategory(cat: Category) {
@@ -383,6 +441,39 @@
   function closeReset() {
     resetStage = null
     resetConfirm = ''
+  }
+
+  // App-Target: Werksreset-Form-Action laeuft ohne Server nicht. Im App-Zweig
+  // den Submit abfangen und per apiFetch->routeApp (POST /api/settings/reset)
+  // ausfuehren. Pi behaelt die Form-Action (inkl. writeAudit).
+  async function submitResetApp(e: SubmitEvent) {
+    e.preventDefault()
+    if (!resetStage) return
+    resetSaving = true
+    try {
+      const res = await apiFetch('/api/settings/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: resetStage, confirm: resetConfirm }),
+      })
+      if (!res.ok) {
+        const b = (await res.json().catch(() => ({}))) as { error?: string }
+        toast.error(String(b?.error ?? 'Zuruecksetzen fehlgeschlagen.'))
+        return
+      }
+      const doneStage = resetStage
+      await invalidateAll()
+      closeReset()
+      toast.success(
+        doneStage === 'C'
+          ? 'System auf Werkszustand zurückgesetzt. Kategorien & Nährwerte sind wieder da.'
+          : 'Löschung abgeschlossen.',
+      )
+    } catch {
+      toast.error('Zuruecksetzen fehlgeschlagen.')
+    } finally {
+      resetSaving = false
+    }
   }
 
 </script>
@@ -545,6 +636,7 @@
     <form
       method="POST"
       action="?/updateGlobalTolerance"
+      onsubmit={__STOQR_TARGET__ === 'app' ? submitGlobalToleranceApp : undefined}
       use:enhance={() => {
         globalSaving = true
         return async ({ update }) => {
@@ -993,6 +1085,7 @@
                       <form
                         method="POST"
                         action="?/updateCategoryTolerance"
+                        onsubmit={__STOQR_TARGET__ === 'app' ? (e) => submitCategoryToleranceApp(e, cat.id) : undefined}
                         use:enhance={() => {
                           categorySaving = true
                           return async ({ result, update }) => {
@@ -1167,6 +1260,7 @@
       id="reset-form"
       method="POST"
       action="?/resetHousehold"
+      onsubmit={__STOQR_TARGET__ === 'app' ? submitResetApp : undefined}
       use:enhance={() => {
         resetSaving = true
         return async ({ update, result }) => {

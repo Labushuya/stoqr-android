@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { categoryMappings, categories } from '@stoqr/db'
+import { categoryMappings, categories } from '$data/schema'
 import { and, eq } from 'drizzle-orm'
 import { matchMappingRules, normalizeToken } from '$lib/utils/category-mapping-match'
 

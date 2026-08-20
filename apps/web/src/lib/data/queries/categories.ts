@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { categories, products } from '@stoqr/db'
+import { categories, products } from '$data/schema'
 import { eq, asc, sql } from 'drizzle-orm'
 import { isSeedCategorySlug, slugify } from './category-slug'
 import { isDescendant, type CatNode } from '$lib/utils/category-tree'
@@ -75,12 +75,15 @@ export type UpdateResult =
 
 export async function updateCategory(
   id: string,
-  input: { name?: string; icon?: string | null; parentId?: string | null }
+  input: { name?: string; icon?: string | null; parentId?: string | null; defaultExpiryToleranceDays?: number }
 ): Promise<UpdateResult> {
   const db = getDb()
-  const patch: Partial<{ name: string; icon: string | null; parentId: string | null }> = {}
+  const patch: Partial<{ name: string; icon: string | null; parentId: string | null; defaultExpiryToleranceDays: number }> = {}
   if (input.name !== undefined) patch.name = input.name.trim()
   if (input.icon !== undefined) patch.icon = input.icon?.trim() || null
+  if (input.defaultExpiryToleranceDays !== undefined) {
+    patch.defaultExpiryToleranceDays = input.defaultExpiryToleranceDays
+  }
 
   if (input.parentId !== undefined) {
     const newParent = input.parentId || null

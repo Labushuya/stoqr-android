@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { globusSnapshots, products, categories, inventoryItems, productStores } from '@stoqr/db'
+import { globusSnapshots, products, categories, inventoryItems, productStores } from '$data/schema'
 import { and, eq, desc } from 'drizzle-orm'
 import { snapshotDiffers, type SnapshotComparable } from '$lib/utils/snapshot-diff'
 import { computeMirrorDiff, type MirrorDiff } from '$lib/utils/mirror-diff'

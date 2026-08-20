@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { shoppingListItems } from '@stoqr/db'
+import { shoppingListItems } from '$data/schema'
 import { and, eq, asc, desc } from 'drizzle-orm'
 import { getStockTargets } from './stock-targets'
 import { getProductStockTotals } from './products'

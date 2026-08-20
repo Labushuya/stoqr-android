@@ -13,7 +13,7 @@ import { relations, sql } from 'drizzle-orm';
 // ---------------------------------------------------------------------------
 
 export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   // stoqr-internal field, not managed by Better Auth.
   // Nullable so Better Auth signup (which doesn't provide username) works out of the box.
   username: text('username').unique(),
@@ -39,7 +39,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 // ---------------------------------------------------------------------------
 
 export const locations = sqliteTable('locations', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .references(() => households.id),
@@ -62,7 +62,7 @@ export const locationsRelations = relations(locations, ({ one, many }) => ({
 // ---------------------------------------------------------------------------
 
 export const storages = sqliteTable('storages', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   locationId: text('location_id')
     .notNull()
     .references(() => locations.id, { onDelete: 'cascade' }),
@@ -91,7 +91,7 @@ export const storagesRelations = relations(storages, ({ one, many }) => ({
 // ---------------------------------------------------------------------------
 
 export const places = sqliteTable('places', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   storageId: text('storage_id')
     .notNull()
     .references(() => storages.id, { onDelete: 'cascade' }),
@@ -115,7 +115,7 @@ export const placesRelations = relations(places, ({ one, many }) => ({
 // ---------------------------------------------------------------------------
 
 export const categories = sqliteTable('categories', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   parentId: text('parent_id').references((): AnySQLiteColumn => categories.id),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
@@ -139,7 +139,7 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
 // ---------------------------------------------------------------------------
 
 export const products = sqliteTable('products', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   gtin: text('gtin').unique(),
   name: text('name').notNull(),
   brand: text('brand'),
@@ -195,7 +195,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
 export const productStores = sqliteTable(
   'product_stores',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     productId: text('product_id')
       .notNull()
       .references(() => products.id, { onDelete: 'cascade' }),
@@ -244,7 +244,7 @@ export const productStoresRelations = relations(productStores, ({ one }) => ({
 export const productPrices = sqliteTable(
   'product_prices',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     householdId: text('household_id')
       .notNull()
       .references(() => households.id),
@@ -324,7 +324,7 @@ export const productPricesRelations = relations(productPrices, ({ one }) => ({
 export const globusSnapshots = sqliteTable(
   'globus_snapshots',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     householdId: text('household_id')
       .notNull()
       .references(() => households.id),
@@ -384,7 +384,7 @@ export const globusSnapshotsRelations = relations(globusSnapshots, ({ one }) => 
 // ---------------------------------------------------------------------------
 
 export const nutrientTypes = sqliteTable('nutrient_types', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
   unit: text('unit').notNull(),
@@ -410,7 +410,7 @@ export const nutrientTypesRelations = relations(nutrientTypes, ({ one, many }) =
 export const productNutrients = sqliteTable(
   'product_nutrients',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     productId: text('product_id')
       .notNull()
       .references(() => products.id, { onDelete: 'cascade' }),
@@ -451,7 +451,7 @@ export const productNutrientsRelations = relations(productNutrients, ({ one }) =
 export const productFieldSources = sqliteTable(
   'product_field_sources',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     productId: text('product_id')
       .notNull()
       .references(() => products.id, { onDelete: 'cascade' }),
@@ -483,7 +483,7 @@ export const productFieldSourcesRelations = relations(productFieldSources, ({ on
 export const categoryMappings = sqliteTable(
   'category_mappings',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     householdId: text('household_id')
       .notNull()
       .references(() => households.id, { onDelete: 'cascade' }),
@@ -520,7 +520,7 @@ export const categoryMappingsRelations = relations(categoryMappings, ({ one }) =
 // ---------------------------------------------------------------------------
 
 export const stores = sqliteTable('stores', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .references(() => households.id),
@@ -557,7 +557,7 @@ export const storesRelations = relations(stores, ({ one, many }) => ({
 // ---------------------------------------------------------------------------
 
 export const inventoryItems = sqliteTable('inventory_items', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   productId: text('product_id')
     .notNull()
     .references(() => products.id),
@@ -612,7 +612,7 @@ export const inventoryItemsRelations = relations(inventoryItems, ({ one }) => ({
 // ---------------------------------------------------------------------------
 
 export const expiryConfig = sqliteTable('expiry_config', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .unique()
@@ -638,7 +638,7 @@ export const expiryConfigRelations = relations(expiryConfig, ({ one }) => ({
 export const stockTargets = sqliteTable(
   'stock_targets',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     householdId: text('household_id')
       .notNull()
       .references(() => households.id),
@@ -687,7 +687,7 @@ export const stockTargetsRelations = relations(stockTargets, ({ one }) => ({
 // ---------------------------------------------------------------------------
 
 export const shoppingListItems = sqliteTable('shopping_list_items', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .references(() => households.id),
@@ -735,7 +735,7 @@ export const shoppingListItemsRelations = relations(shoppingListItems, ({ one })
 // ---------------------------------------------------------------------------
 
 export const shoppingTrips = sqliteTable('shopping_trips', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .references(() => households.id),
@@ -774,7 +774,7 @@ export const shoppingTripsRelations = relations(shoppingTrips, ({ one, many }) =
 // ---------------------------------------------------------------------------
 
 export const shoppingTripItems = sqliteTable('shopping_trip_items', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   tripId: text('trip_id')
     .notNull()
     .references(() => shoppingTrips.id, { onDelete: 'cascade' }),
@@ -824,7 +824,7 @@ export const shoppingTripItemsRelations = relations(shoppingTripItems, ({ one })
 // ---------------------------------------------------------------------------
 
 export const bringSync = sqliteTable('bring_sync_log', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .references(() => households.id),
@@ -889,7 +889,7 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
 // ---------------------------------------------------------------------------
 
 export const households = sqliteTable('households', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text('name').notNull(),
   createdBy: text('created_by').references(() => users.id),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
@@ -916,7 +916,7 @@ export const householdsRelations = relations(households, ({ many }) => ({
 export const householdMembers = sqliteTable(
   'household_members',
   {
-    id: text('id').primaryKey(),
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     householdId: text('household_id')
       .notNull()
       .references(() => households.id, { onDelete: 'cascade' }),
@@ -950,7 +950,7 @@ export const householdMembersRelations = relations(householdMembers, ({ one }) =
 // ---------------------------------------------------------------------------
 
 export const invites = sqliteTable('invites', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id')
     .notNull()
     .references(() => households.id, { onDelete: 'cascade' }),
@@ -975,7 +975,7 @@ export const invitesRelations = relations(invites, ({ one }) => ({
 // ---------------------------------------------------------------------------
 
 export const units = sqliteTable('units', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   householdId: text('household_id').references(() => households.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   symbol: text('symbol').notNull(),
@@ -1003,7 +1003,7 @@ export const unitsRelations = relations(units, ({ one }) => ({
 // ---------------------------------------------------------------------------
 
 export const sessions = sqliteTable('sessions', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
   token: text('token').notNull().unique(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().$defaultFn(() => new Date()),
@@ -1016,7 +1016,7 @@ export const sessions = sqliteTable('sessions', {
 });
 
 export const accounts = sqliteTable('accounts', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
   userId: text('user_id')
@@ -1034,7 +1034,7 @@ export const accounts = sqliteTable('accounts', {
 });
 
 export const verifications = sqliteTable('verifications', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),

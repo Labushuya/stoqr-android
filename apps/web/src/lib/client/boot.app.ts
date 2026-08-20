@@ -20,9 +20,11 @@ import {
   seedLocal,
   getSqliteDdl,
   selfHealSchema,
+  sqliteSchema,
   type SqliteExecutor,
 } from '@stoqr/db/sqlite'
 import { setDb } from '$data/db'
+import { setSchema } from '$data/schema'
 
 const DB_NAME = 'stoqr'
 const DB_VERSION = 1
@@ -144,6 +146,11 @@ export async function bootApp(): Promise<void> {
     // 2) Drizzle-Instanz bauen + als aktive DB setzen — ab jetzt darf routeApp()
     //    getDb() nutzen. Cast: der DB-Provider (db.ts) tippt auf den Postgres-
     //    `Database`-Typ; im App-Target ist die aktive Instanz die SQLite-Drizzle.
+    //    setSchema() ZUERST: die geteilten $data/queries lesen ihre Tabellen aus
+    //    dem Schema-Provider ($data/schema); ohne die Umschaltung auf sqliteSchema
+    //    wuerden sie die Postgres-Tabellen-Defaults (gen_random_uuid()/now())
+    //    serialisieren, die SQLite ablehnt. Muss vor der ersten Query stehen.
+    setSchema(sqliteSchema as unknown as Parameters<typeof setSchema>[0])
     const db = createSqliteDb(executor)
     setDb(db as unknown as Parameters<typeof setDb>[0])
 

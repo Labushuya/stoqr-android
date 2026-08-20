@@ -933,6 +933,26 @@ const BLOCKS = [
         expect: 'Der Re-Import laeuft ohne „UNIQUE constraint failed: product_nutrients" durch. Nach dem Import gibt es je Artikel/Naehrwert genau EINE Zeile (keine Waisen aus dem vorigen Import, keine Duplikate).' },
     ]
   },
+  {
+    tag: 'G59', name: 'App-Schreiboperationen gegen On-Device-SQLite (Schema-Provider + Server-Action-Ersatz)', desc: 'Ganzheitliche Behebung der App-Schreibfehler. ROOT A: die 13 geteilten Query-Module ($data/queries/*) nutzten die POSTGRES-Tabellen (@stoqr/db) fuer beide Targets -> auf der App serialisierte drizzle die PG-Defaults (gen_random_uuid()/now()) in SQL, das SQLite ablehnt; zusaetzlich fehlte der id-Default. Fix: Schema-Provider ($data/schema.ts, Proxy mit echter pg-Tabelle als Target, per setSchema(sqliteSchema) im Boot auf SQLite umgeschaltet) + id-$defaultFn(crypto.randomUUID()) an allen SQLite-PKs. Pi bleibt byte-gleich (Provider defaultet auf Postgres, setSchema feuert nur im App-Boot). ROOT B: mehrere Mutationen liefen ueber SvelteKit-Server-Form-Actions, die im statischen App-SPA nicht existieren; sie bekamen App-Zweige (apiFetch->routeApp->$data), Pi behaelt die Form-Action. ROOT C: fehlender routeApp-Zweig settings/sync ergaenzt.',
+    items: [
+      { id: 'G59-1', title: 'Artikel anlegen/bearbeiten, Pfand, Bestand, Soll, Preis, Markt',
+        steps: ['In der App einen neuen Artikel anlegen; einen bestehenden bearbeiten (inkl. Pfand setzen).', 'Bestand korrigieren (neue Zeile).', 'Soll-/Mindestbestand setzen.', 'Preis erfassen (mit reduziert/Pfand/Dauerpreis).', 'Markt-Zuordnung speichern.', 'Standard-Einheit + Gebinde aendern.'],
+        expect: 'Alle Schreibaktionen speichern ohne SQL-Fehler (kein gen_random_uuid()/now()). Werte sind nach dem Speichern sichtbar.' },
+      { id: 'G59-2', title: 'Kategorien + Kategorie-Zuordnung',
+        steps: ['Neue Haupt- und Unterkategorie anlegen.', 'Neue Kategorie-Zuordnungs-Regel anlegen (Globus-Segment -> Ziel-Kategorie).'],
+        expect: 'Anlegen klappt ohne Fehler; Kategorie/Regel erscheint.' },
+      { id: 'G59-3', title: 'Raeume + Lagerorte + Faecher',
+        steps: ['Neuen Raum, darin einen Lagerort und ein Fach anlegen.'],
+        expect: 'Alle drei Ebenen legen ohne „Fehler beim Hinzufuegen" an.' },
+      { id: 'G59-4', title: 'Einstellungen: MHD-Ampel, MHD-Toleranz je Kategorie, Preis-Abruf, Sync, Werksreset',
+        steps: ['MHD-Ampel-Schwellen aendern + speichern.', 'MHD-Toleranz einer Kategorie aendern + speichern.', 'Preis-Abruf-Schalter umlegen.', 'Sync-Karte speichern.', 'Danger-Zone Stufe A/B/C mit korrekter Phrase ausfuehren.'],
+        expect: 'Kein 500/„Unexpected token <"/„Not found". Werte persistieren ueber Neustart; Werksreset Stufe C stellt Kategorien + Naehrwerte wieder her.' },
+      { id: 'G59-5', title: 'Markt bearbeiten/loeschen + Artikel „Alles loeschen"',
+        steps: ['Einen Markt bearbeiten und (falls unreferenziert) loeschen.', 'Auf einer Artikel-Detailseite „Alles loeschen" ausfuehren.'],
+        expect: 'Bearbeiten/Loeschen ohne Fehler; „Alles loeschen" entfernt Artikel + Bestand + Naehrwerte ohne Waisen.' },
+    ]
+  },
 ];
 
 // ── Rendering ───────────────────────────────────────────────────────────────

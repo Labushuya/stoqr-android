@@ -149,23 +149,50 @@
     formData.set('scrapeUrl', scrapeUrl)
 
     try {
-      const res = await fetch('?/editStore', {
+      let res: Response
+      let body: Record<string, unknown> = {}
+      if (__STOQR_TARGET__ === 'app') {
+        // App: kein Server -> per apiFetch->routeApp (PATCH /api/stores/:id).
+        res = await apiFetch(`/api/stores/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            chain: chain || null,
+            address,
+            city,
+            latitude: editingLat || null,
+            longitude: editingLon || null,
+            scrapeUrl,
+          }),
+        })
+        body = await res.json().catch(() => ({}))
+        if (!res.ok) {
+          editError = String((body as { error?: string })?.error ?? `Fehler ${res.status}`)
+          return
+        }
+        const updatedApp = body as unknown as Store
+        storeRows = storeRows.map((s) => (s.id === id ? updatedApp : s))
+        editingId = null
+        return
+      }
+      res = await fetch('?/editStore', {
         method: 'POST',
         body: formData,
         headers: { 'x-sveltekit-action': 'true' },
       })
-      const body = await res.json().catch(() => ({}))
+      body = await res.json().catch(() => ({}))
 
-      if (!res.ok || body?.status === 'error') {
+      if (!res.ok || (body as { status?: string })?.status === 'error') {
         const msg =
-          body?.data?.error ??
-          body?.error ??
+          (body as { data?: { error?: string } })?.data?.error ??
+          (body as { error?: string })?.error ??
           `Fehler ${res.status}`
         editError = String(msg)
         return
       }
 
-      const updated: Store | undefined = body?.data?.store
+      const updated: Store | undefined = (body as { data?: { store?: Store } })?.data?.store
       if (updated) {
         // Server ist die Wahrheit (normalisierte/abgelehnte Werte) — lokal übernehmen.
         storeRows = storeRows.map((s) => (s.id === id ? updated : s))
@@ -192,6 +219,22 @@
     formData.set('id', id)
 
     try {
+      if (__STOQR_TARGET__ === 'app') {
+        // App: DELETE /api/stores/:id via routeApp. 409 = noch referenziert.
+        const res = await apiFetch(`/api/stores/${id}`, { method: 'DELETE' })
+        if (res.status === 409) {
+          const body = (await res.json().catch(() => ({}))) as { error?: string }
+          toast.error(String(body?.error ?? 'Dieser Markt kann nicht gelöscht werden, da er noch Artikeln zugeordnet ist.'))
+          return
+        }
+        if (!res.ok) {
+          const body = (await res.json().catch(() => ({}))) as { error?: string }
+          toast.error(String(body?.error ?? `Fehler ${res.status}`))
+          return
+        }
+        storeRows = storeRows.filter((s) => s.id !== id)
+        return
+      }
       const res = await fetch('?/deleteStore', {
         method: 'POST',
         body: formData,
@@ -199,7 +242,7 @@
       })
       const body = await res.json().catch(() => ({}))
 
-      if (res.status === 409 || body?.data?.action === 'deleteStore' && body?.data?.error) {
+      if (res.status === 409 || (body?.data?.action === 'deleteStore' && body?.data?.error)) {
         const msg =
           body?.data?.error ??
           'Dieser Markt kann nicht gelöscht werden, da er noch Artikeln zugeordnet ist.'

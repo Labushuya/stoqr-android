@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { households, householdMembers, invites } from '@stoqr/db'
+import { households, householdMembers, invites } from '$data/schema'
 import { asc } from 'drizzle-orm'
 import { error } from '@sveltejs/kit'
 

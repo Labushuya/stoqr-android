@@ -1,5 +1,5 @@
 import { getDb } from '$data/db'
-import { inventoryItems, locations } from '@stoqr/db'
+import { inventoryItems, locations } from '$data/schema'
 import { and, eq, lt, lte, gte, isNotNull, asc, sql } from 'drizzle-orm'
 
 function dateOffset(days: number): string {

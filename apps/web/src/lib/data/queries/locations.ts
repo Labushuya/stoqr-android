@@ -1,5 +1,5 @@
 import { getDb } from '$data/db';
-import { locations, storages, places } from '@stoqr/db';
+import { locations, storages, places } from '$data/schema';
 import { eq, and, asc } from 'drizzle-orm';
 
 // ---------------------------------------------------------------------------
