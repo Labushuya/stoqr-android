@@ -108,7 +108,7 @@
 <div class="wrap">
   <header class="top">
     <h1>stoqr — Test-Manifest</h1>
-    <p class="subtitle">Blöcke A–E + F/F2 + G/G6/G7/G8/G10/G11/G12/G13/G15/G16/G17/G18/G19/G20/G21/G22/G24/G25/G26/G27/G28/G29/G30/G31/G32/G33/G34/G35/G36/G37/G39/G40/G41/G42/G43/G44/G45/G46/G47/G48/G49/G50/G51/G52/G53 · logisch aufbauender Durchlauf · Stand nach G53 (Name „Die Merbotts" + Gefahrenzone/Werksreset mit Auto-Re-Seed)</p></p>
+    <p class="subtitle">Blöcke A–E + F/F2 + G…G60 + <b>G61 (Regressions-Verifikation v0.2.8)</b> · logisch aufbauender Durchlauf · Regressionen + allgemeine Tests an EINEM Ort (Regressions-Report eingemergt)</p>
 
     <div class="pre">
       <h2>Voraussetzung (kein Testschritt)</h2>
@@ -971,6 +971,47 @@ const BLOCKS = [
       { id: 'G60-5', title: 'Scroll-Position bei Breadcrumb-Zurueck',
         steps: ['Einstellungen weit runterscrollen -> eine Unterseite oeffnen (z.B. Einheiten) -> ueber Breadcrumb zurueck.'],
         expect: 'Die Einstellungen-Seite steht wieder an der vorigen Scroll-Position (nicht ganz oben).' },
+    ]
+  },
+  {
+    tag: 'G61', name: 'Regressions-Verifikation v0.2.8 (App-weite Control-Vereinheitlichung)', desc: 'Geraete-Durchlauf der aus v0.2.6 gemeldeten Beobachtungen — je Punkt Ursache/Fix. Datenpfad (Schema-Provider, ROOT A/B) + volle Control-Vereinheitlichung: EIN autoritatives Set in app.css, scoped Drift in 16 Seiten geloescht, ProductForm (.pf-*) und MhdScanner (.btn--*) migriert, .input min-height gegen Flex-Collapse, dark-safe Focus-Ring. Non-destruktiv, Pi-Target byte-identisch. Verifiziert: lint/typecheck/258 Tests gruen, Dual-Build, On-Device-CDP (0 Overflow, Hoehen 30/36/40/44).',
+    items: [
+      { id: 'G61-1', title: 'App-Logo & Drawer (lokale Schriften)',
+        steps: ['App oeffnen, oben den „stoqr"-Schriftzug betrachten.', 'Hamburger-Menue -> Drawer oeffnen.'],
+        expect: '„stoqr" in der gewohnten Schrift (kein System-Fallback). Drawer oeffnet mit allen Menuepunkten. (Fix: Schriften lokal gebuendelt statt Remote-@import.)' },
+      { id: 'G61-2', title: 'Einheiten in Selects nicht mehr doppelt',
+        steps: ['Ein beliebiges Einheiten-Dropdown oeffnen (Bestand hinzufuegen / Artikel-Standard-Einheit).'],
+        expect: 'Jedes Symbol nur EINMAL (kein „Stueck / Stueck"). (Fix: Dedupe nach Symbol in getUnits, System bevorzugt.)' },
+      { id: 'G61-3', title: 'Versions-Pill: Version + Offline-Hinweis',
+        steps: ['Ganz nach unten zur Versions-Pill scrollen.'],
+        expect: 'Pill zeigt die App-Version + neutralen Offline-Hinweis — kein roter „Pruefung nicht moeglich"-Fehler. (Fix: offline-reason gemappt + echte Build-Version.)' },
+      { id: 'G61-4', title: 'Artikel anlegen/bearbeiten (frueher stiller Fehlschlag)',
+        steps: ['Einstellungen -> Artikel: neuen Artikel anlegen.', 'Bestehenden bearbeiten (inkl. Pfand), speichern.'],
+        expect: 'Speichern OHNE Fehler; Werte sofort sichtbar. (Fix ROOT A: Schema-Provider + id-$defaultFn.)' },
+      { id: 'G61-5', title: 'Kategorie (Haupt + Unter) + Zuordnungsregel',
+        steps: ['Kategorien: Haupt- + Unterkategorie anlegen.', 'Kategorie-Zuordnung: eine Regel anlegen.'],
+        expect: 'Alle ohne SQL-Fehler; Unterkategorie eingerueckt; Regel in der Liste. (Fix ROOT A.)' },
+      { id: 'G61-6', title: 'MHD-Ampel + MHD-Toleranz je Kategorie speichern',
+        steps: ['Einstellungen -> MHD-Ampel: Schwellen aendern, speichern, Reload.', 'Bei einer Kategorie die Toleranz-Tage setzen, speichern.'],
+        expect: 'Kein 500 / „Unexpected token <"; Werte bleiben nach Reload. (Fix ROOT B: App-Zweige apiFetch statt Server-Action.)' },
+      { id: 'G61-7', title: 'Sync-Karte + Gefahrenzone-Modals (Darstellung + Funktion)',
+        steps: ['Einstellungen -> Sync-Abschnitt betrachten (ggf. speichern).', 'Gefahrenzone: Modal-Trigger (Stufe A/B/C) oeffnen, Buttons betrachten; optional Stufe C ausfuehren.'],
+        expect: 'Sync-Karte sauber gestylt (kein „Not found" beim Speichern). Modal-Buttons zentriert, komplett im Rahmen, KEIN Overflow. Stufe C stellt Kategorien/Naehrwerte wieder her. (Fix: routeApp settings/sync + globale Modal-Footer-Primitiven, v0.2.8.)' },
+      { id: 'G61-8', title: 'Inventar-Detailseite: alle Schreib-Aktionen',
+        steps: ['Artikel oeffnen: Pfand setzen; Bestand korrigieren (neue Zeile); Soll/Mindest setzen; Standard-Einheit + Gebinde aendern; Markt zuordnen; Preis erfassen; „Alles loeschen" auf einem Testartikel.'],
+        expect: 'Jede Aktion speichert OHNE SQL-Fehler; Werte bleiben. (Fix ROOT A/B: Schema-Provider + delete-all App-Zweig.)' },
+      { id: 'G61-9', title: 'Raeume: anlegen + Eingabemaske mobil',
+        steps: ['/orte: Raum + Lagerort + Fach anlegen.', '„Raum hinzufuegen" / „Bearbeiten" oeffnen, Feldbreite + Buttons pruefen.'],
+        expect: 'Alle drei ohne Fehler. Textfeld voll breit, Buttons erreichbar, KEIN Horizontal-Scroll. (Fix ROOT A + mobile Breakpoints.)' },
+      { id: 'G61-10', title: 'Maerkte: bearbeiten/loeschen + Button-Cluster + URL-Feld',
+        steps: ['Einstellungen -> Maerkte: Markt bearbeiten/speichern, unreferenzierten loeschen.', 'Globus-Karte „Preise abrufen" betrachten; URL-Feld beim Bearbeiten pruefen.'],
+        expect: 'Bearbeiten/Loeschen ok. Button-Cluster bleibt im Kartenrahmen (umbrechen statt ueberlaufen). URL-Feld normale Hoehe (nicht auf 22px kollabiert). (Fix ROOT B + .input min-height, v0.2.8.)' },
+      { id: 'G61-11', title: 'Einkaufsliste: Zeilenlayout + einheitliche Controls',
+        steps: ['Einkaufsliste oeffnen (mit Eintraegen); Zeilen, „+"-Button, Felder betrachten.'],
+        expect: 'Name/Menge/Buttons klar getrennt; Bedienelemente einheitlich (gleiche Hoehen), kein Overflow. (Fix: mobile Breakpoint + globales Control-Set.)' },
+      { id: 'G61-12', title: 'App-weit: Buttons/Felder/Chips/Modals einheitlich (hell+dunkel)',
+        steps: ['Durch Inventar, Einkauf, Einstellungen, Raeume, Maerkte gehen — Primaer-/Sekundaer-Buttons + Felder vergleichen.', 'Modals oeffnen (Bestand/Soll/Preis/Gebinde/Markt/Reset) — Footer-Buttons.', 'System-Theme auf Dunkel stellen, ein Feld fokussieren.'],
+        expect: 'Gleiche Control-Typen sehen ueberall identisch aus (Hoehe 30/36/40/44, Radius, Farbe); Primaer=gefuellt, Sekundaer=Outline; Felder ~40px. Modal-Buttons zentriert, kein Overflow. Dunkelmodus stimmig, Fokus-Ring passend (dark-safe Token). (v0.2.8, CDP-verifiziert.)' },
     ]
   },
 ];
