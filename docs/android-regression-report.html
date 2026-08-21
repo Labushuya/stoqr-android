@@ -1,286 +1,488 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>stoqr Android — Regressions-Report & Test-Leitfaden</title>
-  <style>
-    :root { --ok:#166534; --okbg:#dcfce7; --pend:#9a3412; --pendbg:#ffedd5; --line:#e5e0d5; --ink:#2b2b2b; --muted:#6b6b6b; }
-    * { box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background:#f7f3ec; margin:0; padding:1.5rem; line-height:1.5; }
-    h1 { font-size:1.5rem; margin:0 0 .25rem; }
-    h2 { font-size:1.05rem; margin:2rem 0 .5rem; border-bottom:2px solid var(--line); padding-bottom:.3rem; }
-    .sub { color:var(--muted); margin:0 0 1rem; font-size:.9rem; }
-    .item { border:1px solid var(--line); border-radius:10px; background:#fff; padding:.85rem 1rem; margin:.6rem 0; }
-    .item h3 { margin:0 0 .35rem; font-size:.98rem; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
-    .tag { font-size:.7rem; font-weight:700; padding:.12rem .5rem; border-radius:999px; letter-spacing:.02em; }
-    .tag.ok { background:var(--okbg); color:var(--ok); }
-    .tag.pend { background:var(--pendbg); color:var(--pend); }
-    .grid { display:grid; grid-template-columns: max-content 1fr; gap:.2rem .8rem; font-size:.9rem; margin-top:.35rem; }
-    .grid dt { color:var(--muted); font-weight:600; }
-    .grid dd { margin:0; }
-    code { background:#f0ebe1; padding:.05rem .3rem; border-radius:4px; font-size:.85em; }
-    .legend { font-size:.85rem; color:var(--muted); margin-bottom:1rem; }
-    .g { color:var(--ok); font-weight:600; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>stoqr Android — Regressions-Manifest (v0.2.8)</title>
+<style>
+  :root {
+    --bg: #faf7f2;
+    --surface: #ffffff;
+    --surface-sunken: #f3efe8;
+    --border: #e4ddd1;
+    --text: #2a2621;
+    --text-muted: #857b6d;
+    --primary: #c4673a;
+    --primary-subtle: #f7e8e0;
+    --ok: #16a34a;
+    --ok-subtle: #dcfce7;
+    --warn: #c2410c;
+    --warn-subtle: #fff7ed;
+    --danger: #dc2626;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a17; --surface: #262320; --surface-sunken: #201d1a;
+      --border: #3a352f; --text: #ece7df; --text-muted: #9a9084;
+      --primary: #e08a5c; --ok: #4ade80; --ok-subtle: #14331f;
+      --warn: #fb923c; --warn-subtle: #33220f; --danger: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55; font-size: 16px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 120px; }
+  header.top { margin-bottom: 20px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .subtitle { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 16px; }
+
+  .pre {
+    background: var(--warn-subtle); border: 1px solid var(--warn);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+  }
+  .pre h2 { margin: 0 0 6px; font-size: 1rem; color: var(--warn); }
+  .pre ul { margin: 6px 0 0; padding-left: 20px; }
+  .pre li { margin: 2px 0; font-size: 0.9rem; }
+
+  .progress-bar {
+    position: sticky; top: 0; z-index: 10; background: var(--bg);
+    padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px;
+  }
+  .progress-track { height: 10px; background: var(--surface-sunken); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--ok); width: 0%; transition: width 0.2s; }
+  .progress-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.85rem; color: var(--text-muted); gap: 8px; flex-wrap: wrap; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button.act {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: var(--radius-sm); padding: 7px 12px; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  }
+  button.act:hover { border-color: var(--primary); color: var(--primary); }
+  button.act.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+  button.act.primary:hover { opacity: 0.9; color: #fff; }
+
+  section.block { margin-bottom: 26px; }
+  .block-head { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+  .block-head h2 { font-size: 1.2rem; margin: 0; }
+  .block-tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--primary); background: var(--primary-subtle); padding: 2px 8px; border-radius: 999px; }
+  .block-desc { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 12px; }
+
+  .item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 14px; margin-bottom: 10px;
+  }
+  .item.done { border-color: var(--ok); background: var(--ok-subtle); }
+  .item-top { display: flex; gap: 10px; align-items: flex-start; }
+  .item-cb { width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; accent-color: var(--ok); cursor: pointer; }
+  .item-body { flex: 1; min-width: 0; }
+  .item-id { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.03em; }
+  .item-title { font-weight: 600; margin: 1px 0 4px; }
+  .item-meta { margin: 6px 0 0; padding: 8px 10px; background: var(--surface-sunken); border-radius: var(--radius-sm); font-size: 0.85rem; }
+  .item-meta dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 10px; margin: 0; }
+  .item-meta dt { color: var(--text-muted); font-weight: 600; }
+  .item-meta dd { margin: 0; }
+  .item-steps { margin: 8px 0 0; padding-left: 18px; font-size: 0.9rem; }
+  .item-steps li { margin: 2px 0; }
+  .expect {
+    margin: 8px 0 0; padding: 8px 10px; background: var(--surface-sunken);
+    border-left: 3px solid var(--ok); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.88rem;
+  }
+  .expect b { color: var(--ok); }
+  .note-wrap { margin-top: 10px; }
+  .note-wrap label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
+  textarea.note {
+    width: 100%; min-height: 40px; resize: vertical; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--bg); color: var(--text);
+    padding: 7px 9px; font-family: inherit; font-size: 0.9rem;
+  }
+  textarea.note:focus { outline: none; border-color: var(--primary); }
+  code { background: var(--surface-sunken); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+  footer.foot { text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 30px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 0.9rem; font-weight: 600; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: 1; }
+</style>
 </head>
 <body>
-  <h1>stoqr Android — Regressions-Report &amp; Test-Leitfaden</h1>
-  <p class="sub">Deine gemeldeten Beobachtungen (Test der Version v0.2.6), die jeweilige Ursache, der durchgefuehrte Fix und wie/wo zu testen ist. Stand: Phase 1 (Datenpfad) UND Phase 2 (UI/Design-System) abgeschlossen.</p>
-  <p class="legend">
-    <span class="tag ok">BEHOBEN</span> = im aktuellen Release enthalten (Phase 1 Datenschicht + Phase 2 UI). &nbsp;·&nbsp;
-    Detaillierte technische Testfaelle: <code>docs/test-manifest.html</code> Bloecke <b>G59</b> (Schreiboperationen), <b>G60</b> (UI/Design-System), G56–G58.
-  </p>
+<div class="wrap">
+  <header class="top">
+    <h1>stoqr Android — Regressions-Manifest</h1>
+    <p class="subtitle">Deine gemeldeten Beobachtungen (Test v0.2.6) — je mit Ursache &amp; Fix — als abhakbarer Geräte-Durchlauf für v0.2.8. Datenpfad (Phase 1) + volle Control-Vereinheitlichung (Phase 2). Zum Abhaken am Handy und Zurückgeben an Claude.</p>
 
-  <h2>Generell</h2>
+    <div class="pre">
+      <h2>Voraussetzung (kein Testschritt)</h2>
+      <ul>
+        <li>App-Version <code>v0.2.8</code> ist installiert (bzw. die aktuelle Debug-App mit dem Vereinheitlichungs-Stand).</li>
+        <li>Deine <code>.stoqr</code>-Daten sind importiert (Datentransfer → Import), damit Listen/Detailseiten mit echten Daten geprüft werden.</li>
+        <li>Am besten vorab: Einstellungen → Gefahrenzone → Werksreset Stufe C für einen frischen, konsistenten Stand.</li>
+      </ul>
+      Jeden Punkt abhaken; Abweichungen ins Notizfeld. Am Ende „Offene + Notizen kopieren“ → mir im Chat einfügen.
+    </div>
+  </header>
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> App-Logo &amp; Drawer fehlen</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Die Schrift (Sora/Inter) wird per Remote-<code>@import</code> von Google Fonts geladen — offline im WebView tot, daher degradiert der „stoqr"-Schriftzug. Der Drawer selbst ist korrekt verdrahtet.</dd>
-      <dt>Fix</dt><dd>Schriften lokal gebuendelt (<code>@font-face</code> + WOFF2 in <code>static/fonts/</code>) statt Remote-@import. <code>G60-1</code>.</dd>
-      <dt>Test</dt><dd>Schriftzug „stoqr" in der gewohnten Schrift; Hamburger-Menue oeffnet den Drawer.</dd>
-    </dl>
+  <div class="progress-bar">
+    <div class="progress-track"><div class="progress-fill" id="fill"></div></div>
+    <div class="progress-meta">
+      <span id="count">0 / 0 erledigt</span>
+      <span class="actions">
+        <button class="act primary" onclick="copyExport(true)">📋 Offene + Notizen kopieren</button>
+        <button class="act" onclick="copyExport(false)">Alles kopieren</button>
+        <button class="act" onclick="resetAll()">Zurücksetzen</button>
+      </span>
+    </div>
   </div>
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Einheiten in Select-Feldern doppelt</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Keine Eindeutigkeit auf <code>units.symbol</code>; Seed-System-Einheiten und importierte/zugefuegte Haushalts-Einheiten mit gleichem Symbol koexistieren; <code>getUnits</code> merged ohne Dedupe.</dd>
-      <dt>Fix</dt><dd>Dedupe nach Symbol in <code>getUnits</code> (System bevorzugt). <code>G60-3</code>.</dd>
-      <dt>Test</dt><dd>In jedem Einheiten-Dropdown jedes Symbol nur EINMAL.</dd>
-    </dl>
-  </div>
+  <div id="manifest"></div>
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Pruefungs-Pill „Pruefung nicht moeglich" / falsche Version</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Offline-Stub liefert <code>reason:'offline'</code> (nicht als benigne Meldung gemappt) und eine hart codierte Version <code>0.1.0</code>.</dd>
-      <dt>Fix</dt><dd><code>offline</code>-Meldung freundlich gemappt; echte Build-Version (aus package.json) angezeigt. <code>G60-4</code>.</dd>
-      <dt>Test</dt><dd>Pill zeigt aktuelle Version + neutralen Offline-Hinweis statt Fehler.</dd>
-    </dl>
-  </div>
+  <footer class="foot">
+    Zustand wird automatisch im Browser gespeichert (localStorage, eigener Schlüssel — getrennt vom Pi-Test-Manifest).
+    „Kopieren“ legt eine Markdown-Übersicht in die Zwischenablage — hier im Chat einfügen.
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
 
-  <h2>Einstellungen</h2>
+<script>
+// ── Manifest-Daten ────────────────────────────────────────────────────────
+// Jeder Punkt: id, title, cause (Ursache), fix (durchgeführter Fix),
+// steps[] (am Gerät zu prüfen), expect (Erwartung).
+const BLOCKS = [
+  {
+    tag: "Generell", name: "App-Rahmen & Anzeige", desc: "Logo/Schrift, doppelte Einheiten, Versions-/Prüf-Pill.",
+    items: [
+      { id: "GEN-1", title: "App-Logo & Drawer",
+        cause: "Schrift (Sora/Inter) per Remote-@import von Google Fonts — offline im WebView tot, „stoqr“-Schriftzug degradiert.",
+        fix: "Schriften lokal gebündelt (@font-face + WOFF2 in static/fonts/) statt Remote-@import.",
+        steps: ["App öffnen, oben den „stoqr“-Schriftzug betrachten.", "Hamburger-Menü tippen → Drawer öffnen."],
+        expect: "„stoqr“ in der gewohnten Schrift (nicht System-Fallback). Drawer öffnet mit allen Menüpunkten." },
+      { id: "GEN-2", title: "Einheiten in Select-Feldern doppelt",
+        cause: "Keine Eindeutigkeit auf units.symbol; Seed-System-Einheiten + importierte Haushalts-Einheiten mit gleichem Symbol koexistieren; getUnits merged ohne Dedupe.",
+        fix: "Dedupe nach Symbol in getUnits (System bevorzugt).",
+        steps: ["Ein beliebiges Einheiten-Dropdown öffnen (z.B. Bestand hinzufügen oder Artikel-Standard-Einheit)."],
+        expect: "Jedes Symbol erscheint nur EINMAL (keine Dubletten wie „Stück / Stück“)." },
+      { id: "GEN-3", title: "Prüf-Pill „Prüfung nicht möglich“ / falsche Version",
+        cause: "Offline-Stub liefert reason:'offline' (nicht als benigne Meldung gemappt) + hart codierte Version 0.1.0.",
+        fix: "offline-Meldung freundlich gemappt; echte Build-Version (__STOQR_VERSION__) angezeigt.",
+        steps: ["Ganz nach unten scrollen zur Versions-Pill.", "Version + Meldung betrachten."],
+        expect: "Pill zeigt die AKTUELLE Version (0.2.8) + neutralen Offline-Hinweis — kein roter „Prüfung nicht möglich“-Fehler." },
+    ]
+  },
+  {
+    tag: "Einstellungen", name: "Einstellungen & Schreiboperationen", desc: "Scroll-Restore, Artikel/Kategorien/Zuordnung/MHD anlegen & speichern, Sync-Karte, Gefahrenzone.",
+    items: [
+      { id: "SET-1", title: "Scroll-Position bei Breadcrumb-Zurück",
+        cause: "Unterseiten sind eigene Routes; Breadcrumb ein normaler Link → SvelteKit scrollt nach oben; keine Wiederherstellung.",
+        fix: "Breadcrumb nutzt history.back() → SvelteKit-Scroll-Restore.",
+        steps: ["Einstellungen weit runterscrollen.", "Eine Unterseite öffnen (z.B. Einheiten).", "Über den Breadcrumb „Einstellungen“ zurück."],
+        expect: "Die Einstellungen stehen wieder an der vorigen Scroll-Position (nicht ganz oben)." },
+      { id: "SET-2", title: "Artikel anlegen/bearbeiten (früher stiller Fehlschlag)",
+        cause: "ROOT A: geteilte Query-Fns nutzten Postgres-Tabellen → gen_random_uuid()/now() gegen SQLite.",
+        fix: "Schema-Provider (App nutzt SQLite-Tabellen) + id-$defaultFn.",
+        steps: ["Einstellungen → Artikel: neuen Artikel anlegen.", "Einen bestehenden bearbeiten (inkl. Pfand) und speichern."],
+        expect: "Speichern OHNE Fehler; Werte sofort sichtbar. Kein SQL-/„Unexpected token“-Fehler." },
+      { id: "SET-3", title: "Neue Kategorie (Haupt + Unter)",
+        cause: "ROOT A (gen_random_uuid()).",
+        fix: "Schema-Provider.",
+        steps: ["Einstellungen → Kategorien.", "Hauptkategorie anlegen.", "Unterkategorie (Unterkategorie-von gesetzt) anlegen."],
+        expect: "Beide erscheinen ohne Fehler; Unterkategorie eingerückt." },
+      { id: "SET-4", title: "Kategorie-Zuordnung: neue Regel",
+        cause: "ROOT A (gen_random_uuid(), now()).",
+        fix: "Schema-Provider.",
+        steps: ["Einstellungen → Kategorie-Zuordnung.", "Regel anlegen (z.B. Globus-Katalog: Getränke → Getränke)."],
+        expect: "Regel erscheint ohne Fehler in der Liste." },
+      { id: "SET-5", title: "MHD-Ampel speichern (früher 500 / „Unexpected token <“)",
+        cause: "ROOT B: Server-Form-Action läuft im App-SPA nicht → 404-HTML.",
+        fix: "App-Zweig apiFetch → /api/settings/expiry-tolerance.",
+        steps: ["Einstellungen → MHD-Ampel: gelb/rot-Schwellen ändern.", "Speichern, danach Seite neu laden."],
+        expect: "Kein 500; Werte bleiben nach dem Neuladen erhalten." },
+      { id: "SET-6", title: "MHD-Toleranz je Kategorie ändern",
+        cause: "ROOT B: Server-Form-Action ohne App-Pfad → stiller Fehlschlag.",
+        fix: "App-Zweig PATCH /api/categories/:id (defaultExpiryToleranceDays).",
+        steps: ["Bei einer Kategorie die Toleranz-Tage eintragen + speichern."],
+        expect: "Wert wird übernommen und bleibt nach Reload." },
+      { id: "SET-7", title: "Katalog-Sicherung „Offline: nicht verfügbar“",
+        cause: "Erwartet: Katalog-Sync ist ein reiner Online-Netzabruf; offline (App) bewusst degradiert.",
+        fix: "Keiner nötig — die Meldung ist gewollt. Der Preis-Abruf-Schalter ist eine getrennte, on-device gespeicherte Präferenz.",
+        steps: ["Einstellungen → Katalog-Sicherung öffnen."],
+        expect: "Offline-Hinweis erscheint — das ist BEABSICHTIGT (kein Bug). Punkt trotzdem abhaken, wenn nur der Hinweis (kein Absturz) erscheint." },
+      { id: "SET-8", title: "„Sync in Vorbereitung“-Karte (früher Textwüste + „Not found“)",
+        cause: "Cross-Component Scope-Leakage (Parent-CSS-Klassen greifen im Slot nicht) + Speichern warf „Not found“.",
+        fix: "„Not found“ behoben (routeApp settings/sync-Zweig). Darstellung über globale Control-Primitiven; volle Vereinheitlichung in v0.2.8.",
+        steps: ["Einstellungen → Sync-Abschnitt betrachten.", "Falls speicherbar: führendes System wählen + speichern."],
+        expect: "Karte sauber gestylt (nicht ineinandergeschoben); Buttons/Felder einheitlich; Speichern ohne „Not found“." },
+      { id: "SET-9", title: "Gefahrenzone-Modals: Buttons abgeschnitten / außerhalb",
+        cause: "Modal-Footer nutzte Parent-Klassen (Scope-Leakage) + fehlendes max-height/overflow; uneinheitliche Button-Größen.",
+        fix: "Werksreset A/B/C funktioniert on-device; Modal-Footer über globale Primitiven, flex-wrap + mobile Vollbreite. v0.2.8: alle Modal-Buttons zentriert, kein Overflow (CDP-verifiziert).",
+        steps: ["Einstellungen → Gefahrenzone.", "Nacheinander die Modal-Trigger (Stufe A/B/C) öffnen und die Buttons betrachten.", "Optional Stufe C mit korrekter Phrase ausführen."],
+        expect: "Modal-Buttons komplett im Rahmen, zentriert, kein Overflow/Abschneiden. Stufe C stellt Kategorien/Nährwerte wieder her." },
+    ]
+  },
+  {
+    tag: "Inventar", name: "Artikel-Detailseite", desc: "Pfand, Bestandskorrektur, Soll/Mindest, Einheit/Gebinde, Markt, Preis, Nährwerte, Alles löschen.",
+    items: [
+      { id: "INV-1", title: "Pfand setzen (früher SQL-Fehler product_field_sources)",
+        cause: "ROOT A (gen_random_uuid(), now()).",
+        fix: "Schema-Provider.",
+        steps: ["Einen count-Artikel (z.B. Bier) öffnen.", "Pfand aktivieren, 16 ct wählen, speichern.", "Artikel neu öffnen."],
+        expect: "Pfand bleibt gesetzt; kein Fehler. Pfand-Checkbox nur bei Stück-Einheiten aktiv." },
+      { id: "INV-2", title: "Bestandskorrektur (neue Zeile)",
+        cause: "ROOT A (inventory_items insert).",
+        fix: "Schema-Provider.",
+        steps: ["Bestand korrigieren → Zielmenge höher → „Neue Zeile“ → Menge/MHD → Übernehmen.", "Auch eine bestehende Zeile anpassen."],
+        expect: "Korrektur speichert ohne Fehler; Zeilen sofort korrekt." },
+      { id: "INV-3", title: "Soll-/Mindestbestand setzen",
+        cause: "ROOT A (stock_targets upsert).",
+        fix: "Schema-Provider.",
+        steps: ["„Soll-Bestand festlegen“ → Soll (z.B. 4) + Mindest (z.B. 1) → Speichern.", "Reload."],
+        expect: "Kein Netzwerkfehler; Wert bleibt. Bedarf-Indikator zeigt passenden Status." },
+      { id: "INV-4", title: "Standard-Einheit / Gebinde ändern",
+        cause: "ROOT A (Produkt-Update).",
+        fix: "Schema-Provider.",
+        steps: ["Standard-Einheit ändern (z.B. Flasche → Glas) + speichern.", "Gebinde festlegen (z.B. 1,5 l) + speichern."],
+        expect: "Beides speichert ohne Fehler; Werte bleiben nach Reload." },
+      { id: "INV-5", title: "Markt-Zuordnung",
+        cause: "ROOT A (Junction-Insert).",
+        fix: "Schema-Provider.",
+        steps: ["Unter „Märkte wo einkaufbar“ einen Markt antippen."],
+        expect: "Chip wird aktiv (✓); kein Fehler; bleibt nach Reload." },
+      { id: "INV-6", title: "Preis-Änderung (im Modal/Inline-Editor)",
+        cause: "ROOT A (product_prices insert, transaktional).",
+        fix: "Schema-Provider.",
+        steps: ["Preise-Card → „Preis setzen/Ändern“.", "Preis + Einheit + Haken (reduziert/Dauerpreis) → Speichern."],
+        expect: "Preis gespeichert, sofort als aktueller Preis sichtbar; kein SQL-Fehler." },
+      { id: "INV-7", title: "Nährwerte von OpenFoodFacts abrufen: „nicht gefunden“",
+        cause: "Erwartet: OFF-Abruf ist ein Online-Netzabruf; offline liefert die App bewusst „nicht gefunden“.",
+        fix: "Keiner nötig (Offline-Verhalten). Manuell erfasste Nährwerte funktionieren (nutzt ROOT-A-Fix).",
+        steps: ["Nährwerte manuell eintragen + speichern."],
+        expect: "Manuelle Nährwerte speichern ohne Fehler. (OFF-Abruf offline = „nicht gefunden“ ist ok.)" },
+      { id: "INV-8", title: "„Alles löschen“ (Artikel + Bestand)",
+        cause: "ROOT B: Server-Form-Action ohne App-Pfad.",
+        fix: "App-Zweig POST /api/products/:id/delete-all (inkl. expliziter Kinder-Löschung).",
+        steps: ["Auf einer Testartikel-Detailseite „Alles löschen“ ausführen."],
+        expect: "Artikel + Bestand + Nährwerte weg, keine Fehler." },
+    ]
+  },
+  {
+    tag: "Räume", name: "Räume / Lagerorte", desc: "Anlegen (funktional) + Eingabemaske mobil.",
+    items: [
+      { id: "RAUM-1", title: "Raum / Lagerort / Fach anlegen (früher „Fehler beim Hinzufügen“)",
+        cause: "ROOT A (gen_random_uuid()).",
+        fix: "Schema-Provider.",
+        steps: ["/orte: Raum anlegen.", "Lagerort im Raum anlegen.", "Fach im Lagerort anlegen."],
+        expect: "Alle drei ohne Fehler; erscheinen sofort." },
+      { id: "RAUM-2", title: "Eingabemaske zu schmal / läuft aus dem Screen",
+        cause: "Fehlende mobile Breakpoints (Inline-Formular stackt nicht; Buttons/Selects verdrängen das Textfeld).",
+        fix: "Mobile Breakpoints: Add-/Inline-Edit-Masken stapeln, Textfeld voll breit. v0.2.8: einheitliche Control-Höhen, kein Horizontal-Scroll (CDP-verifiziert).",
+        steps: ["/orte: „Raum hinzufügen“ und ein „Bearbeiten“ öffnen.", "Auf Textfeld-Breite + Button-Erreichbarkeit achten."],
+        expect: "Textfeld voll breit, Buttons erreichbar, KEIN Horizontal-Scroll." },
+    ]
+  },
+  {
+    tag: "Märkte", name: "Märkte", desc: "Bearbeiten/Löschen (funktional) + Button-Cluster im Rahmen.",
+    items: [
+      { id: "MKT-1", title: "Markt bearbeiten / löschen (funktional)",
+        cause: "ROOT B: rohe fetch('?/editStore'|'?/deleteStore') Server-Action.",
+        fix: "App-Zweig PATCH/DELETE /api/stores/:id.",
+        steps: ["Einstellungen → Märkte: einen Markt bearbeiten + speichern.", "Einen unreferenzierten Markt löschen."],
+        expect: "Bearbeiten + Löschen ohne Fehler." },
+      { id: "MKT-2", title: "Globus-Karte „Preise abrufen“ läuft aus dem Card-Rahmen",
+        cause: "3-Button-Cluster bricht erst zu spät um (mobile Breakpoint).",
+        fix: "Button-Cluster darf umbrechen (flex-wrap) statt überlaufen. v0.2.8: URL-Feld volle Höhe (min-height-Fix), Buttons einheitlich.",
+        steps: ["Einstellungen → Märkte: Globus-Karte mit „Preise abrufen“ betrachten (schmaler Screen).", "URL-Feld beim Bearbeiten prüfen."],
+        expect: "Buttons bleiben im Kartenrahmen (umbrechen statt überlaufen); URL-Feld hat normale Höhe (nicht kollabiert)." },
+    ]
+  },
+  {
+    tag: "Einkaufsliste", name: "Einkaufsliste", desc: "Zeilenlayout + einheitliche Bedienelemente.",
+    items: [
+      { id: "EKL-1", title: "Zeilen ineinandergeschoben + uneinheitliche Feld-/Button-Größen",
+        cause: "Desktop-Zeilenlayout ohne mobilen Breakpoint; kein gemeinsames Control-Design-System.",
+        fix: "Mobile Breakpoint (Zeile als Grid, Aktionen stacken); v0.2.8: EIN autoritatives Control-Set app.css, scoped Drift entfernt.",
+        steps: ["Einkaufsliste öffnen (mit Einträgen).", "Zeilen + „+“-Button + Eingabefelder betrachten."],
+        expect: "Name/Menge/Buttons klar getrennt; Bedienelemente einheitlich (gleiche Höhen), kein Overflow." },
+    ]
+  },
+  {
+    tag: "UI v0.2.8", name: "App-weite Vereinheitlichung (neu geprüft)", desc: "Der Kern deiner letzten Reklamation: Buttons/Felder/Modals app-weit einheitlich, zentriert, ohne Overflow. Non-destruktiv, Pi unberührt.",
+    items: [
+      { id: "UNI-1", title: "Alle Buttons app-weit gleich hoch & Stil",
+        cause: "3 parallele Button-Systeme (.btn-*, .btn--* in MhdScanner, .pf-* in ProductForm) + per-Seite re-definierte Höhen (18–48px).",
+        fix: "EIN autoritatives Control-Set in app.css; scoped Drift in 16 Dateien gelöscht; ProductForm/MhdScanner auf kanonische Klassen migriert. Höhen-Skala 30/36/40/44.",
+        steps: ["Durch Inventar, Einkauf, Einstellungen, Räume, Märkte gehen.", "Primär-/Sekundär-Buttons vergleichen."],
+        expect: "Gleiche Button-Typen sehen überall identisch aus (Höhe/Radius/Farbe). Primär = gefüllt, Sekundär = Outline." },
+      { id: "UNI-2", title: "Eingabefelder & Selects einheitlich (40px)",
+        cause: "Input-Höhen drifteten (28–42px); URL-Feld kollabierte in column-Flex auf 22px.",
+        fix: "Globales .input mit min-height:40px (Flex-Collapse-Schutz); scoped Input-Optik entfernt, nur Layout-Modifier behalten.",
+        steps: ["Diverse Formulare öffnen (Artikel, Markt, Kategorie, Soll-Bestand).", "Feld-Höhen vergleichen."],
+        expect: "Alle Text-/Select-Felder gleich hoch (~40px), keine gequetschten/kollabierten Felder." },
+      { id: "UNI-3", title: "Modal-/Pop-Up-Buttons zentriert & im Rahmen",
+        cause: "Modal-Footer-Buttons falsch formatiert, nicht zentriert, Overflow (deine Reklamation).",
+        fix: "Modal-Footer über globale Primitiven + flex-wrap + mobile Vollbreite; CDP-Geometrie über alle Routen: 0 Overflow.",
+        steps: ["Modals öffnen: Bestand korrigieren, Soll-Bestand, Preis, Gebinde, Markt-Zuordnung, Werksreset.", "Footer-Buttons betrachten."],
+        expect: "Buttons zentriert, vollständig sichtbar, kein Overflow/Abschneiden — in JEDEM Modal." },
+      { id: "UNI-4", title: "Chips & Checkboxen einheitlich",
+        cause: ".pf-chip / eigene Chip-Stile in ProductForm & Detailseite drifteten.",
+        fix: "Globale .chip/.chip--on + .checkbox; ProductForm-Pfand-Chips + Checkbox migriert.",
+        steps: ["Pfand-Chips (Artikel-Formular), Markt-Chips (Detailseite), Checkboxen betrachten."],
+        expect: "Chips/Checkboxen überall gleicher Stil; aktiver Zustand konsistent gefüllt." },
+      { id: "UNI-5", title: "Hell- & Dunkelmodus konsistent",
+        cause: "Hartkodierte Focus-Ringe (rgba) statt Token → im Dark Mode falsch.",
+        fix: "Focus-Ring auf --color-primary-subtle (dark-safe) umgestellt.",
+        steps: ["System-Theme auf Dunkel stellen, App durchgehen.", "Ein Feld fokussieren (Tastatur/Antippen)."],
+        expect: "Farben/Kontraste im Dunkelmodus stimmig; Fokus-Ring sichtbar und passend (nicht grell/falsch)." },
+    ]
+  },
+];
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Scroll-Position bei Breadcrumb-Zurueck verloren</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Unterseiten sind eigene Routes; Breadcrumb ist ein normaler Link -> SvelteKit scrollt nach oben; keine Scroll-Wiederherstellung.</dd>
-      <dt>Fix</dt><dd>Breadcrumb nutzt <code>history.back()</code> -> SvelteKit-Scroll-Restore. <code>G60-5</code>.</dd>
-      <dt>Test</dt><dd>Zurueck ueber Breadcrumb behaelt die Scroll-Position.</dd>
-    </dl>
-  </div>
+// ── Rendering ───────────────────────────────────────────────────────────────
+const STORAGE_KEY = "stoqr-android-regression-v028";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (e) { state = {}; }
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Artikel anlegen/bearbeiten scheitert still</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A: geteilte Query-Fns nutzten Postgres-Tabellen -> <code>gen_random_uuid()</code>/<code>now()</code> gegen SQLite.</dd>
-      <dt>Fix</dt><dd>Schema-Provider (App nutzt SQLite-Tabellen) + id-Default. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Neuen Artikel anlegen; bestehenden bearbeiten (inkl. Pfand). Speichern ohne Fehler, Werte sichtbar.</dd>
-    </dl>
-  </div>
+const manifestEl = document.getElementById("manifest");
+const allIds = [];
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Neue Kategorie (Haupt/Unter) wirft SQL-Fehler</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-2</code>.</dd>
-      <dt>Test</dt><dd>Haupt- und Unterkategorie anlegen — beide erscheinen ohne Fehler.</dd>
-    </dl>
-  </div>
+for (const block of BLOCKS) {
+  const sec = document.createElement("section");
+  sec.className = "block";
+  const head = document.createElement("div");
+  head.className = "block-head";
+  head.innerHTML = `<span class="block-tag">${escapeHtml(block.tag)}</span><h2>${escapeHtml(block.name)}</h2>`;
+  sec.appendChild(head);
+  const desc = document.createElement("p");
+  desc.className = "block-desc";
+  desc.textContent = block.desc;
+  sec.appendChild(desc);
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Kategorie-Zuordnung: neue Regel wirft SQL-Fehler</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>, <code>now()</code>).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-2</code>.</dd>
-      <dt>Test</dt><dd>Regel „Globus-Katalog: Getraenke -> Getraenke" anlegen — ok.</dd>
-    </dl>
-  </div>
+  for (const it of block.items) {
+    allIds.push(it.id);
+    const item = document.createElement("div");
+    item.className = "item";
+    item.id = "item-" + it.id;
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> MHD-Ampel speichern wirft 500 / „Unexpected token &lt;"</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT B: Server-Form-Action laeuft im App-SPA nicht -> 404-HTML.</dd>
-      <dt>Fix</dt><dd>App-Zweig <code>apiFetch -> /api/settings/expiry-tolerance</code>. <code>G59-4</code>.</dd>
-      <dt>Test</dt><dd>Schwellen aendern + speichern; kein 500; Werte bleiben nach Neuladen.</dd>
-    </dl>
-  </div>
+    const checked = !!(state[it.id] && state[it.id].done);
+    if (checked) item.classList.add("done");
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> MHD-Toleranz nach Kategorie nicht aenderbar</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT B: Server-Form-Action ohne App-Pfad -> stiller Fehlschlag.</dd>
-      <dt>Fix</dt><dd>App-Zweig <code>PATCH /api/categories/:id</code> (defaultExpiryToleranceDays). <code>G59-4</code>.</dd>
-      <dt>Test</dt><dd>Toleranz einer Kategorie tippen + speichern — Wert uebernommen.</dd>
-    </dl>
-  </div>
+    const stepsHtml = (it.steps || []).map(s => `<li>${escapeHtml(s)}</li>`).join("");
+    const causeHtml = it.cause ? `<dt>Ursache</dt><dd>${escapeHtml(it.cause)}</dd>` : "";
+    const fixHtml = it.fix ? `<dt>Fix</dt><dd>${escapeHtml(it.fix)}</dd>` : "";
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Katalog-Sicherung: „Offline: nicht verfuegbar"</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Erwartet: Katalog-Sync ist ein reiner Online-Netzabruf; offline (App) bewusst degradiert. Kein Fehler, sondern korrektes Verhalten.</dd>
-      <dt>Fix</dt><dd>Keiner noetig (die Meldung ist gewollt; der Preis-Abruf-Schalter ist eine getrennte, on-device gespeicherte Praeferenz).</dd>
-      <dt>Test</dt><dd>Meldung bleibt — das ist beabsichtigt, solange die App offline arbeitet.</dd>
-    </dl>
-  </div>
+    item.innerHTML = `
+      <div class="item-top">
+        <input type="checkbox" class="item-cb" ${checked ? "checked" : ""} data-id="${it.id}" aria-label="erledigt" />
+        <div class="item-body">
+          <div class="item-id">${escapeHtml(it.id)}</div>
+          <div class="item-title">${escapeHtml(it.title)}</div>
+          <div class="item-meta"><dl>${causeHtml}${fixHtml}</dl></div>
+          <div class="item-steps-wrap"><ol class="item-steps">${stepsHtml}</ol></div>
+          <div class="expect"><b>Erwartung:</b> ${escapeHtml(it.expect)}</div>
+          <div class="note-wrap">
+            <label for="note-${it.id}">Notiz / Abweichung</label>
+            <textarea class="note" id="note-${it.id}" data-id="${it.id}" placeholder="Alles wie erwartet? Sonst hier notieren…">${escapeHtml(state[it.id] && state[it.id].note ? state[it.id].note : "")}</textarea>
+          </div>
+        </div>
+      </div>`;
+    sec.appendChild(item);
+  }
+  manifestEl.appendChild(sec);
+}
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> „Sync in Vorbereitung"-Karte sieht wie Textwueste aus</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Cross-Component Scope-Leakage: die Komponente nutzt Parent-CSS-Klassen, die Svelte-Scoping nicht durchreicht. Speichern warf zusaetzlich „Not found".</dd>
-      <dt>Fix</dt><dd>„Not found" behoben (routeApp <code>settings/sync</code>-Zweig, <code>G59-4</code>). Darstellung ueber globale Control-Primitiven in <code>app.css</code> (Scope-Leakage behoben). <code>G60-2</code>.</dd>
-      <dt>Test</dt><dd>Sync-Karte korrekt gestylt (nicht mehr wie Textwueste); Speichern ohne „Not found".</dd>
-    </dl>
-  </div>
+// ── Interaktion ───────────────────────────────────────────────────────────
+manifestEl.addEventListener("change", (e) => {
+  const cb = e.target.closest(".item-cb");
+  if (cb) {
+    const id = cb.dataset.id;
+    ensure(id).done = cb.checked;
+    document.getElementById("item-" + id).classList.toggle("done", cb.checked);
+    save();
+    updateProgress();
+  }
+});
+manifestEl.addEventListener("input", (e) => {
+  const ta = e.target.closest(".note");
+  if (ta) { ensure(ta.dataset.id).note = ta.value; save(); }
+});
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Gefahrenzone-Modals: Buttons ausserhalb/abgeschnitten</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Modal-Footer nutzt Parent-Klassen (Scope-Leakage) + fehlendes <code>max-height/overflow</code>.</dd>
-      <dt>Fix</dt><dd>Funktion behoben (Werksreset A/B/C laeuft on-device, <code>G59-4/5</code>); Modal-Footer-Buttons ueber globale Primitiven gestylt (Scope-Leakage behoben). <code>G60-2</code>.</dd>
-      <dt>Test</dt><dd>Werksreset A/B/C mit korrekter Phrase fuehrt aus (Stufe C stellt Kategorien/Naehrwerte wieder her); Modal-Buttons korrekt im Rahmen.</dd>
-    </dl>
-  </div>
+function ensure(id) { if (!state[id]) state[id] = { done: false, note: "" }; return state[id]; }
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 
-  <h2>Inventar (Artikel-Detailseite)</h2>
+function updateProgress() {
+  const done = allIds.filter(id => state[id] && state[id].done).length;
+  const total = allIds.length;
+  document.getElementById("count").textContent = `${done} / ${total} erledigt`;
+  document.getElementById("fill").style.width = total ? (done / total * 100) + "%" : "0%";
+}
+updateProgress();
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Pfand setzen wirft SQL-Fehler (product_field_sources)</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>, <code>now()</code>).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Bier-Artikel: Pfand 16 ct setzen + speichern — ok.</dd>
-    </dl>
-  </div>
+// ── Export (Markdown → Zwischenablage) ──────────────────────────────────────
+function buildMarkdown(onlyOpen = false) {
+  const done = allIds.filter(id => state[id] && state[id].done).length;
+  const lines = [];
+  lines.push("# stoqr Android — Regressions-Ergebnis (v0.2.8)");
+  lines.push("");
+  lines.push(`Stand: ${done} / ${allIds.length} erledigt`);
+  if (onlyOpen) lines.push("_Gefiltert: nur offene Punkte und Punkte mit Notiz_");
+  lines.push("");
+  let bodyCount = 0;
+  for (const block of BLOCKS) {
+    const blockLines = [];
+    for (const it of block.items) {
+      const st = state[it.id] || {};
+      const note = (st.note || "").trim();
+      if (onlyOpen && st.done && !note) continue;
+      const box = st.done ? "[x]" : "[ ]";
+      blockLines.push(`- ${box} **${it.id}** — ${it.title}`);
+      if (note) {
+        for (const nl of note.split("\n")) blockLines.push(`    - 📝 ${nl}`);
+      }
+    }
+    if (blockLines.length === 0) continue;
+    lines.push(`## [${block.tag}] ${block.name}`);
+    lines.push(...blockLines);
+    lines.push("");
+    bodyCount += blockLines.length;
+  }
+  if (bodyCount === 0) {
+    lines.push("Alle Punkte erledigt, keine offenen Hinweise.");
+    lines.push("");
+  }
+  return lines.join("\n");
+}
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Bestandskorrektur (neue Zeile) wirft SQL-Fehler</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>inventory_items</code> insert).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Bestand von 4 auf 5 (neue Zeile) korrigieren — ok; auch bestehende Zeilen anpassen.</dd>
-    </dl>
-  </div>
+function copyExport(onlyOpen = false) {
+  const md = buildMarkdown(onlyOpen);
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = md; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); showToast("In Zwischenablage kopiert ✓"); }
+    catch (e) { showToast("Kopieren nicht möglich — Text manuell markieren"); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(md).then(() => showToast("In Zwischenablage kopiert ✓"), fallback);
+  } else { fallback(); }
+}
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Soll-/Mindestbestand setzen wirft SQL-Fehler</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>stock_targets</code> upsert).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Soll 2 / Mindest 1 setzen (mit + ohne Mindestbestand) — ok.</dd>
-    </dl>
-  </div>
+function resetAll() {
+  if (!confirm("Alle Häkchen und Notizen zurücksetzen?")) return;
+  state = {}; save();
+  document.querySelectorAll(".item-cb").forEach(cb => cb.checked = false);
+  document.querySelectorAll(".note").forEach(ta => ta.value = "");
+  document.querySelectorAll(".item").forEach(el => el.classList.remove("done"));
+  updateProgress();
+}
 
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Standard-Einheit / Gebinde aendern scheitert</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (Produkt-Update).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Standard-Einheit (Flasche->Glas) und Gebinde aendern — ok. (Doppelte Einheiten-Anzeige separat behoben, s.o.)</dd>
-    </dl>
-  </div>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Markt-Zuordnung scheitert</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (Junction-Insert).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Artikel einem Markt zuordnen + speichern — ok.</dd>
-    </dl>
-  </div>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Preis-Aenderung wirft SQL-Fehler (im Modal)</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>product_prices</code> insert, transaktional).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-1</code>.</dd>
-      <dt>Test</dt><dd>Preis mit „reduziert"/„Dauerpreis"/„enthaelt Pfand"/Kategorie erfassen — ok.</dd>
-    </dl>
-  </div>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Naehrwerte von OpenFoodFacts abrufen: „nicht gefunden"</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Erwartet: OFF-Abruf ist ein Online-Netzabruf; offline liefert die App bewusst „nicht gefunden". Kein Datenbank-Fehler.</dd>
-      <dt>Fix</dt><dd>Keiner noetig (Offline-Verhalten). Manuell erfasste Naehrwerte funktionieren.</dd>
-      <dt>Test</dt><dd>Naehrwerte manuell eintragen + speichern — ok (nutzt ROOT-A-Fix).</dd>
-    </dl>
-  </div>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> „Alles loeschen" (Artikel + Bestand)</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT B: Server-Form-Action ohne App-Pfad.</dd>
-      <dt>Fix</dt><dd>App-Zweig <code>POST /api/products/:id/delete-all</code> (inkl. expliziter Kinder-Loeschung). <code>G59-5</code>.</dd>
-      <dt>Test</dt><dd>„Alles loeschen" auf einer Detailseite — Artikel + Bestand + Naehrwerte weg, keine Fehler.</dd>
-    </dl>
-  </div>
-
-  <h2>Raeume</h2>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Neuen Raum / Lagerort anlegen: „Fehler beim Hinzufuegen"</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT A (<code>gen_random_uuid()</code>).</dd>
-      <dt>Fix</dt><dd>Schema-Provider. <code>G59-3</code>.</dd>
-      <dt>Test</dt><dd>Raum, Lagerort und Fach anlegen — alle drei ohne Fehler.</dd>
-    </dl>
-  </div>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Raum-Anlegen/-Bearbeiten: Eingabemaske zu schmal / laeuft aus dem Screen</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Fehlende mobile Breakpoints (Inline-Formular stackt nicht; Buttons/Selects verdraengen das Textfeld).</dd>
-      <dt>Fix</dt><dd>Mobile Breakpoints: Add-/Inline-Edit-Masken stapeln, Textfeld voll breit. <code>G60-2</code>.</dd>
-      <dt>Test</dt><dd>Textfeld voll breit, Buttons erreichbar, kein Horizontal-Scroll.</dd>
-    </dl>
-  </div>
-
-  <h2>Maerkte</h2>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Markt bearbeiten/loeschen (funktional)</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>ROOT B: rohe <code>fetch('?/editStore'|'?/deleteStore')</code> Server-Action.</dd>
-      <dt>Fix</dt><dd>App-Zweig <code>PATCH/DELETE /api/stores/:id</code>. <code>G59-5</code>.</dd>
-      <dt>Test</dt><dd>Markt bearbeiten + (falls unreferenziert) loeschen — ok.</dd>
-    </dl>
-  </div>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Globus-Karte mit „Preise abrufen" laeuft aus dem Card-Rahmen</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>3-Button-Cluster bricht erst zu spaet um (mobile Breakpoint).</dd>
-      <dt>Fix</dt><dd>Button-Cluster darf umbrechen (flex-wrap) statt ueberlaufen. <code>G60-2</code>.</dd>
-      <dt>Test</dt><dd>Buttons bleiben im Kartenrahmen.</dd>
-    </dl>
-  </div>
-
-  <h2>Einkaufsliste</h2>
-
-  <div class="item">
-    <h3><span class="tag ok">BEHOBEN</span> Zeilen-Formatierung ineinandergeschoben + uneinheitliche Feld-/Button-Groessen</h3>
-    <dl class="grid">
-      <dt>Ursache</dt><dd>Desktop-Zeilenlayout ohne mobilen Breakpoint; kein gemeinsames Control-Design-System.</dd>
-      <dt>Fix</dt><dd>Mobile Breakpoint: Zeile als Grid, Aktionen stacken unter Name/Menge; globale Control-Primitiven. <code>G60-2</code>.</dd>
-      <dt>Test</dt><dd>Name/Menge/Buttons klar getrennt; einheitlichere Bedienelemente ueber globale Primitiven.</dd>
-    </dl>
-  </div>
-
-  <h2>So testest Du die Phase-1-Fixes (jetzt)</h2>
-  <div class="item">
-    <p style="margin:.2rem 0;">Sobald das naechste App-Release installiert ist, die mit <span class="g">BEHOBEN</span> markierten Punkte durchgehen — alle Schreib-Aktionen sollten ohne SQL-Fehler speichern. Empfohlene Reihenfolge:</p>
-    <ol style="margin:.4rem 0 0; padding-left:1.2rem; font-size:.92rem;">
-      <li>Einstellungen &rarr; Danger-Zone &rarr; Werksreset Stufe C (frischer, konsistenter Stand).</li>
-      <li>Raum + Lagerort + Fach anlegen.</li>
-      <li>Kategorie (Haupt + Unter) + Kategorie-Zuordnungsregel anlegen.</li>
-      <li>Artikel anlegen, Pfand setzen, Bestand korrigieren, Soll-/Mindestbestand, Markt-Zuordnung, Preis erfassen.</li>
-      <li>MHD-Ampel + MHD-Toleranz je Kategorie speichern; Preis-Abruf-Schalter; Sync-Karte speichern.</li>
-      <li>„Alles loeschen" auf einem Testartikel.</li>
-    </ol>
-    <p style="margin:.6rem 0 0; font-size:.85rem; color:var(--muted);">Technische Detail-Testfaelle mit Schritten &amp; Erwartung: <code>docs/test-manifest.html</code> &rarr; Block <b>G59</b> (und G56–G58 fuer die vorherigen Fixes).</p>
-  </div>
+let toastTimer = null;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+}
+</script>
 </body>
 </html>

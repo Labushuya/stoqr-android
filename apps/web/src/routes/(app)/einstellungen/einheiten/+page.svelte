@@ -399,27 +399,12 @@
   .add-form { display: flex; flex-direction: column; gap: var(--space-4); }
   .add-footer { display: flex; }
 
-  .input { flex: 1 1 140px; min-width: 0; height: 40px; padding: 0 var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: var(--color-surface); color: var(--color-text-primary); font-family: var(--font-body); font-size: var(--text-base); outline: none; box-sizing: border-box; }
-  .input:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15); }
+  .input { flex: 1 1 140px; min-width: 0; }
   .input--sym { flex: 0 1 90px; }
   .input--factor { flex: 0 1 110px; }
 
   .alert { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); font-size: var(--text-sm); font-weight: 500; margin-bottom: var(--space-4); }
   .alert--error { background-color: var(--color-danger-subtle, #fee2e2); color: var(--color-danger, #dc2626); border: 1px solid rgba(220, 38, 38, 0.2); }
-
-  .btn-primary { display: inline-flex; align-items: center; gap: var(--space-2); height: 40px; padding: 0 var(--space-5); border-radius: var(--radius-md); border: none; background-color: var(--color-primary); color: var(--color-text-inverse); font-family: var(--font-body); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
-  .btn-primary:hover:not(:disabled) { background-color: var(--color-primary-hover); }
-  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
-
-  .btn-ghost { border: 1px solid var(--color-border); background: transparent; color: var(--color-primary); border-radius: var(--radius-md); height: 32px; padding: 0 var(--space-3); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
-  .btn-ghost:hover { background: var(--color-primary-subtle); border-color: var(--color-primary); }
-
-  .btn-edit-inline, .btn-cancel-inline { height: 30px; padding: 0 var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: transparent; color: var(--color-text-secondary); font-size: var(--text-xs); font-weight: 500; cursor: pointer; white-space: nowrap; }
-  .btn-edit-inline:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-subtle); }
-  .btn-delete-inline { height: 30px; padding: 0 var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: transparent; color: var(--color-text-muted); font-size: var(--text-xs); font-weight: 500; cursor: pointer; white-space: nowrap; }
-  .btn-delete-inline:hover:not(:disabled) { border-color: var(--color-danger, #dc2626); color: var(--color-danger, #dc2626); background: var(--color-danger-subtle, #fee2e2); }
-  .btn-save-inline { height: 30px; padding: 0 var(--space-3); border-radius: var(--radius-md); border: none; background: var(--color-primary); color: var(--color-text-inverse); font-size: var(--text-xs); font-weight: 600; cursor: pointer; }
-  .btn-save-inline:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .suggest-hint { font-size: var(--text-sm); color: var(--color-text-secondary); margin: 0 0 var(--space-4); }
   .suggest-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }

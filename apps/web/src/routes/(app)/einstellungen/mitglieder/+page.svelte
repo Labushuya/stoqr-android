@@ -189,7 +189,7 @@
               disabled={inviting}
             />
           </div>
-          <button class="btn-primary" type="submit" disabled={inviting}>
+          <button class="btn-primary no-shrink" type="submit" disabled={inviting}>
             {#if inviting}
               <span class="spinner" aria-hidden="true"></span>
               Einladen...
@@ -494,32 +494,7 @@
   }
 
   .input {
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
     width: 100%;
-    box-sizing: border-box;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .input::placeholder {
-    color: var(--color-text-muted);
-  }
-
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
-  }
-
-  .input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 
   /* ── Invite link result ───────────────────────────────────────────────── */
@@ -576,37 +551,6 @@
 
   .btn-copy:hover {
     background-color: var(--color-surface);
-  }
-
-  /* ── Primary button ───────────────────────────────────────────────────── */
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 40px;
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
   }
 
   /* ── Table ────────────────────────────────────────────────────────────── */

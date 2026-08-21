@@ -1246,7 +1246,7 @@
     <div class="section-header nutrient-header">
       <h2 class="section-title">Nährwerte <span class="section-subtitle">pro 100 g / 100 ml</span></h2>
       {#if product.gtin}
-        <button class="btn-secondary btn-off" type="button" disabled={fetchingOff} onclick={fetchNutrientsFromOff}>
+        <button class="btn-primary btn-off" type="button" disabled={fetchingOff} onclick={fetchNutrientsFromOff}>
           {#if fetchingOff}<span class="spinner spinner--sm" aria-hidden="true"></span>{/if}
           Von OpenFoodFacts abrufen
         </button>
@@ -1293,7 +1293,7 @@
           <option value={t.id}>{t.name} ({t.unit})</option>
         {/each}
       </select>
-      <button class="btn-secondary" type="button" onclick={addNutrientRow} disabled={!selectedNewType}>Hinzufügen</button>
+      <button class="btn-primary" type="button" onclick={addNutrientRow} disabled={!selectedNewType}>Hinzufügen</button>
       <button class="btn-link" type="button" onclick={() => (showCustomForm = !showCustomForm)}>
         {showCustomForm ? 'Abbrechen' : 'Eigener Nährstoff'}
       </button>
@@ -1303,7 +1303,7 @@
       <div class="custom-nutrient">
         <input class="input" type="text" placeholder="Name (z.B. Magnesium)" bind:value={customName} maxlength="128" aria-label="Name des Nährstoffs" />
         <input class="input custom-unit" type="text" placeholder="Einheit" bind:value={customUnit} maxlength="16" aria-label="Einheit" />
-        <button class="btn-secondary" type="button" onclick={createCustomNutrient} disabled={customSaving}>Anlegen</button>
+        <button class="btn-primary" type="button" onclick={createCustomNutrient} disabled={customSaving}>Anlegen</button>
       </div>
     {/if}
   </div>
@@ -1464,7 +1464,7 @@
                   Lagerort: {row.locationPath.length ? row.locationPath.map((p) => p.name).join(' › ') : 'wählen…'}
                 </button>
                 <div class="stock-edit-actions">
-                  <button class="btn-secondary" type="button" onclick={() => saveRow(row)}>Speichern</button>
+                  <button class="btn-primary" type="button" onclick={() => saveRow(row)}>Speichern</button>
                   <button class="btn-link" type="button" onclick={cancelRowEdit}>Abbrechen</button>
                 </div>
               </div>
@@ -1597,7 +1597,7 @@
   {/if}
   {#snippet footer()}
     <button class="btn-link" type="button" onclick={() => (normalizeOpen = false)}>Abbrechen</button>
-    <button class="btn-secondary" type="button" disabled={normalizeSaving} onclick={runNormalize}>
+    <button class="btn-primary" type="button" disabled={normalizeSaving} onclick={runNormalize}>
       {normalizeSaving ? 'Wird angeglichen…' : 'Angleichen'}
     </button>
   {/snippet}
@@ -1686,10 +1686,10 @@
 
   {#snippet footer()}
     {#if invStep === 1}
-      <button class="btn-secondary" type="button" disabled={invSaving} onclick={loadInventoryPreview}>Weiter</button>
+      <button class="btn-primary" type="button" disabled={invSaving} onclick={loadInventoryPreview}>Weiter</button>
     {:else}
       <button class="btn-link" type="button" disabled={invSaving} onclick={() => (invStep = 1)}>Zurück</button>
-      <button class="btn-secondary" type="button" disabled={invSaving} onclick={saveInventory}>Übernehmen</button>
+      <button class="btn-primary" type="button" disabled={invSaving} onclick={saveInventory}>Übernehmen</button>
     {/if}
   {/snippet}
 </Modal>
@@ -1705,7 +1705,7 @@
   {/if}
   {#snippet footer()}
     <button class="btn-link" type="button" onclick={() => (restoreModal = null)}>Abbrechen</button>
-    <button class="btn-secondary" type="button" onclick={confirmRestoreModal}>Wiederherstellen</button>
+    <button class="btn-primary" type="button" onclick={confirmRestoreModal}>Wiederherstellen</button>
   {/snippet}
 </Modal>
 
@@ -1727,7 +1727,7 @@
     {#if stockTarget}
       <button class="btn-link btn-link--danger" type="button" onclick={deleteTarget}>Entfernen</button>
     {/if}
-    <button class="btn-secondary" type="button" disabled={targetSaving} onclick={saveTarget}>Speichern</button>
+    <button class="btn-primary" type="button" disabled={targetSaving} onclick={saveTarget}>Speichern</button>
   {/snippet}
 </Modal>
 
@@ -1977,42 +1977,11 @@
   .up-mode-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .up-mode-btn.active { background: var(--color-surface-raised); color: var(--color-text-primary); box-shadow: var(--shadow-sm); }
 
-  /* ── Inputs / buttons ───────────────────────────────────────────────── */
+  /* ── Inputs / buttons: Optik global; hier nur Layout + Sonderfaelle ─────── */
   .input {
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
-    box-sizing: border-box;
     min-width: 0;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    width: 100%;
   }
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
-  }
-
-  .btn-secondary {
-    height: 40px;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast);
-  }
-  .btn-secondary:hover:not(:disabled) { background-color: var(--color-primary-hover); }
-  .btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
 
   .btn-link {
     background: none;

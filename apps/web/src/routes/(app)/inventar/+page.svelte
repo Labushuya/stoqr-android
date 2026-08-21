@@ -1753,62 +1753,7 @@ Das Produkt bleibt im Katalog.`,
     line-height: 1.6;
   }
 
-  /* ── Buttons ──────────────────────────────────────────────────────────── */
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 38px;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-primary--lg {
-    height: 44px;
-    padding: 0 var(--space-6);
-    font-size: var(--text-base);
-  }
-
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    height: 38px;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-secondary);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-text-primary);
-  }
+  /* ── Buttons: Optik global (btn-primary/--lg/btn-secondary=outline) ──────── */
 
   /* ── FAB group ────────────────────────────────────────────────────────── */
 
@@ -1914,26 +1859,7 @@ Das Produkt bleibt im Katalog.`,
   .required { color: var(--color-danger, #dc2626); }
 
   .input {
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     width: 100%;
-    box-sizing: border-box;
-    appearance: none;
-  }
-
-  .input::placeholder { color: var(--color-text-muted); }
-
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
   }
 
   .article-hint {

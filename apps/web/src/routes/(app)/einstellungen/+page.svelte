@@ -1388,39 +1388,7 @@
     color: var(--color-text-muted);
   }
 
-  .btn-danger {
-    flex-shrink: 0;
-    padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--color-danger, #dc2626);
-    background: var(--color-danger, #dc2626);
-    color: #fff;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition-fast), opacity var(--transition-fast);
-  }
-  .btn-danger:hover:not(:disabled) {
-    background: #901c12;
-    border-color: #901c12;
-  }
-  .btn-danger:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  .btn-cancel {
-    padding: var(--space-2) var(--space-4);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-text-primary);
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    cursor: pointer;
-    transition: background var(--transition-fast);
-  }
-  .btn-cancel:hover {
-    background: var(--color-surface-sunken);
-  }
+  .btn-danger { flex-shrink: 0; }
 
   .reset-warn {
     margin: 0 0 var(--space-3);
@@ -1641,28 +1609,7 @@
   /* ── Inputs ───────────────────────────────────────────────────────────── */
 
   .input {
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     width: 100%;
-    box-sizing: border-box;
-    appearance: none;
-  }
-
-  .input::placeholder {
-    color: var(--color-text-muted);
-  }
-
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
   }
 
   .input--disabled {
@@ -1719,32 +1666,8 @@
     border: 1px solid rgba(22, 163, 74, 0.2);
   }
 
-  /* ── Buttons ──────────────────────────────────────────────────────────── */
+  /* ── Buttons: nur Layout/Zustands-Modifier; Optik global ────────────────── */
 
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 40px;
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-primary:disabled,
   .btn-primary--disabled {
     opacity: 0.45;
     cursor: not-allowed;
@@ -1863,78 +1786,7 @@
     flex-wrap: wrap;
   }
 
-  .btn-edit-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    height: 30px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-secondary);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color var(--transition-fast), color var(--transition-fast),
-      background-color var(--transition-fast);
-  }
-
-  .btn-edit-inline:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background-color: var(--color-primary-subtle);
-  }
-
-  .btn-save-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    height: 30px;
-    padding: 0 var(--space-3);    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast);
-  }
-
-  .btn-save-inline:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-  }
-
-  .btn-save-inline:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-cancel-inline {
-    display: inline-flex;
-    align-items: center;
-    height: 30px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
-  }
-
-  .btn-cancel-inline:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-text-primary);
-  }
+  /* Inline-Buttons (edit/save/cancel): Optik global. */
 
   /* ── Empty hint ───────────────────────────────────────────────────────── */
 

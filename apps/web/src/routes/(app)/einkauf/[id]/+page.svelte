@@ -266,14 +266,11 @@
   .page-desc { font-size: var(--text-sm); color: var(--color-text-secondary); margin: var(--space-1) 0 0; }
 
   .toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin-bottom: var(--space-4); }
-  .btn-ghost { border: 1px solid var(--color-border); background: transparent; color: var(--color-primary); border-radius: var(--radius-md); height: 36px; padding: 0 var(--space-4); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
-  .btn-ghost:hover { background: var(--color-primary-subtle); border-color: var(--color-primary); }
   .btn-ghost--strong { color: var(--color-text-inverse); background: var(--color-primary); border-color: var(--color-primary); }
   .btn-ghost--strong:hover { background: var(--color-primary-hover); }
   .btn-x-text { border: none; background: none; color: var(--color-text-muted); cursor: pointer; font-size: var(--text-sm); }
   .btn-x-text:hover { color: var(--color-danger, #dc2626); }
 
-  .card { background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-5); box-shadow: var(--shadow-sm); }
   .section-title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary); margin: 0 0 var(--space-4); }
   .section-sub { font-size: var(--text-xs); font-weight: 500; color: var(--color-text-muted); }
   .empty-hint { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; }
@@ -294,9 +291,6 @@
   .real-badge--ausverkauft { background: #fee2e2; color: #dc2626; }
 
   .item-actions { display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; flex-wrap: wrap; }
-  .chip { border: 1px solid var(--color-border); background: transparent; color: var(--color-text-secondary); border-radius: var(--radius-full); height: 28px; padding: 0 var(--space-3); font-size: var(--text-xs); font-weight: 600; cursor: pointer; }
-  .chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
-  .chip--on { background: var(--color-primary); color: var(--color-text-inverse); border-color: var(--color-primary); }
   .btn-book { font-size: var(--text-xs); font-weight: 600; color: var(--color-primary); text-decoration: none; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-1) var(--space-2); }
   .btn-book:hover { background: var(--color-primary-subtle); border-color: var(--color-primary); }
   .btn-x { border: none; background: none; color: var(--color-text-muted); cursor: pointer; font-size: 14px; padding: var(--space-1); }

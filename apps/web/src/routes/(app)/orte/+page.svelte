@@ -461,7 +461,7 @@
                   </svg>
                 </button>
                 <button
-                  class="btn-icon btn-icon--danger"
+                  class="btn-icon btn-icon-danger"
                   type="button"
                   title="Löschen"
                   onclick={() => deleteLocation(loc)}
@@ -541,7 +541,7 @@
                             </svg>
                           </button>
                           <button
-                            class="btn-icon btn-icon--danger"
+                            class="btn-icon btn-icon-danger"
                             type="button"
                             title="Löschen"
                             onclick={() => deleteStorage(st)}
@@ -743,82 +743,11 @@
     margin: 0;
   }
 
-  /* ── Buttons ──────────────────────────────────────────────────────────── */
+  /* ── Buttons: Optik global; hier nur Layout + Sonderfaelle ───────────────── */
 
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 38px;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-    flex-shrink: 0;
-  }
-
-  .btn-primary:hover {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-primary--lg {
-    height: 44px;
-    padding: 0 var(--space-6);
-    font-size: var(--text-base);
-  }
-
-  .btn-save {
-    display: inline-flex;
-    align-items: center;
-    height: 34px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast);
-    flex-shrink: 0;
-  }
-
-  .btn-save:hover {
-    background-color: var(--color-primary-hover);
-  }
-
-  .btn-cancel {
-    display: inline-flex;
-    align-items: center;
-    height: 34px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-secondary);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
-    flex-shrink: 0;
-  }
-
-  .btn-cancel:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-text-primary);
-  }
+  .btn-primary,
+  .btn-save,
+  .btn-cancel { flex-shrink: 0; }
 
   .btn-save--xs,
   .btn-cancel--xs {
@@ -873,7 +802,7 @@
     color: var(--color-text-primary);
   }
 
-  .btn-icon--danger:hover {
+  .btn-icon-danger:hover {
     background-color: var(--color-danger-subtle);
     color: var(--color-danger);
   }
@@ -905,27 +834,8 @@
   /* ── Input ────────────────────────────────────────────────────────────── */
 
   .input {
-    height: 38px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     min-width: 0;
     width: 100%;
-  }
-
-  .input::placeholder {
-    color: var(--color-text-muted);
-  }
-
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
   }
 
   .input--sm {

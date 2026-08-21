@@ -1637,31 +1637,7 @@
   }
 
   .input {
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     width: 100%;
-    box-sizing: border-box;
-    appearance: none;
-  }
-
-  .input::placeholder { color: var(--color-text-muted); }
-
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
-  }
-
-  .input:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
   }
 
   /* ── MHD rows ─────────────────────────────────────────────────────────── */

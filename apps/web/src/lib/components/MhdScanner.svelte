@@ -186,26 +186,26 @@
     <!-- Actions -->
     <div class="scanner-actions">
       {#if phase === 'camera'}
-        <button class="btn btn--primary btn--full" onclick={captureAndScan}>
+        <button class="btn-primary btn-block" onclick={captureAndScan}>
           Scannen
         </button>
 
       {:else if phase === 'loading'}
-        <button class="btn btn--primary btn--full" disabled>
+        <button class="btn-primary btn-block" disabled>
           <span class="spinner spinner--sm" aria-hidden="true"></span>
           Wird verarbeitet…
         </button>
 
       {:else if phase === 'preview'}
-        <button class="btn btn--secondary" onclick={handleRetry}>
+        <button class="btn-ghost" onclick={handleRetry}>
           Erneut versuchen
         </button>
-        <button class="btn btn--primary" onclick={handleConfirm}>
+        <button class="btn-primary" onclick={handleConfirm}>
           Bestätigen
         </button>
 
       {:else if phase === 'error'}
-        <button class="btn btn--secondary btn--full" onclick={handleRetry}>
+        <button class="btn-ghost btn-block" onclick={handleRetry}>
           Erneut versuchen
         </button>
       {/if}
@@ -454,59 +454,10 @@
     flex-shrink: 0;
   }
 
-  /* ── Buttons ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-6);
-    border-radius: var(--radius-md);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    font-weight: 600;
-    line-height: 1;
-    cursor: pointer;
-    border: 1.5px solid transparent;
-    transition:
-      background var(--transition-fast),
-      border-color var(--transition-fast),
-      opacity var(--transition-fast);
-    white-space: nowrap;
-    flex: 1;
-  }
-
-  .btn--full {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-
-  .btn--primary {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-text-inverse);
-  }
-
-  .btn--primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-  }
-
-  .btn--primary:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
-
-  .btn--secondary {
-    background: var(--color-surface-sunken);
-    border-color: var(--color-border);
-    color: var(--color-text-primary);
-  }
-
-  .btn--secondary:hover {
-    background: var(--color-border-subtle);
-    border-color: var(--color-border-strong);
-  }
+  /* ── Buttons: Optik global; hier nur Zeilen-Layout ── */
+  /* Buttons teilen sich die Aktionszeile gleichmaessig (frueher .btn{flex:1}). */
+  .scanner-actions > button { flex: 1; }
+  .scanner-actions > button.btn-block { flex: 1 1 100%; width: 100%; }
 
   /* ── Desktop: center as modal ── */
   @media (min-width: 600px) {

@@ -432,13 +432,8 @@
   .toolbar { margin-bottom: var(--space-4); display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
   .store-filter { display: inline-flex; align-items: center; gap: var(--space-2); }
   .store-filter-label { font-size: var(--text-sm); color: var(--color-text-muted); }
-  .input--store { height: 38px; }
   .filter-hint { font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 var(--space-3); }
-  .btn-ghost { border: 1px solid var(--color-border); background: transparent; color: var(--color-primary); border-radius: var(--radius-md); height: 38px; padding: 0 var(--space-4); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
-  .btn-ghost:hover:not(:disabled) { background: var(--color-primary-subtle); border-color: var(--color-primary); }
-  .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .card { background: var(--color-surface-raised); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-5); margin-bottom: var(--space-5); box-shadow: var(--shadow-sm); }
   .section-title { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary); margin: 0 0 var(--space-4); }
   .section-sub { font-size: var(--text-xs); font-weight: 500; color: var(--color-text-muted); }
   .empty-hint { font-size: var(--text-sm); color: var(--color-text-muted); margin: 0 0 var(--space-3); }
@@ -471,13 +466,11 @@
   .btn-x:hover { color: var(--color-danger, #dc2626); }
 
   .add-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
-  .input { height: 40px; padding: 0 var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); font-family: var(--font-body); font-size: var(--text-base); outline: none; box-sizing: border-box; }
-  .input:focus { border-color: var(--color-border-focus); box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15); }
   .add-row .input:first-child { flex: 1 1 160px; min-width: 0; }
   .input--qty { flex: 0 1 80px; }
   .input--unit { flex: 0 1 130px; }
-  .btn-primary { height: 40px; width: 40px; border: none; background: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-md); font-size: var(--text-lg); font-weight: 700; cursor: pointer; flex-shrink: 0; }
-  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  /* Quadratischer „+"-Button: Layout-Override (Breite = Hoehe); Optik global. */
+  .btn-primary { width: 40px; padding: 0; font-size: var(--text-lg); font-weight: 700; flex-shrink: 0; }
 
   @media (max-width: 560px) {
     .page { padding: var(--space-4) var(--space-3) var(--space-12); }

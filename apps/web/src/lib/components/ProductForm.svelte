@@ -210,22 +210,22 @@
       <div class="pf-grid">
         <label class="pf-field pf-field--full">
           <span class="pf-label">Name *</span>
-          <input class="pf-input" type="text" bind:value={fName} maxlength="255" placeholder="z.B. Vollmilch" />
+          <input class="input" type="text" bind:value={fName} maxlength="255" placeholder="z.B. Vollmilch" />
         </label>
 
         <label class="pf-field">
           <span class="pf-label">Marke</span>
-          <input class="pf-input" type="text" bind:value={fBrand} maxlength="128" placeholder="optional" />
+          <input class="input" type="text" bind:value={fBrand} maxlength="128" placeholder="optional" />
         </label>
 
         <label class="pf-field">
           <span class="pf-label">EAN / Barcode</span>
-          <input class="pf-input" type="text" inputmode="numeric" bind:value={fGtin} maxlength="14" placeholder="optional" />
+          <input class="input" type="text" inputmode="numeric" bind:value={fGtin} maxlength="14" placeholder="optional" />
         </label>
 
         <label class="pf-field">
           <span class="pf-label">Kategorie {#if isEdit && fieldSources.category === 'manual' && !catSourceReset}<button class="pf-reset-src" type="button" disabled={catSourceResetting} title="Setzt die manuelle Herkunft zurück — die Kategorie bleibt, wird aber wieder für Zuordnungs-Regeln empfänglich." onclick={resetCategorySource}>Herkunft zurücksetzen</button>{/if}</span>
-          <select class="pf-input" bind:value={fCategoryId}>
+          <select class="input" bind:value={fCategoryId}>
             <option value="">— keine —</option>
             {#each categoryTree as cat (cat.id)}
               <option value={cat.id}>{catIndent(cat.depth)}{cat.name}</option>
@@ -236,7 +236,7 @@
         {#if showUnit}
           <label class="pf-field">
             <span class="pf-label">Standard-Einheit</span>
-            <select class="pf-input" bind:value={fUnit}>
+            <select class="input" bind:value={fUnit}>
               {#each units as u (u.symbol)}
                 <option value={u.symbol}>{u.name}</option>
               {/each}
@@ -246,7 +246,7 @@
 
         <label class="pf-field pf-field--full">
           <span class="pf-label">Bild-URL</span>
-          <input class="pf-input" type="text" bind:value={fImageUrl} placeholder="/media/… oder https://…" />
+          <input class="input" type="text" bind:value={fImageUrl} placeholder="/media/… oder https://…" />
         </label>
 
         {#if fImageUrl.trim()}
@@ -257,13 +257,13 @@
 
         <label class="pf-field pf-field--full">
           <span class="pf-label">Beschreibung</span>
-          <textarea class="pf-input pf-textarea" bind:value={fDescription} rows="2" placeholder="optional"></textarea>
+          <textarea class="input pf-textarea" bind:value={fDescription} rows="2" placeholder="optional"></textarea>
         </label>
 
         <!-- Pfand (G47/G49) — nur fuer count-Einheiten (Flasche/Dose/Stück) -->
         <div class="pf-field pf-field--full">
           <label class="pf-check" class:pf-check--disabled={!fUnitIsCount}>
-            <input type="checkbox" bind:checked={fHasDeposit} disabled={!fUnitIsCount} />
+            <input class="checkbox" type="checkbox" bind:checked={fHasDeposit} disabled={!fUnitIsCount} />
             <span class="pf-label">Pfand</span>
           </label>
           {#if !fUnitIsCount}
@@ -273,13 +273,13 @@
               {#each [8, 15, 16, 25] as ct (ct)}
                 <button
                   type="button"
-                  class="pf-chip"
-                  class:pf-chip--active={fDepositCt === ct}
+                  class="chip"
+                  class:chip--on={fDepositCt === ct}
                   onclick={() => (fDepositCt = ct)}
                 >{(ct / 100).toLocaleString('de-DE', { minimumFractionDigits: 2 })} €</button>
               {/each}
               <input
-                class="pf-input pf-deposit-free"
+                class="input pf-deposit-free"
                 type="number" min="0" step="0.01" placeholder="andere (€)"
                 value={fDepositCt != null ? fDepositCt / 100 : ''}
                 oninput={(e) => {
@@ -293,9 +293,9 @@
       </div>
 
       <div class="pf-actions">
-        <button class="pf-btn pf-btn--ghost" type="button" onclick={onClose} disabled={saving}>Abbrechen</button>
-        <button class="pf-btn pf-btn--primary" type="button" onclick={save} disabled={saving}>
-          {#if saving}<span class="pf-spinner" aria-hidden="true"></span>{/if}
+        <button class="btn-ghost" type="button" onclick={onClose} disabled={saving}>Abbrechen</button>
+        <button class="btn-primary" type="button" onclick={save} disabled={saving}>
+          {#if saving}<span class="spinner" aria-hidden="true"></span>{/if}
           {isEdit ? 'Speichern' : 'Anlegen'}
         </button>
       </div>
@@ -358,13 +358,7 @@
   .pf-check--disabled { opacity: 0.55; cursor: not-allowed; }
   .pf-hint { font-size: var(--text-xs); color: var(--color-text-muted); margin: var(--space-1) 0 0; }
   .pf-deposit { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
-  .pf-chip {
-    border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-secondary);
-    border-radius: var(--radius-full); padding: var(--space-1) var(--space-3); font-size: var(--text-sm);
-    font-weight: 600; cursor: pointer;
-  }
-  .pf-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
-  .pf-chip--active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-text-inverse); }
+  /* .chip/.chip--on: Optik global */
   .pf-deposit-free { max-width: 140px; }
   .pf-label {
     font-size: var(--text-xs);
@@ -385,23 +379,7 @@
   }
   .pf-reset-src:hover:not(:disabled) { background: var(--color-primary-subtle); border-color: var(--color-primary); }
   .pf-reset-src:disabled { opacity: 0.5; cursor: not-allowed; }
-  .pf-input {
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body, inherit);
-    font-size: var(--text-base);
-    outline: none;
-    box-sizing: border-box;
-    appearance: none;
-  }
-  .pf-input:focus {
-    border-color: var(--color-border-focus, var(--color-primary));
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
-  }
+  /* .input: Optik global; hier nur Textarea-Layout */
   .pf-textarea { height: auto; padding: var(--space-2) var(--space-3); resize: vertical; }
   .pf-preview { align-items: flex-start; }
   .pf-preview-img {
@@ -417,36 +395,5 @@
     gap: var(--space-2);
     margin-top: var(--space-5);
   }
-  .pf-btn {
-    height: 40px;
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-md);
-    font-family: var(--font-body, inherit);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-  .pf-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .pf-btn--ghost {
-    border: 1px solid var(--color-border);
-    background: transparent;
-    color: var(--color-text-secondary);
-  }
-  .pf-btn--primary {
-    border: none;
-    background: var(--color-primary);
-    color: var(--color-text-inverse, #fff);
-  }
-  .pf-spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: pf-spin 600ms linear infinite;
-  }
-  @keyframes pf-spin { to { transform: rotate(360deg); } }
+  /* .btn-ghost/.btn-primary/.spinner: Optik global */
 </style>

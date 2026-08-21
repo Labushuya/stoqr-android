@@ -407,55 +407,8 @@
     line-height: 1.5;
   }
 
-  /* ── Buttons (Spiegel von einstellungen) ────────────────────────────────── */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 40px;
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-  .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-  .btn-primary:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-  .btn-danger {
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    padding: 0 var(--space-5);
-    border: 1px solid var(--color-danger);
-    background: var(--color-danger);
-    color: #fff;
-    border-radius: var(--radius-md);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: var(--space-4);
-    transition: opacity var(--transition-fast);
-  }
-  .btn-danger:hover:not(:disabled) {
-    opacity: 0.9;
-  }
-  .btn-danger:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
+  /* ── Buttons: nur Layout-Modifier; Optik global ─────────────────────────── */
+  .btn-danger { margin-top: var(--space-4); }
 
   /* ── Import: Datei + Bestaetigung ───────────────────────────────────────── */
   .file-field {

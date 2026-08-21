@@ -189,13 +189,13 @@
 
   <!-- Quick actions -->
   <div class="quick-actions">
-    <a href="/inventar" class="qa-btn qa-btn--primary">
+    <a href="/inventar" class="btn-primary">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
       Artikel hinzufügen
     </a>
-    <a href="/orte" class="qa-btn qa-btn--secondary">
+    <a href="/orte" class="btn-secondary">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M8 2C5.24 2 3 4.24 3 7c0 4 5 7 5 7s5-3 5-7c0-2.76-2.24-5-5-5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
         <circle cx="8" cy="7" r="1.8" stroke="currentColor" stroke-width="1.6" fill="none"/>
@@ -479,43 +479,7 @@
     flex-wrap: wrap;
   }
 
-  .qa-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 38px;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
-  }
-
-  .qa-btn--primary {
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    border: none;
-  }
-
-  .qa-btn--primary:hover {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .qa-btn--secondary {
-    background-color: transparent;
-    color: var(--color-text-secondary);
-    border: 1px solid var(--color-border);
-  }
-
-  .qa-btn--secondary:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-text-primary);
-    background-color: var(--color-surface-sunken);
-  }
+  /* Quick-Action-Links nutzen die globalen .btn-primary/.btn-secondary. */
 
   /* ── List section ─────────────────────────────────────────────────────── */
 

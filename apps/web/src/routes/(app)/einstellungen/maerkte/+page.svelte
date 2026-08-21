@@ -975,27 +975,6 @@
   .input {
     flex: 1 1 160px;
     min-width: 140px;
-    height: 40px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-base);
-    outline: none;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-    box-sizing: border-box;
-    appearance: none;
-  }
-
-  .input::placeholder {
-    color: var(--color-text-muted);
-  }
-
-  .input:focus {
-    border-color: var(--color-border-focus);
-    box-shadow: 0 0 0 3px rgba(196, 103, 58, 0.15);
   }
 
   .input--chain {
@@ -1007,7 +986,10 @@
   }
 
   .input--url {
-    flex: 1 1 100%;
+    /* In der column-Flexbox darf flex-basis nicht die HOEHE steuern (sonst
+       kollabiert das Feld auf Inhaltshoehe). Volle Breite, feste Control-Hoehe. */
+    flex: 0 0 auto;
+    width: 100%;
   }
 
   .scrape-badge {
@@ -1043,140 +1025,6 @@
     background-color: var(--color-danger-subtle, #fee2e2);
     color: var(--color-danger, #dc2626);
     border: 1px solid rgba(220, 38, 38, 0.2);
-  }
-
-  /* ── Buttons ──────────────────────────────────────────────────────────── */
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    height: 40px;
-    padding: 0 var(--space-5);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-sm);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast), box-shadow var(--transition-fast);
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-    box-shadow: var(--shadow-md);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-
-  .btn-edit-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    height: 30px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-secondary);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color var(--transition-fast), color var(--transition-fast),
-      background-color var(--transition-fast);
-  }
-
-  .btn-edit-inline:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background-color: var(--color-primary-subtle);
-  }
-
-  .btn-delete-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    height: 30px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color var(--transition-fast), color var(--transition-fast),
-      background-color var(--transition-fast);
-  }
-
-  .btn-delete-inline:hover:not(:disabled) {
-    border-color: var(--color-danger, #dc2626);
-    color: var(--color-danger, #dc2626);
-    background-color: var(--color-danger-subtle, #fee2e2);
-  }
-
-  .btn-delete-inline:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-save-inline {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    height: 30px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background-color var(--transition-fast);
-  }
-
-  .btn-save-inline:hover:not(:disabled) {
-    background-color: var(--color-primary-hover);
-  }
-
-  .btn-save-inline:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .btn-cancel-inline {
-    display: inline-flex;
-    align-items: center;
-    height: 30px;
-    padding: 0 var(--space-3);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background-color: transparent;
-    color: var(--color-text-muted);
-    font-family: var(--font-body);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
-  }
-
-  .btn-cancel-inline:hover {
-    border-color: var(--color-border-strong);
-    color: var(--color-text-primary);
   }
 
   /* ── Spinner ──────────────────────────────────────────────────────────── */
