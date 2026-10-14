@@ -1039,6 +1039,11 @@
     {:else}
       <div class="table-wrap">
         <table class="table">
+          <colgroup>
+            <col class="col-cat" />
+            <col class="col-tol" />
+            <col class="col-act" />
+          </colgroup>
           <thead>
             <tr>
               <th class="th">Kategorie</th>
@@ -1480,7 +1485,7 @@
   .field-map-table { width: 100%; border-collapse: collapse; margin-top: var(--space-2); }
   .field-map-table th { text-align: left; color: var(--color-text-muted); font-weight: 600; padding: 2px var(--space-2); border-bottom: 1px solid var(--color-border); }
   .field-map-table td { padding: 2px var(--space-2); border-bottom: 1px solid var(--color-border-subtle, var(--color-border)); vertical-align: top; }
-  .field-map-val { color: var(--color-text-primary); word-break: break-word; }
+  .field-map-val { color: var(--color-text-primary); overflow-wrap: anywhere; word-break: normal; }
   .field-map-src { font-family: var(--font-mono, monospace); font-size: 10px; color: var(--color-text-muted); }
   .snap-badge { font-size: var(--text-xs); font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--color-surface-sunken); color: var(--color-text-muted); flex-shrink: 0; }
   .snap-badge--warn { background: color-mix(in srgb, var(--color-warning, #d97706) 18%, transparent); color: var(--color-warning, #d97706); }
@@ -1737,11 +1742,23 @@
 
   /* ── Category name cell ───────────────────────────────────────────────── */
 
+  /* Feste Spaltenbreiten fuer table-layout:fixed — sonst verteilt der Browser
+     gleichmaessig und Kategorienamen brechen/werden abgeschnitten, die
+     Aktion-Spalte wird zu schmal fuer Speichern+Abbrechen (G61). */
+  .col-cat { width: auto; }
+  .col-tol { width: 92px; }
+  .col-act { width: 168px; }
+
+  /* Kategorie-Zelle darf umbrechen statt zu ueberlaufen/abzuschneiden. */
+  .td:first-child { white-space: normal; overflow-wrap: anywhere; }
+
   .cat-name {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
+    min-width: 0;
     font-weight: 500;
+    overflow-wrap: anywhere;
   }
 
   .cat-icon {
@@ -1783,8 +1800,15 @@
     align-items: center;
     justify-content: flex-end;
     gap: var(--space-2);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    min-width: 0;
   }
+  /* Das <form> um den Speichern-Button darf die Zeile nicht sprengen
+     (Block-Default) — inline halten, damit Speichern+Abbrechen nebeneinander
+     in der Aktion-Spalte bleiben statt zu stapeln/ueberlappen (G61). */
+  .action-row > form { display: inline-flex; margin: 0; }
+  .action-row .btn-save-inline,
+  .action-row .btn-cancel-inline { flex-shrink: 0; }
 
   /* Inline-Buttons (edit/save/cancel): Optik global. */
 
@@ -1846,15 +1870,22 @@
       gap: var(--space-1);
     }
 
-    /* Increase inline button touch targets for mobile */
+    /* Mobile: groessere Touch-Ziele, aber kompaktes Padding, damit
+       Speichern+Abbrechen in der Aktion-Spalte nebeneinander bleiben und nicht
+       ueberlaufen/stapeln (G61). */
     .btn-edit-inline,
     .btn-save-inline,
     .btn-cancel-inline {
       height: 44px;
-      padding: 0 var(--space-4);
+      min-height: 44px;
+      padding: 0 var(--space-2);
+      white-space: nowrap;
     }
 
-    /* Unit edit/delete icon buttons — increase tap area */
+    /* Aktion-Spalte auf Mobile breiter, Toleranz schmaler — Platz fuer beide
+       Buttons nebeneinander. */
+    .col-tol { width: 64px; }
+    .col-act { width: 148px; }
   }
 
   .members-link {

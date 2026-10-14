@@ -18,8 +18,10 @@
 // 503/404), damit die UI nicht bricht. Siehe die einzelnen Kommentare unten.
 //
 // Audit: die Pi-Handler schreiben nebenbei writeAudit(...). Das ist best-effort
-// und beeinflusst den Response-Vertrag NICHT — im App-Router bewusst weggelassen,
-// um den Router schlank zu halten (die UI liest kein Audit-Log offline).
+// und beeinflusst den Response-Vertrag NICHT. Es wird hier nun 1:1 zu den
+// Pi-Handlern geschrieben, damit die Aktivitaets-Seite (listAuditLog) das Log
+// auch on-device (SQLite) befuellt sieht. Nur Zweige, die auf dem Pi ebenfalls
+// writeAudit aufrufen, werden geloggt — Online-Only-Degradationen nicht.
 
 import { LOCAL_HOUSEHOLD_ID, LOCAL_USER_ID, sqliteSchema } from '@stoqr/db/sqlite'
 import type { SqliteDatabase } from '@stoqr/db/sqlite'
@@ -38,6 +40,7 @@ import * as shoppingListQ from '$data/queries/shopping-list'
 import * as tripsQ from '$data/queries/shopping-trips'
 import * as targetsQ from '$data/queries/stock-targets'
 import * as resetQ from '$data/queries/reset'
+import { writeAudit } from '$data/queries/audit'
 import { getUnits } from '$data/queries/households'
 import {
   buildUnitMetaMap,
@@ -158,6 +161,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           // Pi nutzt hier inline-drizzle; die Query-Fn createLocation erledigt
           // dasselbe (inkl. sortOrder-Default via Schema).
           const location = await locationsQ.createLocation({ householdId: hh, name: b.name, icon: b.icon })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'locations',
+            recordId: location.id,
+            newValues: { name: location.name, icon: location.icon },
+          })
           return jsonRes(location, 201)
         }
       } else {
@@ -173,13 +184,31 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (b.icon !== undefined) updates.icon = b.icon
           if (b.sortOrder !== undefined) updates.sortOrder = b.sortOrder
           if (Object.keys(updates).length === 0) return errRes('No fields to update', 400)
+          const before = await locationsQ.getLocation(id, hh)
           const updated = await locationsQ.updateLocation(id, hh, updates)
           if (!updated) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'locations',
+            recordId: id,
+            oldValues: before ? { name: before.name, icon: before.icon } : null,
+            newValues: { name: updated.name, icon: updated.icon },
+          })
           return jsonRes(updated)
         }
         if (method === 'DELETE') {
           const deleted = await locationsQ.deleteLocation(id, hh)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'locations',
+            recordId: id,
+            oldValues: { name: deleted.name },
+          })
           return noContent()
         }
       }
@@ -209,6 +238,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             temperatureZone: b.temperatureZone,
             icon: b.icon,
           })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'storages',
+            recordId: storage.id,
+            newValues: { name: storage.name, locationId: storage.locationId },
+          })
           return jsonRes(storage, 201)
         }
       } else {
@@ -227,11 +264,27 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (Object.keys(updates).length === 0) return errRes('No fields to update', 400)
           const updated = await locationsQ.updateStorage(id, updates)
           if (!updated) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'storages',
+            recordId: id,
+            newValues: { name: updated.name },
+          })
           return jsonRes(updated)
         }
         if (method === 'DELETE') {
           const deleted = await locationsQ.deleteStorage(id)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'storages',
+            recordId: id,
+            oldValues: { name: deleted.name },
+          })
           return noContent()
         }
       }
@@ -247,6 +300,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           const b = parseBody(init) as { storageId?: string; name?: string; icon?: string; sortOrder?: number }
           if (!b.storageId || !b.name) return errRes('storageId and name are required', 400)
           const place = await locationsQ.createPlace({ storageId: b.storageId, name: b.name, icon: b.icon })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'places',
+            recordId: place.id,
+            newValues: { name: place.name, storageId: place.storageId },
+          })
           return jsonRes(place, 201)
         }
       } else {
@@ -259,11 +320,27 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (Object.keys(updates).length === 0) return errRes('No fields to update', 400)
           const updated = await locationsQ.updatePlace(id, updates)
           if (!updated) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'places',
+            recordId: id,
+            newValues: { name: updated.name },
+          })
           return jsonRes(updated)
         }
         if (method === 'DELETE') {
           const deleted = await locationsQ.deletePlace(id)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'places',
+            recordId: id,
+            oldValues: { name: deleted.name },
+          })
           return noContent()
         }
       }
@@ -281,6 +358,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           const name = (b.name ?? '').trim()
           if (!name) return errRes('Name erforderlich', 400)
           const row = await categoriesQ.createCategory({ name, icon: b.icon ?? null, parentId: b.parentId ?? null })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'categories',
+            recordId: row.id,
+            newValues: { name: row.name, slug: row.slug, icon: row.icon, parentId: row.parentId },
+          })
           return jsonRes(row, 201)
         }
       } else {
@@ -299,14 +384,32 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             if (res.reason === 'cycle') return errRes(res.detail ?? 'Ungueltige Verschachtelung.', 409)
             return errRes('Not found', 404)
           }
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'categories',
+            recordId: id,
+            oldValues: { name: before.name, icon: before.icon, parentId: before.parentId },
+            newValues: { name: res.row.name, icon: res.row.icon, parentId: res.row.parentId },
+          })
           return jsonRes(res.row)
         }
         if (method === 'DELETE') {
+          const before = await categoriesQ.getCategoryById(id)
           const res = await categoriesQ.deleteCategory(id)
           if (!res.ok) {
             if (res.reason === 'not-found') return errRes('Not found', 404)
             return errRes(res.detail ?? 'Kategorie kann nicht geloescht werden.', 409)
           }
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'categories',
+            recordId: id,
+            oldValues: before ? { name: before.name, slug: before.slug } : undefined,
+          })
           return noContent()
         }
       }
@@ -330,12 +433,28 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             const status = res.reason === 'duplicate' ? 409 : 400
             return errRes(res.detail ?? 'Regel konnte nicht angelegt werden.', status)
           }
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'category_mappings',
+            recordId: res.row.id,
+            newValues: { source: res.row.source, token: res.row.token, categoryId: res.row.categoryId },
+          })
           return jsonRes(res.row, 201)
         }
       } else {
         if (method === 'DELETE') {
           const deleted = await mappingQ.deleteCategoryMapping(id, hh)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'category_mappings',
+            recordId: id,
+            oldValues: { source: deleted.source, token: deleted.token, categoryId: deleted.categoryId },
+          })
           return noContent()
         }
       }
@@ -399,6 +518,23 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             purchasePriceCt: b.purchasePriceCt,
           })
 
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'inventory_items',
+            recordId: item.id,
+            newValues: {
+              productId: resolvedProductId as string,
+              quantity: item.quantity,
+              unit: item.unit,
+              storeId: b.storeId ?? null,
+              placeId: b.placeId ?? null,
+              bestBeforeDate: b.bestBeforeDate ?? null,
+              purchasePriceCt: b.purchasePriceCt ?? null,
+            },
+          })
+
           if (b.storeId) {
             try {
               await productStoresQ.addStoreForProduct(resolvedProductId, hh, b.storeId)
@@ -409,7 +545,7 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
 
           // Preis mitschreiben, wenn angefordert.
           if (b.recordPrice && b.purchasePriceCt != null && b.storeId) {
-            await pricesQ.recordPrice({
+            const priceRow = await pricesQ.recordPrice({
               householdId: hh,
               productId: resolvedProductId,
               storeId: b.storeId,
@@ -419,6 +555,22 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
               makePermanent: b.pricePermanent ?? false,
               source: 'booked',
               createdBy: null as unknown as string,
+            })
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'INSERT',
+              tableName: 'product_prices',
+              recordId: priceRow.id,
+              newValues: {
+                productId: resolvedProductId as string,
+                storeId: b.storeId,
+                priceCt: b.purchasePriceCt,
+                unit: b.priceUnit ?? b.unit,
+                isReduced: b.priceIsReduced ?? false,
+                isCurrent: priceRow.isCurrent,
+                source: 'booked',
+              },
             })
           }
 
@@ -444,6 +596,8 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (Object.keys(patch).length === 0 && b.categoryId === undefined && !b.productName) {
             return errRes('Keine Felder zum Aktualisieren', 400)
           }
+          // Vorher-Zustand fuer Audit-Diff (nur die gepatchten Felder).
+          const before = await productsQ.getInventoryItem(id, hh)
           const updated = await productsQ.updateInventoryItem(id, hh, patch)
           if (!updated) return errRes('Not found', 404)
           // Produkt-Stammdaten (Name/Kategorie) mitpflegen, wenn uebergeben.
@@ -459,11 +613,40 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
                 .where(eq(sqliteSchema.products.id, itemForProduct.productId))
             }
           }
+          // Audit-Log: nur die tatsaechlich gepatchten Felder in old/new abbilden.
+          if (before && Object.keys(patch).length > 0) {
+            const oldValues: Record<string, unknown> = {}
+            const newValues: Record<string, unknown> = {}
+            for (const key of Object.keys(patch)) {
+              oldValues[key] = (before as Record<string, unknown>)[key]
+              newValues[key] = (updated as Record<string, unknown>)[key]
+            }
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'UPDATE',
+              tableName: 'inventory_items',
+              recordId: id,
+              oldValues,
+              newValues,
+            })
+          }
           return jsonRes(updated)
         }
         if (method === 'DELETE') {
+          const before = await productsQ.getInventoryItem(id, hh)
           const deleted = await productsQ.deleteInventoryItem(id, hh)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'inventory_items',
+            recordId: id,
+            oldValues: before
+              ? { quantity: before.quantity, unit: before.unit, productId: before.productId }
+              : null,
+          })
           return noContent()
         }
       } else if (sub === 'consume' && method === 'POST') {
@@ -473,6 +656,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
         }
         const updated = await productsQ.consumeInventoryItem(id, hh, b.amount)
         if (!updated) return errRes('Not found', 404)
+        await writeAudit({
+          householdId: hh,
+          userId: LOCAL_USER_ID,
+          action: 'UPDATE',
+          tableName: 'inventory_items',
+          recordId: id,
+          newValues: { consumedAmount: b.amount },
+        })
         return jsonRes(updated)
       }
     }
@@ -525,6 +716,19 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (b.defaultUnit) srcs.unit = 'manual'
           if (countOk && b.hasDeposit) srcs.deposit = 'manual'
           await productsQ.setFieldSources(productId, srcs as any)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'products',
+            recordId: productId,
+            newValues: {
+              name: b.name,
+              brand: (b.brand ?? null) as unknown,
+              gtin: b.gtin ? String(b.gtin).trim() : null,
+              categoryId: (b.categoryId ?? null) as unknown,
+            },
+          })
           return jsonRes(product ?? { id: productId }, 201)
         }
       }
@@ -571,9 +775,23 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
 
           if (Object.keys(patch).length === 0) return errRes('Keine Felder zum Aktualisieren', 400)
 
+          // Vorher-Zustand fuer Audit-Diff (nur die potenziell geaenderten Felder).
+          const before = await productsQ.getProductById(id)
           const updated = await productsQ.updateProduct(id, patch)
           if (!updated) return errRes('Not found', 404)
           const product = await productsQ.getProductById(id)
+
+          const auditKeys = Object.keys(patch)
+          const beforeRow = before as Record<string, unknown> | null
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'products',
+            recordId: id,
+            oldValues: beforeRow ? Object.fromEntries(auditKeys.map((k) => [k, beforeRow[k]])) : null,
+            newValues: patch as Record<string, unknown>,
+          })
 
           // Feld-Herkunft 'manual' fuer geaenderte Felder.
           const srcs: Record<string, 'manual'> = {}
@@ -600,8 +818,17 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (activeItem) {
             return errRes('Produkt hat noch Bestandseintraege. Bitte zuerst alle Eintraege entfernen.', 409)
           }
+          const beforeRow = await productsQ.getProductById(id)
           const deleted = await productsQ.deleteProduct(id)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'products',
+            recordId: id,
+            oldValues: beforeRow ? { name: beforeRow.name, gtin: beforeRow.gtin } : null,
+          })
           return noContent()
         }
       }
@@ -677,12 +904,22 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             if (qn === 0) patch.status = 'consumed'
             else if (before.status === 'consumed') patch.status = 'available'
             await productsQ.updateInventoryItem(line.id, hh, patch)
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'UPDATE',
+              tableName: 'inventory_items',
+              recordId: line.id,
+              oldValues: { quantity: before.quantity, status: before.status },
+              newValues: { quantity: String(qn), status: patch.status ?? before.status },
+              changedFields: patch.status ? ['quantity', 'status'] : ['quantity'],
+            })
             touched++
           }
           if (newLine) {
             const qn = Number(newLine.quantity)
             if (Number.isFinite(qn) && qn > 0) {
-              await productsQ.createInventoryItem({
+              const created = await productsQ.createInventoryItem({
                 productId: id,
                 householdId: hh,
                 quantity: qn,
@@ -690,6 +927,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
                 bestBeforeDate: newLine.bestBeforeDate || undefined,
                 placeId: newLine.placeId || undefined,
                 storeId: newLine.storeId || undefined,
+              })
+              await writeAudit({
+                householdId: hh,
+                userId: LOCAL_USER_ID,
+                action: 'INSERT',
+                tableName: 'inventory_items',
+                recordId: created?.id ?? id,
+                newValues: { quantity: String(qn), unit, bestBeforeDate: newLine.bestBeforeDate ?? null },
               })
               touched++
               await shoppingListQ.generateAutoNeeds(hh)
@@ -732,7 +977,17 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             }
             await productsQ.updateInventoryItem(item.id, hh, patch)
           }
+          const oldDefault = product.defaultUnit
           await productsQ.updateProduct(id, { defaultUnit: targetUnit })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'products',
+            recordId: id,
+            oldValues: { defaultUnit: oldDefault },
+            newValues: { defaultUnit: targetUnit, mode, itemsConverted: converted, itemsRelabeled: relabeled },
+          })
           return jsonRes({ ok: true, unit: targetUnit, mode, items: items.length, converted, relabeled })
         }
 
@@ -793,6 +1048,22 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
                 source: 'manual',
                 createdBy: null as unknown as string,
               })
+              await writeAudit({
+                householdId: hh,
+                userId: LOCAL_USER_ID,
+                action: 'INSERT',
+                tableName: 'product_prices',
+                recordId: row.id,
+                newValues: {
+                  productId: id,
+                  storeId: b.storeId,
+                  priceCt: Math.round(priceCt),
+                  unit: b.unit,
+                  isReduced: b.isReduced ?? false,
+                  isCurrent: row.isCurrent,
+                  source: 'manual',
+                },
+              })
               return jsonRes(row, 201)
             }
           }
@@ -809,6 +1080,15 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             if (b.action === 'reject') {
               const row = await pricesQ.rejectProposedPrice(proposalId, hh)
               if (!row) return errRes('Vorschlag nicht gefunden', 404)
+              await writeAudit({
+                householdId: hh,
+                userId: LOCAL_USER_ID,
+                action: 'UPDATE',
+                tableName: 'product_prices',
+                recordId: row.id,
+                oldValues: { status: 'proposed' },
+                newValues: { status: 'rejected' },
+              })
               return jsonRes({ ok: true, price: row })
             }
             if (b.action === 'confirm') {
@@ -825,6 +1105,21 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
                 createdBy: null as unknown as string,
               })
               if (!row) return errRes('Vorschlag nicht gefunden', 404)
+              await writeAudit({
+                householdId: hh,
+                userId: LOCAL_USER_ID,
+                action: 'UPDATE',
+                tableName: 'product_prices',
+                recordId: row.id,
+                oldValues: { status: 'proposed' },
+                newValues: {
+                  status: 'confirmed',
+                  isCurrent: row.isCurrent,
+                  priceCt: row.priceCt,
+                  unit: row.unit,
+                  isReduced: row.isReduced,
+                },
+              })
               return jsonRes({ ok: true, price: row })
             }
             return errRes('Ungueltige Aktion', 400)
@@ -881,11 +1176,31 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
               }
             }
             const row = await targetsQ.upsertStockTarget({ productId: id, householdId: hh, targetQuantity, unit, minQuantity })
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'UPDATE',
+              tableName: 'stock_targets',
+              recordId: id,
+              newValues: {
+                targetQuantity: row?.targetQuantity ?? String(targetQuantity),
+                unit,
+                minQuantity: row?.minQuantity ?? minQuantity,
+                notes: row?.notes ?? null,
+              },
+            })
             return jsonRes(row)
           }
           if (method === 'DELETE') {
             const { deleted } = await targetsQ.deleteStockTarget(id, hh)
             if (!deleted) return errRes('Not found', 404)
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'DELETE',
+              tableName: 'stock_targets',
+              recordId: id,
+            })
             return noContent()
           }
         }
@@ -971,6 +1286,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
         if (method === 'POST') {
           const b = parseBody(init) as { name?: string; storeId?: string }
           const trip = await tripsQ.createTrip({ householdId: hh, name: b.name ?? null, storeId: b.storeId ?? null })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'shopping_trips',
+            recordId: trip.id,
+            newValues: { name: trip.name, storeId: trip.storeId, status: trip.status },
+          })
           return jsonRes(trip, 201)
         }
       } else if (!sub) {
@@ -988,6 +1311,15 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             else if (b.action === 'end') row = await tripsQ.endTrip(id, hh)
             else return errRes('Unbekannte Aktion', 400)
             if (!row) return errRes('Uebergang nicht moeglich (Status/Not found)', 409)
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'UPDATE',
+              tableName: 'shopping_trips',
+              recordId: id,
+              newValues: { status: row.status },
+              changedFields: ['status'],
+            })
             return jsonRes(row)
           }
           const patch: Record<string, unknown> = {}
@@ -996,11 +1328,26 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (Object.keys(patch).length === 0) return errRes('Keine Felder zum Aktualisieren', 400)
           const row = await tripsQ.updateTrip(id, hh, patch)
           if (!row) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'shopping_trips',
+            recordId: id,
+            newValues: patch as Record<string, unknown>,
+          })
           return jsonRes(row)
         }
         if (method === 'DELETE') {
           const { deleted } = await tripsQ.deleteTrip(id, hh)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'shopping_trips',
+            recordId: id,
+          })
           return noContent()
         }
       } else if (sub === 'items' && !itemId) {
@@ -1009,6 +1356,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (b.shoppingListItemId) {
             const row = await tripsQ.reserveNeed(b.shoppingListItemId, id, hh)
             if (!row) return errRes('Bedarf oder Einkauf nicht gefunden', 404)
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'INSERT',
+              tableName: 'shopping_trip_items',
+              recordId: row.id,
+              newValues: { tripId: row.tripId, productId: row.productId, quantity: row.quantity, unit: row.unit },
+            })
             return jsonRes(row, 201)
           }
           if (b.reserveAllForStore !== undefined) {
@@ -1023,6 +1378,15 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (b.toTripId) {
             const row = await tripsQ.moveTripItem(itemId, b.toTripId, hh)
             if (!row) return errRes('Position oder Ziel-Einkauf nicht gefunden', 404)
+            await writeAudit({
+              householdId: hh,
+              userId: LOCAL_USER_ID,
+              action: 'UPDATE',
+              tableName: 'shopping_trip_items',
+              recordId: itemId,
+              newValues: { tripId: b.toTripId },
+              changedFields: ['tripId'],
+            })
             return jsonRes(row)
           }
           const patch: Record<string, unknown> = {}
@@ -1032,11 +1396,26 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
           if (Object.keys(patch).length === 0) return errRes('Keine Felder zum Aktualisieren', 400)
           const row = await tripsQ.updateTripItem(itemId, hh, patch)
           if (!row) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'shopping_trip_items',
+            recordId: itemId,
+            newValues: patch as Record<string, unknown>,
+          })
           return jsonRes(row)
         }
         if (method === 'DELETE') {
           const { deleted } = await tripsQ.releaseTripItem(itemId, hh)
           if (!deleted) return errRes('Not found', 404)
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'shopping_trip_items',
+            recordId: itemId,
+          })
           return noContent()
         }
       } else if (sub === 'items' && itemId && sub2 === 'book-in') {
@@ -1084,6 +1463,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             longitude: coordToDb(b.longitude),
             scrapeUrl: normalizedUrl as string | null,
           }).returning()
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'stores',
+            recordId: store.id,
+            newValues: { name: store.name, chain: store.chain },
+          })
           return jsonRes(store, 201)
         }
       } else if (!sub) {
@@ -1108,8 +1495,24 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             patch.scrapeUrl = normalizedUrl
           }
           if (Object.keys(patch).length === 0) return errRes('No fields to update', 400)
+          const [existing] = await db.select().from(S).where(and(eq(S.id, id), eq(S.householdId, hh)))
           const [updated] = await db.update(S).set(patch).where(and(eq(S.id, id), eq(S.householdId, hh))).returning()
           if (!updated) return errRes('Not found', 404)
+          const oldValues: Record<string, unknown> = {}
+          const newValues: Record<string, unknown> = {}
+          for (const key of Object.keys(patch)) {
+            oldValues[key] = (existing as Record<string, unknown> | undefined)?.[key]
+            newValues[key] = (updated as Record<string, unknown>)[key]
+          }
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'stores',
+            recordId: id,
+            oldValues,
+            newValues,
+          })
           return jsonRes(updated)
         }
         if (method === 'DELETE') {
@@ -1121,6 +1524,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             .where(eq(sqliteSchema.inventoryItems.storeId, id))
           if (refCount > 0) return jsonRes({ error: 'Markt wird noch von Bestaenden verwendet', count: refCount }, 409)
           await db.delete(S).where(eq(S.id, id))
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'stores',
+            recordId: id,
+            oldValues: { name: store.name, chain: store.chain },
+          })
           return jsonRes({ ok: true })
         }
       } else if (sub === 'prices' && seg[4] === 'fetch-all' && method === 'POST') {
@@ -1157,6 +1568,19 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             isSystem: false,
             sortOrder: 100,
           }).returning()
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'units',
+            recordId: newUnit.id,
+            newValues: {
+              name: newUnit.name,
+              symbol: newUnit.symbol,
+              dimension: newUnit.dimension,
+              toBaseFactor: newUnit.toBaseFactor,
+            },
+          })
           return jsonRes(newUnit, 201)
         }
       } else {
@@ -1174,6 +1598,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             return jsonRes({ error: `Diese Einheit wird von ${usedBy} Artikel(n) verwendet und kann nicht geloescht werden.`, usedBy }, 409)
           }
           await db.delete(U).where(eq(U.id, id))
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'DELETE',
+            tableName: 'units',
+            recordId: id,
+            oldValues: { name: unit.name, symbol: unit.symbol },
+          })
           return jsonRes({ ok: true })
         }
         if (method === 'PATCH') {
@@ -1206,6 +1638,21 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
               .set({ unit: updates.symbol as string })
               .where(and(eq(sqliteSchema.inventoryItems.householdId, hh), eq(sqliteSchema.inventoryItems.unit, oldSymbol)))
           }
+          const oldValues: Record<string, unknown> = {}
+          const newValues: Record<string, unknown> = {}
+          for (const key of Object.keys(updates)) {
+            oldValues[key] = (unit as Record<string, unknown>)[key]
+            newValues[key] = (updated as Record<string, unknown>)[key]
+          }
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'UPDATE',
+            tableName: 'units',
+            recordId: id,
+            oldValues,
+            newValues,
+          })
           return jsonRes(updated)
         }
       }
@@ -1328,7 +1775,9 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
     // /api/settings/reset  (Werksreset A/B/C, on-device)
     // -----------------------------------------------------------------------
     // App-Ersatz fuer die Server-Form-Action resetHousehold. Phrase muss exakt
-    // zur Stufe passen (Type-to-Confirm, ASCII). Ohne Audit (routeApp-Konvention).
+    // zur Stufe passen (Type-to-Confirm, ASCII). Audit 1:1 zur Server-Action
+    // (tableName household_reset); bei Stufe C wird das Log geleert und dieser
+    // Eintrag ist der erste im frischen Log (gewollt).
     if (r === 'settings' && seg[2] === 'reset' && method === 'POST') {
       const b = parseBody(init) as { stage?: unknown; confirm?: unknown }
       const stage = String(b.stage ?? '')
@@ -1339,6 +1788,14 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
         return errRes('Bestaetigungstext stimmt nicht. Bitte die angezeigte Phrase exakt eintippen.', 422)
       }
       await resetQ.resetHousehold(hh, stage as resetQ.ResetStage)
+      await writeAudit({
+        householdId: hh,
+        userId: LOCAL_USER_ID,
+        action: 'DELETE',
+        tableName: 'household_reset',
+        recordId: hh,
+        oldValues: { stage },
+      })
       return jsonRes({ action: 'resetHousehold', success: true, stage })
     }
 
@@ -1382,6 +1839,20 @@ export async function routeApp(path: string, init?: RequestInit): Promise<Respon
             targetHouseholdId: hh,
             targetUserId: LOCAL_USER_ID,
             newId: () => crypto.randomUUID(),
+          })
+          await writeAudit({
+            householdId: hh,
+            userId: LOCAL_USER_ID,
+            action: 'INSERT',
+            tableName: 'transfer_import',
+            recordId: hh,
+            newValues: {
+              scope: result.scope,
+              sourceSystem: result.sourceSystem,
+              inserted: result.inserted,
+              reusedProducts: result.reusedProducts,
+              warnings: result.warnings.length,
+            },
           })
           return jsonRes(result)
         } catch (err) {

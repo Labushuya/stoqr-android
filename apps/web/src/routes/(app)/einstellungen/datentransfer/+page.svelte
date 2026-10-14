@@ -153,13 +153,18 @@
 <svelte:head><title>Datentransfer · stoqr</title></svelte:head>
 
 <div class="page">
-  <header class="page-header">
-    <a href="/einstellungen" class="back-link">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/einstellungen" class="breadcrumb-back">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <span>Einstellungen</span>
+      Einstellungen
     </a>
+    <span class="breadcrumb-sep" aria-hidden="true">/</span>
+    <span class="breadcrumb-current" aria-current="page">Import / Export</span>
+  </nav>
+
+  <header class="page-header">
     <h1 class="page-title">Import / Export</h1>
     <p class="page-lead">
       Sichere deine Daten als Datei und uebertrage sie zwischen Pi und App. Dies dient der
@@ -291,18 +296,13 @@
   .page-header {
     margin-bottom: var(--space-8);
   }
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    color: var(--color-text-muted);
-    text-decoration: none;
-    font-size: var(--text-sm);
-    margin-bottom: var(--space-2);
-  }
-  .back-link:hover {
-    color: var(--color-text-primary);
-  }
+  /* Kanonischer Breadcrumb — identisch zu den anderen Einstellungen-Unterseiten
+     (kategorien/einheiten/maerkte/…), statt des fruehreren grauen .back-link (G61). */
+  .breadcrumb { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-6); font-size: var(--text-sm); color: var(--color-text-muted); }
+  .breadcrumb-back { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--color-primary); text-decoration: none; font-weight: 500; }
+  .breadcrumb-back:hover { color: var(--color-primary-hover); }
+  .breadcrumb-sep { color: var(--color-text-muted); }
+  .breadcrumb-current { color: var(--color-text-secondary); font-weight: 500; }
   .page-title {
     font-family: var(--font-display);
     font-size: var(--text-2xl);

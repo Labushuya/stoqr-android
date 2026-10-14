@@ -1168,6 +1168,7 @@
   .places-grid {
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: var(--space-2);
     margin-bottom: var(--space-2);
   }
@@ -1185,6 +1186,25 @@
     border: 1px solid var(--color-border);
     color: var(--color-text-primary);
     font-size: var(--text-sm);
+  }
+
+  /* Im Edit-Zustand darf der Chip wachsen — sonst ragen der Icon-Button (40px)
+     und die Edit-Buttons aus der 30px-Pille in die Nachbarzeilen (G61).
+     Feste Hoehe/Pillenform nur im Anzeige-Zustand. */
+  .place-chip:has(.inline-edit) {
+    height: auto;
+    min-height: 30px;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    align-items: center;
+  }
+  /* Kompakter Icon-Button im Chip-Editor (statt globaler 48x40) — passend zur
+     .input--xs-Hoehe, damit nichts ueber den Editor hinausragt. */
+  .place-chip .inline-edit--chip .icon-btn {
+    width: 32px;
+    height: 30px;
+    font-size: 16px;
   }
 
   .place-icon {

@@ -1886,7 +1886,10 @@
     font-weight: 700;
     color: var(--color-text-primary);
     margin: 0;
-    word-break: break-word;
+    /* Nur an Wortgrenzen umbrechen; lange Woerter notfalls hart, aber nicht
+       Zeichen-fuer-Zeichen wie bei word-break:break-word (G61-Feedback). */
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
   .product-brand, .product-category {
     font-size: var(--text-sm);
@@ -2221,14 +2224,9 @@
   .price-flags { display: flex; flex-wrap: wrap; gap: var(--space-3); }
   .flag-label { display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--text-sm); color: var(--color-text-secondary); cursor: pointer; }
   .price-actions { display: flex; gap: var(--space-2); }
-  .btn-save-inline { border: none; background: var(--color-primary); color: var(--color-text-inverse); border-radius: var(--radius-md); height: 32px; padding: 0 var(--space-3); font-size: var(--text-xs); font-weight: 600; cursor: pointer; }
-  .btn-save-inline:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-cancel-inline { border: 1px solid var(--color-border); background: transparent; color: var(--color-text-muted); border-radius: var(--radius-md); height: 32px; padding: 0 var(--space-3); font-size: var(--text-xs); font-weight: 500; cursor: pointer; }
-  .btn-edit-inline { border: 1px solid var(--color-border); background: transparent; color: var(--color-primary); border-radius: var(--radius-md); height: 30px; padding: 0 var(--space-3); font-size: var(--text-xs); font-weight: 600; cursor: pointer; flex-shrink: 0; }
-  .btn-edit-inline:hover { background: var(--color-primary-subtle); border-color: var(--color-primary); }
+  /* Inline-Buttons (save/cancel/edit): Optik global (app.css, einheitlich 30px). */
+  .btn-edit-inline { flex-shrink: 0; }
   .price-view-actions { display: inline-flex; gap: var(--space-2); flex-shrink: 0; }
-  .btn-edit-inline:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-cancel-inline:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* ── Online-Preis-Vorschlag (Block F2, Staging) ───────────────────────── */
   .price-proposal { margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px dashed var(--color-border); display: flex; flex-direction: column; gap: var(--space-2); }
@@ -2243,8 +2241,13 @@
   .pack-view strong { color: var(--color-text-primary); }
   .unit-orphan-hint { display: inline-block; margin-left: 6px; font-size: 9px; font-weight: 700; padding: 0 5px; border-radius: 999px; background: color-mix(in srgb, var(--color-danger, #dc2626) 16%, transparent); color: var(--color-danger, #dc2626); text-transform: uppercase; letter-spacing: 0.03em; cursor: help; }
   .pack-none { color: var(--color-text-muted); font-style: italic; }
-  .pack-edit { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; flex: 1; }
+  .pack-edit { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; flex: 1; min-width: 0; }
   .pack-label { font-size: var(--text-sm); color: var(--color-text-secondary); }
+  /* Select im Standard-Einheit-Editor (nackte .input ohne pack-Modifier):
+     definierte Breite, damit es nicht unkontrolliert waechst und die Buttons
+     sauber in einer Reihe bleiben (G61). Gebinde-Felder (.pack-input/.pack-dim)
+     behalten ihre eigene Breite. */
+  .pack-edit > .input:not(.pack-input):not(.pack-dim) { flex: 1 1 140px; min-width: 0; }
   .pack-input { flex: 0 1 90px; }
   .pack-dim { flex: 0 1 150px; }
 
